@@ -62,24 +62,48 @@ impl Actor for Client {
             panic!("MyRegisterActor clients must be added to the model after servers.");
         }
 
-        if self.count > 0 {
-            let unique_request_id = index; // next will be 2 * index
-            let value = (b'A' + (index % self.server_count) as u8) as char;
-            let msg = match self.request_type {
-                RequestType::Put => {
-                    ClientMsg::Put(unique_request_id, KEY.to_owned(), value.to_string())
+        if self.message_acks {
+            // we'll wait for acks before sending more messages
+
+            if self.count > 0 {
+                let unique_request_id = index; // next will be 2 * index
+                let value = (b'A' + (index % self.server_count) as u8) as char;
+                let msg = match self.request_type {
+                    RequestType::Put => {
+                        ClientMsg::Put(unique_request_id, KEY.to_owned(), value.to_string())
+                    }
+                    RequestType::Delete => ClientMsg::Delete(unique_request_id, KEY.to_owned()),
+                };
+                o.send(
+                    Id::from(index % self.server_count),
+                    MyRegisterMsg::Client(msg),
+                );
+                ClientState {
+                    awaiting: Some(unique_request_id),
+                    op_count: 1,
                 }
-                RequestType::Delete => ClientMsg::Delete(unique_request_id, KEY.to_owned()),
-            };
-            o.send(
-                Id::from(index % self.server_count),
-                MyRegisterMsg::Client(msg),
-            );
-            ClientState {
-                awaiting: Some(unique_request_id),
-                op_count: 1,
+            } else {
+                ClientState {
+                    awaiting: None,
+                    op_count: 0,
+                }
             }
         } else {
+            for i in 0..self.count {
+                let unique_request_id = (i + 1) * index; // next will be 2 * index
+                let value = (b'A' + (index % self.server_count) as u8) as char;
+                let msg = match self.request_type {
+                    RequestType::Put => {
+                        ClientMsg::Put(unique_request_id, KEY.to_owned(), value.to_string())
+                    }
+                    RequestType::Delete => ClientMsg::Delete(unique_request_id, KEY.to_owned()),
+                };
+                o.send(
+                    Id::from(index % self.server_count),
+                    MyRegisterMsg::Client(msg),
+                );
+            }
+
             ClientState {
                 awaiting: None,
                 op_count: 0,
