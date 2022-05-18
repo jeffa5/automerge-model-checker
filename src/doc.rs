@@ -1,7 +1,7 @@
 use std::hash::Hash;
 
 use automerge::transaction::Transactable;
-use automerge::{ActorId, Automerge, Change, ROOT};
+use automerge::{sync, ActorId, Automerge, Change, ROOT};
 use stateright::actor::Id;
 
 #[derive(Clone, Debug)]
@@ -63,5 +63,15 @@ impl Doc {
             .map_range(ROOT, ..)
             .map(|(key, value, _)| (key, value.into_string().unwrap()))
             .collect()
+    }
+
+    pub fn receive_sync_message(&mut self, message: sync::Message) {
+        self.am
+            .receive_sync_message(&mut sync::State::default(), message)
+            .unwrap()
+    }
+
+    pub fn generate_sync_message(&self) -> Option<sync::Message> {
+        self.am.generate_sync_message(&mut sync::State::default())
     }
 }

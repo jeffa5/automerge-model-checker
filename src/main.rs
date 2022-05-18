@@ -1,3 +1,4 @@
+use automerge::sync;
 use automerge::Change;
 use clap::Parser;
 use doc::Doc;
@@ -13,6 +14,7 @@ use stateright::{actor::Id, Model};
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
+use std::str::FromStr;
 use std::sync::Arc;
 
 mod doc;
@@ -26,6 +28,25 @@ type Value = String;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct Peer {
     peers: Vec<Id>,
+    sync_method: SyncMethod,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+enum SyncMethod {
+    Changes,
+    Messages,
+}
+
+impl FromStr for SyncMethod {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "changes" => Ok(SyncMethod::Changes),
+            "messages" => Ok(SyncMethod::Messages),
+            _ => Err("Failed to match sync method".to_owned()),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -60,13 +81,18 @@ impl Actor for Peer {
                 // respond to the query (not totally necessary for this)
                 o.send(src, MyRegisterMsg::PutOk(id));
 
-                if let Some(change) = state.last_local_change() {
-                    o.broadcast(
-                        &self.peers,
-                        &MyRegisterMsg::Internal(PeerMsg::SyncChange {
-                            change_bytes: change.raw_bytes().to_vec(),
-                        }),
-                    )
+                match self.sync_method {
+                    SyncMethod::Changes => {
+                        if let Some(change) = state.last_local_change() {
+                            o.broadcast(
+                                &self.peers,
+                                &MyRegisterMsg::Internal(PeerMsg::SyncChange {
+                                    change_bytes: change.raw_bytes().to_vec(),
+                                }),
+                            )
+                        }
+                    }
+                    SyncMethod::Messages => todo!(),
                 }
             }
             MyRegisterMsg::Get(id, key) => {
@@ -82,16 +108,34 @@ impl Actor for Peer {
                 // respond to the query (not totally necessary for this)
                 o.send(src, MyRegisterMsg::DeleteOk(id));
 
-                if let Some(change) = state.last_local_change() {
-                    o.broadcast(
-                        &self.peers,
-                        &MyRegisterMsg::Internal(PeerMsg::SyncChange {
-                            change_bytes: change.raw_bytes().to_vec(),
+                match self.sync_method {
+                    SyncMethod::Changes => {
+                        if let Some(change) = state.last_local_change() {
+                            o.broadcast(
+                                &self.peers,
+                                &MyRegisterMsg::Internal(PeerMsg::SyncChange {
+                                    change_bytes: change.raw_bytes().to_vec(),
+                                }),
+                            )
+                        }
+                    }
+                    SyncMethod::Messages => todo!(),
+                }
+            }
+            MyRegisterMsg::Internal(PeerMsg::SyncMessage { message_bytes }) => {
+                let message = sync::Message::decode(&message_bytes).unwrap();
+                // receive the sync message
+                state.to_mut().receive_sync_message(message);
+                // try and generate a reply
+                if let Some(message) = state.to_mut().generate_sync_message() {
+                    o.send(
+                        src,
+                        MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                            message_bytes: message.encode(),
                         }),
                     )
                 }
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncMessage { message_bytes }) => todo!(),
             MyRegisterMsg::Internal(PeerMsg::SyncChange { change_bytes }) => {
                 let change = Change::from_bytes(change_bytes).unwrap();
                 state.to_mut().apply_change(change)
@@ -448,6 +492,7 @@ struct ModelCfg {
     delete_clients: usize,
     servers: usize,
     follow_up_gets: bool,
+    sync_method: SyncMethod,
 }
 
 impl ModelCfg {
@@ -456,6 +501,7 @@ impl ModelCfg {
         for i in 0..self.servers {
             model = model.actor(MyRegisterActor::Server(Peer {
                 peers: model_peers(i, self.servers),
+                sync_method: self.sync_method,
             }))
         }
 
@@ -547,6 +593,9 @@ struct Opts {
 
     #[clap(long, global = true)]
     follow_up_gets: bool,
+
+    #[clap(long)]
+    sync_method: SyncMethod,
 }
 
 #[derive(clap::Subcommand)]
@@ -564,6 +613,7 @@ fn main() {
         delete_clients: opts.delete_clients,
         servers: opts.servers,
         follow_up_gets: opts.follow_up_gets,
+        sync_method: opts.sync_method,
     }
     .into_actor_model()
     .checker()
