@@ -16,7 +16,6 @@ use stateright::{actor::Id, Model};
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::str::FromStr;
 use std::sync::Arc;
 
 mod client;
@@ -35,22 +34,10 @@ struct Peer {
     message_acks: bool,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
 enum SyncMethod {
     Changes,
     Messages,
-}
-
-impl FromStr for SyncMethod {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "changes" => Ok(SyncMethod::Changes),
-            "messages" => Ok(SyncMethod::Messages),
-            _ => Err("Failed to match sync method".to_owned()),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -389,7 +376,7 @@ struct Opts {
     #[clap(long, global = true)]
     message_acks: bool,
 
-    #[clap(long, global = true, default_value = "changes")]
+    #[clap(long, arg_enum, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 }
 
