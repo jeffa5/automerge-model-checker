@@ -92,7 +92,21 @@ impl Actor for Peer {
                             )
                         }
                     }
-                    SyncMethod::Messages => todo!(),
+                    SyncMethod::Messages => {
+                        // each peer has a specific state to manage in the sync connection
+                        for peer in &self.peers {
+                            if let Some(message) =
+                                state.to_mut().generate_sync_message((*peer).into())
+                            {
+                                o.send(
+                                    *peer,
+                                    MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                                        message_bytes: message.encode(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
                 }
             }
             MyRegisterMsg::Get(id, key) => {
@@ -119,15 +133,29 @@ impl Actor for Peer {
                             )
                         }
                     }
-                    SyncMethod::Messages => todo!(),
+                    SyncMethod::Messages => {
+                        // each peer has a specific state to manage in the sync connection
+                        for peer in &self.peers {
+                            if let Some(message) =
+                                state.to_mut().generate_sync_message((*peer).into())
+                            {
+                                o.send(
+                                    *peer,
+                                    MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                                        message_bytes: message.encode(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
                 }
             }
             MyRegisterMsg::Internal(PeerMsg::SyncMessage { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes).unwrap();
                 // receive the sync message
-                state.to_mut().receive_sync_message(message);
+                state.to_mut().receive_sync_message(src.into(), message);
                 // try and generate a reply
-                if let Some(message) = state.to_mut().generate_sync_message() {
+                if let Some(message) = state.to_mut().generate_sync_message(src.into()) {
                     o.send(
                         src,
                         MyRegisterMsg::Internal(PeerMsg::SyncMessage {
@@ -594,7 +622,7 @@ struct Opts {
     #[clap(long, global = true)]
     follow_up_gets: bool,
 
-    #[clap(long)]
+    #[clap(long, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 }
 

@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::hash::Hash;
 
 use automerge::transaction::Transactable;
@@ -7,6 +8,7 @@ use stateright::actor::Id;
 #[derive(Clone, Debug)]
 pub struct Doc {
     am: Automerge,
+    sync_states: BTreeMap<usize, sync::State>,
 }
 
 impl PartialEq for Doc {
@@ -28,7 +30,10 @@ impl Doc {
         let mut doc = Automerge::new();
         let id: usize = actor_id.into();
         doc.set_actor(ActorId::from(id.to_be_bytes()));
-        Self { am: doc }
+        Self {
+            am: doc,
+            sync_states: BTreeMap::new(),
+        }
     }
 
     pub fn get(&self, key: &str) -> Option<String> {
@@ -65,13 +70,13 @@ impl Doc {
             .collect()
     }
 
-    pub fn receive_sync_message(&mut self, message: sync::Message) {
-        self.am
-            .receive_sync_message(&mut sync::State::default(), message)
-            .unwrap()
+    pub fn receive_sync_message(&mut self, peer: usize, message: sync::Message) {
+        let state = self.sync_states.entry(peer).or_default();
+        self.am.receive_sync_message(state, message).unwrap()
     }
 
-    pub fn generate_sync_message(&self) -> Option<sync::Message> {
-        self.am.generate_sync_message(&mut sync::State::default())
+    pub fn generate_sync_message(&mut self, peer: usize) -> Option<sync::Message> {
+        let state = self.sync_states.entry(peer).or_default();
+        self.am.generate_sync_message(state)
     }
 }
