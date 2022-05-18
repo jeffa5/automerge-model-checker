@@ -1,0 +1,16 @@
+[package]
+name = "amc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+automerge = { git = "https://github.com/automerge/automerge-rs" }
+clap = { version = "3.1.18", features = ["derive"] }
+num_cpus = "1.13.1"
+stateright = "0.29.0"
+
+[patch.crates-io]
+stateright = { git = "https://github.com/jeffa5/stateright", branch = "public-out" }
+
+[profile.release]
+debug = true
