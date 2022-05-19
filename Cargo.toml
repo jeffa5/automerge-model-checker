@@ -10,7 +10,10 @@ num_cpus = "1.13.1"
 stateright = "0.29.0"
 
 [patch.crates-io]
-stateright = { git = "https://github.com/jeffa5/stateright", branch = "public-out" }
+stateright = { git = "https://github.com/jeffa5/stateright", branch = "report-data" }
+
+[patch."https://github.com/automerge/automerge-rs"]
+automerge = { git = "https://github.com/jeffa5/automerge-rs", branch = "get-changes-opt" }
 
 [profile.release]
 debug = true

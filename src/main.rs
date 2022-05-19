@@ -4,6 +4,7 @@ use clap::Parser;
 use client::Client;
 use client::ClientMsg;
 use doc::Doc;
+use report::Reporter;
 use stateright::actor::model_peers;
 use stateright::actor::Actor;
 use stateright::actor::ActorModel;
@@ -20,6 +21,7 @@ use std::sync::Arc;
 
 mod client;
 mod doc;
+mod report;
 
 pub const KEY: &str = "key";
 
@@ -413,14 +415,14 @@ fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor>>) {
         SubCmd::CheckDfs => {
             model
                 .spawn_dfs()
-                .report(&mut std::io::stdout())
+                .report(&mut Reporter::default())
                 .join()
                 .assert_properties();
         }
         SubCmd::CheckBfs => {
             model
                 .spawn_bfs()
-                .report(&mut std::io::stdout())
+                .report(&mut Reporter::default())
                 .join()
                 .assert_properties();
         }
