@@ -83,7 +83,7 @@ impl Doc {
     pub fn receive_sync_message(&mut self, peer: usize, message: sync::Message) {
         let state = self.sync_states.entry(peer).or_default();
         let res = self.am.receive_sync_message(state, message);
-        if let Err(error) = res {
+        if let Err(_error) = res {
             // set the error
             self.error = true;
         }
