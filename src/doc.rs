@@ -15,7 +15,7 @@ pub struct Doc {
 impl PartialEq for Doc {
     fn eq(&self, other: &Self) -> bool {
         self.values() == other.values()
-            && self.sync_states == other.sync_states
+            // && self.sync_states == other.sync_states
             && self.error == other.error
     }
 }
@@ -25,7 +25,7 @@ impl Eq for Doc {}
 impl Hash for Doc {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.values().hash(state);
-        self.sync_states.hash(state);
+        // self.sync_states.hash(state);
         self.error.hash(state);
     }
 }
