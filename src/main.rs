@@ -325,6 +325,19 @@ impl ModelCfg {
                 "in sync when syncing is done and no in-flight requests",
                 |_, state| syncing_done_and_in_sync(state),
             )
+            .property(
+                stateright::Expectation::Always,
+                "no errors set (from panics)",
+                |_, state| {
+                    state.actor_states.iter().all(|s| {
+                        if let MyRegisterActorState::Server(s) = &**s {
+                            !s.has_error()
+                        } else {
+                            true
+                        }
+                    })
+                },
+            )
             .init_network(Network::new_ordered(vec![]))
     }
 }

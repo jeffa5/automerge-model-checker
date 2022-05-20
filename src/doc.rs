@@ -9,11 +9,14 @@ use stateright::actor::Id;
 pub struct Doc {
     am: Automerge,
     sync_states: BTreeMap<usize, sync::State>,
+    error: bool,
 }
 
 impl PartialEq for Doc {
     fn eq(&self, other: &Self) -> bool {
         self.values() == other.values()
+            && self.sync_states == other.sync_states
+            && self.error == other.error
     }
 }
 
@@ -22,6 +25,8 @@ impl Eq for Doc {}
 impl Hash for Doc {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.values().hash(state);
+        self.sync_states.hash(state);
+        self.error.hash(state);
     }
 }
 
@@ -33,7 +38,12 @@ impl Doc {
         Self {
             am: doc,
             sync_states: BTreeMap::new(),
+            error: false,
         }
+    }
+
+    pub fn has_error(&self) -> bool {
+        self.error
     }
 
     pub fn get(&self, key: &str) -> Option<String> {
@@ -72,7 +82,11 @@ impl Doc {
 
     pub fn receive_sync_message(&mut self, peer: usize, message: sync::Message) {
         let state = self.sync_states.entry(peer).or_default();
-        self.am.receive_sync_message(state, message).unwrap()
+        let res = self.am.receive_sync_message(state, message);
+        if let Err(error) = res {
+            // set the error
+            self.error = true;
+        }
     }
 
     pub fn generate_sync_message(&mut self, peer: usize) -> Option<sync::Message> {
