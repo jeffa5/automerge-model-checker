@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
+use crate::MyRegisterMsg;
 use crate::{Key, RequestId, Value};
-use crate::{MyRegisterMsg, KEY};
 use stateright::actor::{Actor, Id};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -22,6 +22,8 @@ pub struct Client {
     pub request_type: RequestType,
     // Whether messages we send will get acknowledgements or not
     pub message_acks: bool,
+    /// The key to interact with.
+    pub key: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -70,9 +72,11 @@ impl Actor for Client {
                 let value = (b'A' + (index % self.server_count) as u8) as char;
                 let msg = match self.request_type {
                     RequestType::Put => {
-                        ClientMsg::Put(unique_request_id, KEY.to_owned(), value.to_string())
+                        ClientMsg::Put(unique_request_id, self.key.to_owned(), value.to_string())
                     }
-                    RequestType::Delete => ClientMsg::Delete(unique_request_id, KEY.to_owned()),
+                    RequestType::Delete => {
+                        ClientMsg::Delete(unique_request_id, self.key.to_owned())
+                    }
                 };
                 o.send(
                     Id::from(index % self.server_count),
@@ -94,9 +98,11 @@ impl Actor for Client {
                 let value = (b'A' + (index % self.server_count) as u8) as char;
                 let msg = match self.request_type {
                     RequestType::Put => {
-                        ClientMsg::Put(unique_request_id, KEY.to_owned(), value.to_string())
+                        ClientMsg::Put(unique_request_id, self.key.to_owned(), value.to_string())
                     }
-                    RequestType::Delete => ClientMsg::Delete(unique_request_id, KEY.to_owned()),
+                    RequestType::Delete => {
+                        ClientMsg::Delete(unique_request_id, self.key.to_owned())
+                    }
                 };
                 o.send(
                     Id::from(index % self.server_count),
@@ -131,7 +137,7 @@ impl Actor for Client {
                             Id::from(index % self.server_count),
                             MyRegisterMsg::Client(ClientMsg::Put(
                                 unique_request_id,
-                                KEY.to_owned(),
+                                self.key.to_owned(),
                                 value.to_string(),
                             )),
                         );
@@ -144,7 +150,7 @@ impl Actor for Client {
                             Id::from(index % self.server_count),
                             MyRegisterMsg::Client(ClientMsg::Get(
                                 unique_request_id,
-                                KEY.to_owned(),
+                                self.key.to_owned(),
                             )),
                         );
                         *state = Cow::Owned(ClientState {
@@ -167,7 +173,7 @@ impl Actor for Client {
                             Id::from(index % self.server_count),
                             MyRegisterMsg::Client(ClientMsg::Delete(
                                 unique_request_id,
-                                KEY.to_owned(),
+                                self.key.to_owned(),
                             )),
                         );
                         *state = Cow::Owned(ClientState {
@@ -179,7 +185,7 @@ impl Actor for Client {
                             Id::from(index % self.server_count),
                             MyRegisterMsg::Client(ClientMsg::Get(
                                 unique_request_id,
-                                KEY.to_owned(),
+                                self.key.to_owned(),
                             )),
                         );
                         *state = Cow::Owned(ClientState {

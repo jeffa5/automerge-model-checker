@@ -24,8 +24,6 @@ mod client;
 mod doc;
 mod report;
 
-pub const KEY: &str = "key";
-
 type RequestId = usize;
 type Key = String;
 type Value = String;
@@ -322,6 +320,7 @@ impl ModelCfg {
                 server_count: self.servers,
                 message_acks: self.message_acks,
                 request_type: client::RequestType::Put,
+                key: "key".to_owned(),
             }))
         }
 
@@ -332,6 +331,7 @@ impl ModelCfg {
                 server_count: self.servers,
                 message_acks: self.message_acks,
                 request_type: client::RequestType::Delete,
+                key: "key".to_owned(),
             }))
         }
 
