@@ -1,4 +1,5 @@
 use automerge::sync;
+use automerge::Automerge;
 use automerge::Change;
 use clap::Parser;
 use client::Client;
@@ -40,6 +41,7 @@ struct Peer {
 enum SyncMethod {
     Changes,
     Messages,
+    SaveLoad,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -47,6 +49,7 @@ pub enum PeerMsg {
     // TODO: make this use the raw struct to avoid serde overhead
     SyncMessage { message_bytes: Vec<u8> },
     SyncChange { change_bytes: Vec<u8> },
+    SyncSaveLoad { doc_bytes: Vec<u8> },
 }
 
 impl Actor for Peer {
@@ -102,6 +105,13 @@ impl Actor for Peer {
                             }
                         }
                     }
+                    SyncMethod::SaveLoad => {
+                        let bytes = state.to_mut().save();
+                        o.broadcast(
+                            &self.peers,
+                            &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes: bytes }),
+                        );
+                    }
                 }
             }
             MyRegisterMsg::Client(ClientMsg::Get(id, key)) => {
@@ -147,6 +157,13 @@ impl Actor for Peer {
                             }
                         }
                     }
+                    SyncMethod::SaveLoad => {
+                        let bytes = state.to_mut().save();
+                        o.broadcast(
+                            &self.peers,
+                            &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes: bytes }),
+                        );
+                    }
                 }
             }
             MyRegisterMsg::Internal(PeerMsg::SyncMessage { message_bytes }) => {
@@ -166,6 +183,10 @@ impl Actor for Peer {
             MyRegisterMsg::Internal(PeerMsg::SyncChange { change_bytes }) => {
                 let change = Change::from_bytes(change_bytes).unwrap();
                 state.to_mut().apply_change(change)
+            }
+            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes }) => {
+                let mut other_doc = Automerge::load(&doc_bytes).unwrap();
+                state.to_mut().merge(&mut other_doc);
             }
             MyRegisterMsg::Client(ClientMsg::PutOk(_id)) => {}
             MyRegisterMsg::Client(ClientMsg::GetOk(_id, _value)) => {}
@@ -361,6 +382,9 @@ fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
                 return true;
             }
             MyRegisterMsg::Internal(PeerMsg::SyncChange { .. }) => {
+                return true;
+            }
+            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { .. }) => {
                 return true;
             }
             MyRegisterMsg::Client(_) => {}

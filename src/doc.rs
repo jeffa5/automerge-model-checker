@@ -93,4 +93,12 @@ impl Doc {
         let state = self.sync_states.entry(peer).or_default();
         self.am.generate_sync_message(state)
     }
+
+    pub fn save(&mut self) -> Vec<u8> {
+        self.am.save()
+    }
+
+    pub fn merge(&mut self, other: &mut Automerge) {
+        self.am.merge(other).unwrap();
+    }
 }
