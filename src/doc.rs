@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 
 use automerge::transaction::Transactable;
-use automerge::{sync, ActorId, Automerge, Change, ROOT};
+use automerge::{sync, ActorId, Automerge, Change, ObjType, ROOT};
 use stateright::actor::Id;
 
 #[derive(Clone, Debug)]
@@ -56,6 +56,18 @@ impl Doc {
     pub fn put(&mut self, key: String, value: String) {
         let mut tx = self.am.transaction();
         tx.put(ROOT, key, value).unwrap();
+        tx.commit();
+    }
+
+    pub fn put_object(&mut self, key: String, value: ObjType) {
+        let mut tx = self.am.transaction();
+        tx.put_object(ROOT, key, value).unwrap();
+        tx.commit();
+    }
+
+    pub fn insert(&mut self, index: usize, value: String) {
+        let mut tx = self.am.transaction();
+        tx.insert(ROOT, index, value).unwrap();
         tx.commit();
     }
 

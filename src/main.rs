@@ -131,6 +131,7 @@ impl Actor for MyRegisterActor {
 struct ModelCfg {
     put_clients: usize,
     delete_clients: usize,
+    insert_clients: usize,
     servers: usize,
     sync_method: SyncMethod,
     message_acks: bool,
@@ -163,6 +164,15 @@ impl ModelCfg {
                     request_count: 2,
                     server_count: self.servers,
                     key: "key".to_owned(),
+                },
+            )))
+        }
+
+        for _ in 0..self.insert_clients {
+            model = model.actor(MyRegisterActor::Client(Client::ListStartInserter(
+                client::ListStartInserter {
+                    request_count: 2,
+                    server_count: self.servers,
                 },
             )))
         }
@@ -239,6 +249,9 @@ struct Opts {
     delete_clients: usize,
 
     #[clap(long, short, global = true, default_value = "2")]
+    insert_clients: usize,
+
+    #[clap(long, short, global = true, default_value = "2")]
     servers: usize,
 
     #[clap(long, global = true)]
@@ -264,6 +277,7 @@ fn main() {
     let model = ModelCfg {
         put_clients: opts.put_clients,
         delete_clients: opts.delete_clients,
+        insert_clients: opts.insert_clients,
         servers: opts.servers,
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,

@@ -329,7 +329,7 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 [[package]]
 name = "automerge"
 version = "0.1.0"
-source = "git+https://github.com/jeffa5/automerge-rs?branch=more-sync-opt#0a19c8b493bf154867018938c7dcf0a88123fabf"
+source = "git+https://github.com/jeffa5/automerge-rs?branch=more-sync-opt#f42ea78145cfdb94516c1f6483aa5ff2b6d010f9"
 dependencies = [
  "flate2",
  "fxhash",
