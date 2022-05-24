@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 
 use automerge::transaction::Transactable;
-use automerge::{sync, ActorId, Automerge, Change, ObjType, ROOT};
+use automerge::{sync, ActorId, Automerge, Change, ObjType, Value, ROOT};
 use stateright::actor::Id;
 
 #[derive(Clone, Debug)]
@@ -67,7 +67,14 @@ impl Doc {
 
     pub fn insert(&mut self, index: usize, value: String) {
         let mut tx = self.am.transaction();
-        tx.insert(ROOT, index, value).unwrap();
+        let list = match tx.get(ROOT, "list") {
+            Ok(Some((Value::Object(ObjType::List), list))) => list,
+            _ => {
+                self.error = true;
+                return;
+            }
+        };
+        tx.insert(list, index, value).unwrap();
         tx.commit();
     }
 
@@ -85,10 +92,10 @@ impl Doc {
         self.am.apply_changes(std::iter::once(change)).unwrap()
     }
 
-    pub fn values(&self) -> Vec<(&str, String)> {
+    pub fn values(&self) -> Vec<(&str, Value)> {
         self.am
             .map_range(ROOT, ..)
-            .map(|(key, value, _)| (key, value.into_string().unwrap()))
+            .map(|(key, value, _)| (key, value))
             .collect()
     }
 
