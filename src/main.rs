@@ -392,7 +392,7 @@ fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
     all_same_state(&state.actor_states)
 }
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 struct Opts {
     #[clap(subcommand)]
     command: SubCmd,
@@ -413,7 +413,7 @@ struct Opts {
     sync_method: SyncMethod,
 }
 
-#[derive(clap::Subcommand)]
+#[derive(clap::Subcommand, Debug)]
 enum SubCmd {
     Serve,
     CheckDfs,
@@ -437,6 +437,7 @@ fn main() {
 }
 
 fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor>>) {
+    println!("Running with config {:?}", opts);
     match opts.command {
         SubCmd::Serve => {
             println!("Serving web ui on http://127.0.0.1:8080");
