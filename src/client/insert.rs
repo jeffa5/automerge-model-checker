@@ -28,16 +28,17 @@ impl Actor for ListStartInserter {
         }
 
         let server_id = Id::from(index % self.server_count);
-        for i in 0..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
-            o.send(
-                server_id,
-                MyRegisterMsg::Client(ClientMsg::PutObject(
-                    unique_request_id,
-                    "list".to_owned(),
-                    ObjType::List,
-                )),
-            );
+        // ensure we have a list to insert into
+        let unique_request_id = index; // next will be 2 * index
+        o.send(
+            server_id,
+            MyRegisterMsg::Client(ClientMsg::PutObject(
+                unique_request_id,
+                "list".to_owned(),
+                ObjType::List,
+            )),
+        );
+        for i in 1..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = ClientMsg::Insert(unique_request_id, 0, value.to_string());
