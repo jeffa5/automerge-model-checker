@@ -297,7 +297,6 @@ struct ModelCfg {
     put_clients: usize,
     delete_clients: usize,
     servers: usize,
-    follow_up_gets: bool,
     sync_method: SyncMethod,
     message_acks: bool,
 }
@@ -314,25 +313,23 @@ impl ModelCfg {
         }
 
         for _ in 0..self.put_clients {
-            model = model.actor(MyRegisterActor::Client(Client {
-                count: 2,
-                follow_up_gets: self.follow_up_gets,
-                server_count: self.servers,
-                message_acks: self.message_acks,
-                request_type: client::RequestType::Put,
-                key: "key".to_owned(),
-            }))
+            model = model.actor(MyRegisterActor::Client(Client::MapSinglePutter(
+                client::MapSinglePutter {
+                    request_count: 2,
+                    server_count: self.servers,
+                    key: "key".to_owned(),
+                },
+            )))
         }
 
         for _ in 0..self.delete_clients {
-            model = model.actor(MyRegisterActor::Client(Client {
-                count: 2,
-                follow_up_gets: self.follow_up_gets,
-                server_count: self.servers,
-                message_acks: self.message_acks,
-                request_type: client::RequestType::Delete,
-                key: "key".to_owned(),
-            }))
+            model = model.actor(MyRegisterActor::Client(Client::MapSingleDeleter(
+                client::MapSingleDeleter {
+                    request_count: 2,
+                    server_count: self.servers,
+                    key: "key".to_owned(),
+                },
+            )))
         }
 
         model
@@ -410,9 +407,6 @@ struct Opts {
     servers: usize,
 
     #[clap(long, global = true)]
-    follow_up_gets: bool,
-
-    #[clap(long, global = true)]
     message_acks: bool,
 
     #[clap(long, arg_enum, global = true, default_value = "changes")]
@@ -433,7 +427,6 @@ fn main() {
         put_clients: opts.put_clients,
         delete_clients: opts.delete_clients,
         servers: opts.servers,
-        follow_up_gets: opts.follow_up_gets,
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,
     }
