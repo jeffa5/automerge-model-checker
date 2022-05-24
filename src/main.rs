@@ -246,6 +246,9 @@ struct Opts {
 
     #[clap(long, arg_enum, global = true, default_value = "changes")]
     sync_method: SyncMethod,
+
+    #[clap(long, default_value = "8080")]
+    port: u16,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -275,8 +278,8 @@ fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor>>) {
     println!("Running with config {:?}", opts);
     match opts.command {
         SubCmd::Serve => {
-            println!("Serving web ui on http://127.0.0.1:8080");
-            model.serve("127.0.0.1:8080");
+            println!("Serving web ui on http://127.0.0.1:{}", opts.port);
+            model.serve(("127.0.0.1", opts.port));
         }
         SubCmd::CheckDfs => {
             model
