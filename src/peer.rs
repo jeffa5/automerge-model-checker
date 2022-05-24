@@ -33,10 +33,10 @@ pub enum PeerMsg {
 impl Actor for Peer {
     type Msg = MyRegisterMsg;
 
-    type State = Doc;
+    type State = Box<Doc>;
 
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
-        Self::State::new(id)
+        Box::new(Doc::new(id))
     }
 
     fn on_msg(
