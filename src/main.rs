@@ -135,6 +135,7 @@ struct ModelCfg {
     servers: usize,
     sync_method: SyncMethod,
     message_acks: bool,
+    auto_commit: bool,
 }
 
 impl ModelCfg {
@@ -145,6 +146,7 @@ impl ModelCfg {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 message_acks: self.message_acks,
+                auto_commit: self.auto_commit,
             }))
         }
 
@@ -257,6 +259,9 @@ struct Opts {
     #[clap(long, global = true)]
     message_acks: bool,
 
+    #[clap(long, global = true)]
+    auto_commit: bool,
+
     #[clap(long, arg_enum, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 
@@ -281,6 +286,7 @@ fn main() {
         servers: opts.servers,
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,
+        auto_commit: opts.auto_commit,
     }
     .into_actor_model()
     .checker()

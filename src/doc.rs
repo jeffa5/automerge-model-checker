@@ -5,34 +5,19 @@ use automerge::transaction::Transactable;
 use automerge::{sync, ActorId, Automerge, Change, ObjType, Value, ROOT};
 use stateright::actor::Id;
 
-#[derive(Clone, Debug)]
+mod inner;
+
+pub use inner::InnerDoc;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Doc {
-    am: Automerge,
+    am: InnerDoc,
     sync_states: BTreeMap<usize, sync::State>,
     error: bool,
 }
 
-impl PartialEq for Doc {
-    fn eq(&self, other: &Self) -> bool {
-        self.am.get_heads() == other.am.get_heads()
-            && self.sync_states == other.sync_states
-            && self.error == other.error
-    }
-}
-
-impl Eq for Doc {}
-
-impl Hash for Doc {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.am.get_heads().hash(state);
-        self.sync_states.hash(state);
-        self.error.hash(state);
-    }
-}
-
 impl Doc {
-    pub fn new(actor_id: Id) -> Self {
-        let mut doc = Automerge::new();
+    pub fn new(actor_id: Id, mut doc: InnerDoc) -> Self {
         let id: usize = actor_id.into();
         doc.set_actor(ActorId::from(id.to_be_bytes()));
         Self {
@@ -46,42 +31,24 @@ impl Doc {
         self.error
     }
 
-    pub fn get(&self, key: &str) -> Option<String> {
-        self.am
-            .get(ROOT, key)
-            .unwrap()
-            .map(|(v, _)| v.into_string().unwrap())
+    pub fn get(&mut self, key: &str) -> Option<String> {
+        self.am.get(&ROOT, key)
     }
 
     pub fn put(&mut self, key: String, value: String) {
-        let mut tx = self.am.transaction();
-        tx.put(ROOT, key, value).unwrap();
-        tx.commit();
+        self.am.put(&ROOT, key, value)
     }
 
     pub fn put_object(&mut self, key: String, value: ObjType) {
-        let mut tx = self.am.transaction();
-        tx.put_object(ROOT, key, value).unwrap();
-        tx.commit();
+        self.am.put_object(&ROOT, key, value)
     }
 
     pub fn insert(&mut self, index: usize, value: String) {
-        let mut tx = self.am.transaction();
-        let list = match tx.get(ROOT, "list") {
-            Ok(Some((Value::Object(ObjType::List), list))) => list,
-            _ => {
-                self.error = true;
-                return;
-            }
-        };
-        tx.insert(list, index, value).unwrap();
-        tx.commit();
+        self.am.insert(&ROOT, index, value)
     }
 
     pub fn delete(&mut self, key: &str) {
-        let mut tx = self.am.transaction();
-        tx.delete(ROOT, key).unwrap();
-        tx.commit();
+        self.am.delete(&ROOT, key)
     }
 
     pub fn last_local_change(&self) -> Option<&Change> {
@@ -89,14 +56,11 @@ impl Doc {
     }
 
     pub fn apply_change(&mut self, change: Change) {
-        self.am.apply_changes(std::iter::once(change)).unwrap()
+        self.am.apply_change(change)
     }
 
     pub fn values(&self) -> Vec<(&str, Value)> {
-        self.am
-            .map_range(ROOT, ..)
-            .map(|(key, value, _)| (key, value))
-            .collect()
+        self.am.values()
     }
 
     pub fn receive_sync_message(&mut self, peer: usize, message: sync::Message) {
@@ -117,7 +81,7 @@ impl Doc {
         self.am.save()
     }
 
-    pub fn merge(&mut self, other: &mut Automerge) {
+    pub fn merge(&mut self, other: &mut InnerDoc) {
         self.am.merge(other).unwrap();
     }
 }

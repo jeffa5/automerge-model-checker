@@ -1,7 +1,9 @@
 use crate::client::ClientMsg;
 use crate::doc::Doc;
+use crate::doc::InnerDoc;
 use crate::MyRegisterMsg;
 use automerge::sync;
+use automerge::AutoCommit;
 use automerge::Automerge;
 use automerge::Change;
 use stateright::actor::Actor;
@@ -13,6 +15,7 @@ pub struct Peer {
     pub peers: Vec<Id>,
     pub sync_method: SyncMethod,
     pub message_acks: bool,
+    pub auto_commit: bool,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
@@ -36,7 +39,12 @@ impl Actor for Peer {
     type State = Box<Doc>;
 
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
-        Box::new(Doc::new(id))
+        let inner = if self.auto_commit {
+            InnerDoc::AutoCommit(AutoCommit::new())
+        } else {
+            InnerDoc::Automerge(Automerge::new())
+        };
+        Box::new(Doc::new(id, inner))
     }
 
     fn on_msg(
@@ -251,7 +259,11 @@ impl Actor for Peer {
                 state.to_mut().apply_change(change)
             }
             MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes }) => {
-                let mut other_doc = Automerge::load(&doc_bytes).unwrap();
+                let mut other_doc = if self.auto_commit {
+                    InnerDoc::AutoCommit(AutoCommit::load(&doc_bytes).unwrap())
+                } else {
+                    InnerDoc::Automerge(Automerge::load(&doc_bytes).unwrap())
+                };
                 state.to_mut().merge(&mut other_doc);
             }
             MyRegisterMsg::Client(ClientMsg::PutOk(_id)) => {}
