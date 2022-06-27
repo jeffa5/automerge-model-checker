@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 
 use automerge::transaction::Transactable;
-use automerge::{sync, ActorId, Automerge, Change, ObjType, Value, ROOT};
+use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ObjType, Value, ROOT};
 use stateright::actor::Id;
 
 #[derive(Clone, Debug)]
@@ -44,6 +44,10 @@ impl Doc {
 
     pub fn has_error(&self) -> bool {
         self.error
+    }
+
+    pub fn heads(&self) -> Vec<ChangeHash> {
+        self.am.get_heads()
     }
 
     pub fn get(&self, key: &str) -> Option<String> {

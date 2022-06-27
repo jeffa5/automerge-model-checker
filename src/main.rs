@@ -1,3 +1,4 @@
+use automerge::Automerge;
 use clap::Parser;
 use client::Client;
 use client::ClientMsg;
@@ -190,6 +191,11 @@ impl ModelCfg {
             )
             .property(
                 stateright::Expectation::Always,
+                "saving and loading the document gives the same document",
+                |_, state| save_load_same(state),
+            )
+            .property(
+                stateright::Expectation::Always,
                 "no errors set (from panics)",
                 |_, state| {
                     state.actor_states.iter().all(|s| {
@@ -235,6 +241,24 @@ fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
 
     // next, check that all actors are in the same states (using sub-property checker)
     all_same_state(&state.actor_states)
+}
+
+fn save_load_same(state: &ActorModelState<MyRegisterActor>) -> bool {
+    for actor in &state.actor_states {
+        match &**actor {
+            MyRegisterActorState::Client(_) => {
+                // clients don't have state to save and load
+            }
+            MyRegisterActorState::Server(s) => {
+                let bytes = s.clone().save();
+                let doc = Automerge::load(&bytes).unwrap();
+                if doc.get_heads() != s.heads() {
+                    return false;
+                }
+            }
+        }
+    }
+    true
 }
 
 #[derive(Parser, Debug)]
