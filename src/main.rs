@@ -133,6 +133,7 @@ struct ModelCfg {
     put_clients: usize,
     delete_clients: usize,
     insert_clients: usize,
+    object_type: ObjectType,
     servers: usize,
     sync_method: SyncMethod,
     message_acks: bool,
@@ -150,32 +151,56 @@ impl ModelCfg {
         }
 
         for _ in 0..self.put_clients {
-            model = model.actor(MyRegisterActor::Client(Client::MapSinglePutter(
-                client::MapSinglePutter {
-                    request_count: 2,
-                    server_count: self.servers,
-                    key: "key".to_owned(),
-                },
-            )))
+            match self.object_type {
+                ObjectType::Map => {
+                    model = model.actor(MyRegisterActor::Client(Client::MapSinglePutter(
+                        client::MapSinglePutter {
+                            request_count: 2,
+                            server_count: self.servers,
+                            key: "key".to_owned(),
+                        },
+                    )))
+                }
+                ObjectType::List => {
+                    todo!("support puts in lists")
+                }
+            }
         }
 
         for _ in 0..self.delete_clients {
-            model = model.actor(MyRegisterActor::Client(Client::MapSingleDeleter(
-                client::MapSingleDeleter {
-                    request_count: 2,
-                    server_count: self.servers,
-                    key: "key".to_owned(),
-                },
-            )))
+            match self.object_type {
+                ObjectType::Map => {
+                    model = model.actor(MyRegisterActor::Client(Client::MapSingleDeleter(
+                        client::MapSingleDeleter {
+                            request_count: 2,
+                            server_count: self.servers,
+                            key: "key".to_owned(),
+                        },
+                    )))
+                }
+                ObjectType::List => {
+                    todo!("support deletes in lists")
+                }
+            }
         }
 
         for _ in 0..self.insert_clients {
-            model = model.actor(MyRegisterActor::Client(Client::ListStartInserter(
-                client::ListStartInserter {
-                    request_count: 2,
-                    server_count: self.servers,
-                },
-            )))
+            match self.object_type {
+                ObjectType::List => {
+                    model = model.actor(MyRegisterActor::Client(Client::ListStartInserter(
+                        client::ListStartInserter {
+                            request_count: 2,
+                            server_count: self.servers,
+                        },
+                    )))
+                }
+                ObjectType::Map => {
+                    println!(
+                        "had {} insert_clients but using a map object, no insert clients will be used", self.insert_clients
+                    );
+                    break;
+                }
+            }
         }
 
         model
@@ -284,8 +309,18 @@ struct Opts {
     #[clap(long, arg_enum, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 
+    // What object type to check.
+    #[clap(long, arg_enum, global = true, default_value = "map")]
+    object_type: ObjectType,
+
     #[clap(long, default_value = "8080")]
     port: u16,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
+pub enum ObjectType {
+    Map,
+    List,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -305,6 +340,7 @@ fn main() {
         servers: opts.servers,
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,
+        object_type: opts.object_type,
     }
     .into_actor_model()
     .checker()
