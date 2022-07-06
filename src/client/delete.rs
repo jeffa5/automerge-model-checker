@@ -40,12 +40,13 @@ impl Actor for MapSingleDeleter {
 
 /// A client strategy that just deletes the first element in a list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ListStartDeleter {
+pub struct ListDeleter {
+    pub index: usize,
     pub request_count: usize,
     pub server_count: usize,
 }
 
-impl Actor for ListStartDeleter {
+impl Actor for ListDeleter {
     type Msg = MyRegisterMsg;
 
     type State = ();
@@ -62,7 +63,7 @@ impl Actor for ListStartDeleter {
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = ClientMsg::DeleteList(unique_request_id, 0);
+            let msg = ClientMsg::DeleteList(unique_request_id, self.index);
             o.send(
                 Id::from(index % self.server_count),
                 MyRegisterMsg::Client(msg),

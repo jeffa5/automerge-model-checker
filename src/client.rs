@@ -7,7 +7,7 @@ mod delete;
 mod insert;
 mod put;
 
-pub use delete::ListStartDeleter;
+pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;
 pub use put::ListStartPutter;
@@ -19,8 +19,8 @@ pub enum Client {
     MapSinglePutter(put::MapSinglePutter),
     ListStartPutter(put::ListStartPutter),
     MapSingleDeleter(delete::MapSingleDeleter),
-    ListStartDeleter(delete::ListStartDeleter),
-    ListStartInserter(insert::ListInserter),
+    ListDeleter(delete::ListDeleter),
+    ListInserter(insert::ListInserter),
 }
 
 /// Messages that clients send to peers.
@@ -74,12 +74,12 @@ impl Actor for Client {
                 d.on_start(id, &mut out);
                 o.append(&mut out);
             }
-            Client::ListStartDeleter(d) => {
+            Client::ListDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
                 o.append(&mut out);
             }
-            Client::ListStartInserter(a) => {
+            Client::ListInserter(a) => {
                 let mut out = Out::new();
                 a.on_start(id, &mut out);
                 o.append(&mut out);

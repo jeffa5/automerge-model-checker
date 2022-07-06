@@ -184,8 +184,9 @@ impl ModelCfg {
                     )))
                 }
                 ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Client(Client::ListStartDeleter(
-                        client::ListStartDeleter {
+                    model = model.actor(MyRegisterActor::Client(Client::ListDeleter(
+                        client::ListDeleter {
+                            index: 0,
                             request_count: 2,
                             server_count: self.servers,
                         },
@@ -197,7 +198,7 @@ impl ModelCfg {
         for _ in 0..self.insert_clients {
             match self.object_type {
                 ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Client(Client::ListStartInserter(
+                    model = model.actor(MyRegisterActor::Client(Client::ListInserter(
                         client::ListInserter {
                             index: 0,
                             request_count: 2,
