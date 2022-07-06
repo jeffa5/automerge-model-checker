@@ -13,6 +13,7 @@ pub use insert::ListStartInserter;
 pub use put::ListStartPutter;
 pub use put::MapSinglePutter;
 
+/// A client that generates actions for peers to process.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Client {
     MapSinglePutter(put::MapSinglePutter),
@@ -22,11 +23,14 @@ pub enum Client {
     ListStartInserter(insert::ListStartInserter),
 }
 
+/// Messages that clients send to peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ClientMsg {
     /// Indicates that a value should be written.
     PutMap(RequestId, Key, Value),
+    /// Indicates that a list element should be overwritten.
     PutList(RequestId, usize, Value),
+    /// Indicates that an object should be created.
     PutObject(RequestId, Key, ObjType),
     /// Indicates that a value should be inserted into the list.
     Insert(RequestId, usize, Value),
@@ -34,10 +38,12 @@ pub enum ClientMsg {
     Get(RequestId, Key),
     /// Indicates that a value should be deleted.
     DeleteMap(RequestId, Key),
+    /// Indicates that a list element should be deleted.
     DeleteList(RequestId, usize),
 
     /// Indicates a successful `Put`. Analogous to an HTTP 2XX.
     PutOk(RequestId),
+    /// Indicates a successful `PutObject`. Analogous to an HTTP 2XX.
     PutObjectOk(RequestId),
     /// Indicates a successful `Insert`. Analogous to an HTTP 2XX.
     InsertOk(RequestId),
@@ -52,6 +58,7 @@ impl Actor for Client {
 
     type State = ();
 
+    /// Clients generate all of their actions on start so we only need to initialise them.
     fn on_start(
         &self,
         id: stateright::actor::Id,

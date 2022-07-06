@@ -10,6 +10,11 @@ use stateright::actor::Actor;
 use stateright::actor::Id;
 use stateright::actor::Out;
 
+/// A peer in the automerge network.
+///
+/// Peers can be thought of user's applications.
+/// They keep state over restarts and can process operations from clients, as well as sync these to
+/// other peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Peer {
     pub peers: Vec<Id>,
@@ -17,6 +22,7 @@ pub struct Peer {
     pub message_acks: bool,
 }
 
+/// Methods for syncing.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
 pub enum SyncMethod {
     Changes,
@@ -24,6 +30,7 @@ pub enum SyncMethod {
     SaveLoad,
 }
 
+/// Messages that peers send to each other.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum PeerMsg {
     // TODO: make this use the raw struct to avoid serde overhead
@@ -37,10 +44,12 @@ impl Actor for Peer {
 
     type State = Box<Doc>;
 
+    /// Peers don't do things on their own unless told to.
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
         Box::new(Doc::new(id))
     }
 
+    /// Process a message from another peer or client.
     fn on_msg(
         &self,
         _id: Id,
@@ -156,6 +165,7 @@ impl Actor for Peer {
 }
 
 impl Peer {
+    /// Handle generating a sync message after some changes have been made.
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match self.sync_method {
             SyncMethod::Changes => {
