@@ -9,7 +9,7 @@ mod put;
 
 pub use delete::ListStartDeleter;
 pub use delete::MapSingleDeleter;
-pub use insert::ListStartInserter;
+pub use insert::ListInserter;
 pub use put::ListStartPutter;
 pub use put::MapSinglePutter;
 
@@ -20,7 +20,7 @@ pub enum Client {
     ListStartPutter(put::ListStartPutter),
     MapSingleDeleter(delete::MapSingleDeleter),
     ListStartDeleter(delete::ListStartDeleter),
-    ListStartInserter(insert::ListStartInserter),
+    ListStartInserter(insert::ListInserter),
 }
 
 /// Messages that clients send to peers.

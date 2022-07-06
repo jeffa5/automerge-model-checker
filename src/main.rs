@@ -198,7 +198,8 @@ impl ModelCfg {
             match self.object_type {
                 ObjectType::List => {
                     model = model.actor(MyRegisterActor::Client(Client::ListStartInserter(
-                        client::ListStartInserter {
+                        client::ListInserter {
+                            index: 0,
                             request_count: 2,
                             server_count: self.servers,
                         },

@@ -7,12 +7,13 @@ use super::ClientMsg;
 
 /// A client strategy that just inserts at the start of the list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ListStartInserter {
+pub struct ListInserter {
+    pub index: usize,
     pub request_count: usize,
     pub server_count: usize,
 }
 
-impl Actor for ListStartInserter {
+impl Actor for ListInserter {
     type Msg = MyRegisterMsg;
 
     type State = ();
@@ -41,7 +42,7 @@ impl Actor for ListStartInserter {
         for i in 1..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
-            let msg = ClientMsg::Insert(unique_request_id, 0, value.to_string());
+            let msg = ClientMsg::Insert(unique_request_id, self.index, value.to_string());
             o.send(server_id, MyRegisterMsg::Client(msg));
         }
     }
