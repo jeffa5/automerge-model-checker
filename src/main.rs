@@ -162,7 +162,12 @@ impl ModelCfg {
                     )))
                 }
                 ObjectType::List => {
-                    todo!("support puts in lists")
+                    model = model.actor(MyRegisterActor::Client(Client::ListStartPutter(
+                        client::ListStartPutter {
+                            request_count: 2,
+                            server_count: self.servers,
+                        },
+                    )))
                 }
             }
         }

@@ -48,9 +48,53 @@ impl Actor for Peer {
         o: &mut Out<Self>,
     ) {
         match msg {
-            MyRegisterMsg::Client(ClientMsg::Put(id, key, value)) => {
+            MyRegisterMsg::Client(ClientMsg::PutMap(id, key, value)) => {
                 // apply the op locally
                 state.to_mut().put(key, value);
+
+                if self.message_acks {
+                    // respond to the query (not totally necessary for this)
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::PutOk(id)));
+                }
+
+                match self.sync_method {
+                    SyncMethod::Changes => {
+                        if let Some(change) = state.last_local_change() {
+                            o.broadcast(
+                                &self.peers,
+                                &MyRegisterMsg::Internal(PeerMsg::SyncChange {
+                                    change_bytes: change.raw_bytes().to_vec(),
+                                }),
+                            )
+                        }
+                    }
+                    SyncMethod::Messages => {
+                        // each peer has a specific state to manage in the sync connection
+                        for peer in &self.peers {
+                            if let Some(message) =
+                                state.to_mut().generate_sync_message((*peer).into())
+                            {
+                                o.send(
+                                    *peer,
+                                    MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                                        message_bytes: message.encode(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
+                    SyncMethod::SaveLoad => {
+                        let bytes = state.to_mut().save();
+                        o.broadcast(
+                            &self.peers,
+                            &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes: bytes }),
+                        );
+                    }
+                }
+            }
+            MyRegisterMsg::Client(ClientMsg::PutList(id, index, value)) => {
+                // apply the op locally
+                state.to_mut().put_list(index, value);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)

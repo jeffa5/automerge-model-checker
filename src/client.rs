@@ -10,11 +10,13 @@ mod put;
 pub use delete::ListStartDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListStartInserter;
+pub use put::ListStartPutter;
 pub use put::MapSinglePutter;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Client {
     MapSinglePutter(put::MapSinglePutter),
+    ListStartPutter(put::ListStartPutter),
     MapSingleDeleter(delete::MapSingleDeleter),
     ListStartDeleter(delete::ListStartDeleter),
     ListStartInserter(insert::ListStartInserter),
@@ -23,7 +25,8 @@ pub enum Client {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ClientMsg {
     /// Indicates that a value should be written.
-    Put(RequestId, Key, Value),
+    PutMap(RequestId, Key, Value),
+    PutList(RequestId, usize, Value),
     PutObject(RequestId, Key, ObjType),
     /// Indicates that a value should be inserted into the list.
     Insert(RequestId, usize, Value),
@@ -56,6 +59,11 @@ impl Actor for Client {
     ) -> Self::State {
         match self {
             Client::MapSinglePutter(p) => {
+                let mut out = Out::new();
+                p.on_start(id, &mut out);
+                o.append(&mut out);
+            }
+            Client::ListStartPutter(p) => {
                 let mut out = Out::new();
                 p.on_start(id, &mut out);
                 o.append(&mut out);

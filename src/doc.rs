@@ -63,6 +63,12 @@ impl Doc {
         tx.commit();
     }
 
+    pub fn put_list(&mut self, index: usize, value: String) {
+        let mut tx = self.am.transaction();
+        tx.put(ROOT, index, value).unwrap();
+        tx.commit();
+    }
+
     pub fn put_object(&mut self, key: String, value: ObjType) {
         let mut tx = self.am.transaction();
         tx.put_object(ROOT, key, value).unwrap();
