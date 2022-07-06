@@ -179,7 +179,12 @@ impl ModelCfg {
                     )))
                 }
                 ObjectType::List => {
-                    todo!("support deletes in lists")
+                    model = model.actor(MyRegisterActor::Client(Client::ListStartDeleter(
+                        client::ListStartDeleter {
+                            request_count: 2,
+                            server_count: self.servers,
+                        },
+                    )))
                 }
             }
         }

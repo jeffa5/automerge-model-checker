@@ -7,6 +7,7 @@ mod delete;
 mod insert;
 mod put;
 
+pub use delete::ListStartDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListStartInserter;
 pub use put::MapSinglePutter;
@@ -15,6 +16,7 @@ pub use put::MapSinglePutter;
 pub enum Client {
     MapSinglePutter(put::MapSinglePutter),
     MapSingleDeleter(delete::MapSingleDeleter),
+    ListStartDeleter(delete::ListStartDeleter),
     ListStartInserter(insert::ListStartInserter),
 }
 
@@ -28,7 +30,8 @@ pub enum ClientMsg {
     /// Indicates that a value should be retrieved.
     Get(RequestId, Key),
     /// Indicates that a value should be deleted.
-    Delete(RequestId, Key),
+    DeleteMap(RequestId, Key),
+    DeleteList(RequestId, usize),
 
     /// Indicates a successful `Put`. Analogous to an HTTP 2XX.
     PutOk(RequestId),
@@ -58,6 +61,11 @@ impl Actor for Client {
                 o.append(&mut out);
             }
             Client::MapSingleDeleter(d) => {
+                let mut out = Out::new();
+                d.on_start(id, &mut out);
+                o.append(&mut out);
+            }
+            Client::ListStartDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
                 o.append(&mut out);

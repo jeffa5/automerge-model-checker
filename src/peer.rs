@@ -188,9 +188,53 @@ impl Actor for Peer {
                     }
                 }
             }
-            MyRegisterMsg::Client(ClientMsg::Delete(id, key)) => {
+            MyRegisterMsg::Client(ClientMsg::DeleteMap(id, key)) => {
                 // apply the op locally
                 state.to_mut().delete(&key);
+
+                if self.message_acks {
+                    // respond to the query (not totally necessary for this)
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::DeleteOk(id)));
+                }
+
+                match self.sync_method {
+                    SyncMethod::Changes => {
+                        if let Some(change) = state.last_local_change() {
+                            o.broadcast(
+                                &self.peers,
+                                &MyRegisterMsg::Internal(PeerMsg::SyncChange {
+                                    change_bytes: change.raw_bytes().to_vec(),
+                                }),
+                            )
+                        }
+                    }
+                    SyncMethod::Messages => {
+                        // each peer has a specific state to manage in the sync connection
+                        for peer in &self.peers {
+                            if let Some(message) =
+                                state.to_mut().generate_sync_message((*peer).into())
+                            {
+                                o.send(
+                                    *peer,
+                                    MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                                        message_bytes: message.encode(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
+                    SyncMethod::SaveLoad => {
+                        let bytes = state.to_mut().save();
+                        o.broadcast(
+                            &self.peers,
+                            &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes: bytes }),
+                        );
+                    }
+                }
+            }
+            MyRegisterMsg::Client(ClientMsg::DeleteList(id, index)) => {
+                // apply the op locally
+                state.to_mut().delete_list(index);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)

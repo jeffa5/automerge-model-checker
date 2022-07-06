@@ -29,7 +29,40 @@ impl Actor for MapSingleDeleter {
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = ClientMsg::Delete(unique_request_id, self.key.clone());
+            let msg = ClientMsg::DeleteMap(unique_request_id, self.key.clone());
+            o.send(
+                Id::from(index % self.server_count),
+                MyRegisterMsg::Client(msg),
+            );
+        }
+    }
+}
+
+/// A client strategy that just deletes the first element in a list.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct ListStartDeleter {
+    pub request_count: usize,
+    pub server_count: usize,
+}
+
+impl Actor for ListStartDeleter {
+    type Msg = MyRegisterMsg;
+
+    type State = ();
+
+    fn on_start(
+        &self,
+        id: stateright::actor::Id,
+        o: &mut stateright::actor::Out<Self>,
+    ) -> Self::State {
+        let index: usize = id.into();
+        if index < self.server_count {
+            panic!("MyRegisterActor clients must be added to the model after servers.");
+        }
+
+        for i in 0..self.request_count {
+            let unique_request_id = (i + 1) * index; // next will be 2 * index
+            let msg = ClientMsg::DeleteList(unique_request_id, 0);
             o.send(
                 Id::from(index % self.server_count),
                 MyRegisterMsg::Client(msg),

@@ -88,6 +88,12 @@ impl Doc {
         tx.commit();
     }
 
+    pub fn delete_list(&mut self, index: usize) {
+        let mut tx = self.am.transaction();
+        tx.delete(ROOT, index).unwrap();
+        tx.commit();
+    }
+
     pub fn last_local_change(&self) -> Option<&Change> {
         self.am.get_last_local_change()
     }
