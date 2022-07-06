@@ -27,9 +27,9 @@ pub enum SyncMethod {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum PeerMsg {
     // TODO: make this use the raw struct to avoid serde overhead
-    SyncMessage { message_bytes: Vec<u8> },
-    SyncChange { change_bytes: Vec<u8> },
-    SyncSaveLoad { doc_bytes: Vec<u8> },
+    SyncMessageRaw { message_bytes: Vec<u8> },
+    SyncChangeRaw { change_bytes: Vec<u8> },
+    SyncSaveLoadRaw { doc_bytes: Vec<u8> },
 }
 
 impl Actor for Peer {
@@ -124,7 +124,7 @@ impl Actor for Peer {
 
                 self.sync(state, o);
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncMessage { message_bytes }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes).unwrap();
                 // receive the sync message
                 state.to_mut().receive_sync_message(src.into(), message);
@@ -132,17 +132,17 @@ impl Actor for Peer {
                 if let Some(message) = state.to_mut().generate_sync_message(src.into()) {
                     o.send(
                         src,
-                        MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                        MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw {
                             message_bytes: message.encode(),
                         }),
                     )
                 }
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncChange { change_bytes }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncChangeRaw { change_bytes }) => {
                 let change = Change::from_bytes(change_bytes).unwrap();
                 state.to_mut().apply_change(change)
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoadRaw { doc_bytes }) => {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
                 state.to_mut().merge(&mut other_doc);
             }
@@ -162,7 +162,7 @@ impl Peer {
                 if let Some(change) = state.last_local_change() {
                     o.broadcast(
                         &self.peers,
-                        &MyRegisterMsg::Internal(PeerMsg::SyncChange {
+                        &MyRegisterMsg::Internal(PeerMsg::SyncChangeRaw {
                             change_bytes: change.raw_bytes().to_vec(),
                         }),
                     )
@@ -174,7 +174,7 @@ impl Peer {
                     if let Some(message) = state.to_mut().generate_sync_message((*peer).into()) {
                         o.send(
                             *peer,
-                            MyRegisterMsg::Internal(PeerMsg::SyncMessage {
+                            MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw {
                                 message_bytes: message.encode(),
                             }),
                         )
@@ -185,7 +185,7 @@ impl Peer {
                 let bytes = state.to_mut().save();
                 o.broadcast(
                     &self.peers,
-                    &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { doc_bytes: bytes }),
+                    &MyRegisterMsg::Internal(PeerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
                 );
             }
         }

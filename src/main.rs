@@ -261,13 +261,13 @@ fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
     // first check that the network has no sync messages in-flight.
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
-            MyRegisterMsg::Internal(PeerMsg::SyncMessage { .. }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw { .. }) => {
                 return true;
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncChange { .. }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncChangeRaw { .. }) => {
                 return true;
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoad { .. }) => {
+            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
                 return true;
             }
             MyRegisterMsg::Client(_) => {}
