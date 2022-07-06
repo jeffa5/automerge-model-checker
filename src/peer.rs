@@ -65,7 +65,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::PutOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o)
@@ -76,7 +76,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::PutOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -87,7 +87,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::PutObjectOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -98,7 +98,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::PutObjectOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -107,7 +107,10 @@ impl Actor for Peer {
                 if let Some(value) = state.get(&key) {
                     if self.message_acks {
                         // respond to the query (not totally necessary for this)
-                        o.send(src, MyRegisterMsg::Client(ClientMsg::GetOk(id, value)))
+                        o.send(
+                            src,
+                            MyRegisterMsg::Client(ClientMsg::AckWithValue(id, value)),
+                        )
                     }
                 }
             }
@@ -117,7 +120,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::DeleteOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -128,7 +131,7 @@ impl Actor for Peer {
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, MyRegisterMsg::Client(ClientMsg::DeleteOk(id)));
+                    o.send(src, MyRegisterMsg::Client(ClientMsg::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -155,11 +158,8 @@ impl Actor for Peer {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
                 state.to_mut().merge(&mut other_doc);
             }
-            MyRegisterMsg::Client(ClientMsg::PutOk(_id)) => {}
-            MyRegisterMsg::Client(ClientMsg::PutObjectOk(_id)) => {}
-            MyRegisterMsg::Client(ClientMsg::InsertOk(_id)) => {}
-            MyRegisterMsg::Client(ClientMsg::GetOk(_id, _value)) => {}
-            MyRegisterMsg::Client(ClientMsg::DeleteOk(_id)) => {}
+            MyRegisterMsg::Client(ClientMsg::AckWithValue(_id, _value)) => {}
+            MyRegisterMsg::Client(ClientMsg::Ack(_id)) => {}
         }
     }
 }

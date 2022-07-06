@@ -41,16 +41,10 @@ pub enum ClientMsg {
     /// Indicates that a list element should be deleted.
     DeleteList(RequestId, usize),
 
-    /// Indicates a successful `Put`. Analogous to an HTTP 2XX.
-    PutOk(RequestId),
-    /// Indicates a successful `PutObject`. Analogous to an HTTP 2XX.
-    PutObjectOk(RequestId),
-    /// Indicates a successful `Insert`. Analogous to an HTTP 2XX.
-    InsertOk(RequestId),
-    /// Indicates a successful `Get`. Analogous to an HTTP 2XX.
-    GetOk(RequestId, Value),
-    /// Indicates a successful `Delete`. Analogous to an HTTP 2XX.
-    DeleteOk(RequestId),
+    /// Indicates a successful request with a value response. Analogous to an HTTP 2XX.
+    AckWithValue(RequestId, Value),
+    /// Indicates a successful request with no value response. Analogous to an HTTP 2XX.
+    Ack(RequestId),
 }
 
 impl Actor for Client {
