@@ -265,10 +265,31 @@ impl ModelCfg {
                         .all(|s| max_map_size_is_the_max(&model.actors, s))
                 },
             )
+            .property(
+                stateright::Expectation::Sometimes,
+                "reach max list size",
+                |model, state| {
+                    state
+                        .actor_states
+                        .iter()
+                        .any(|s| state_has_max_list_size(&model.actors, s))
+                },
+            )
+            .property(
+                stateright::Expectation::Always,
+                "max list size is the max",
+                |model, state| {
+                    state
+                        .actor_states
+                        .iter()
+                        .all(|s| max_list_size_is_the_max(&model.actors, s))
+                },
+            )
             .init_network(Network::new_ordered(vec![]))
     }
 }
 
+// TODO: move this to a precalculated field on a config struct that is shared.
 fn max_map_size(actors: &[MyRegisterActor]) -> usize {
     actors
         .iter()
@@ -279,6 +300,23 @@ fn max_map_size(actors: &[MyRegisterActor]) -> usize {
                 | Client::ListStartPutter(_)
                 | Client::ListDeleter(_)
                 | Client::ListInserter(_) => 0,
+            },
+            MyRegisterActor::Server(_) => 0,
+        })
+        .sum()
+}
+
+// TODO: move this to a precalculated field on a config struct that is shared.
+fn max_list_size(actors: &[MyRegisterActor]) -> usize {
+    actors
+        .iter()
+        .map(|a| match a {
+            MyRegisterActor::Client(c) => match c {
+                Client::MapSinglePutter(_)
+                | Client::MapSingleDeleter(_)
+                | Client::ListStartPutter(_)
+                | Client::ListDeleter(_) => 0,
+                Client::ListInserter(c) => c.request_count,
             },
             MyRegisterActor::Server(_) => 0,
         })
@@ -296,6 +334,24 @@ fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActo
 
 fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
     let max = max_map_size(actors);
+    if let MyRegisterActorState::Server(s) = &**state {
+        s.length(ROOT) <= max
+    } else {
+        true
+    }
+}
+
+fn state_has_max_list_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
+    let max = max_list_size(actors);
+    if let MyRegisterActorState::Server(s) = &**state {
+        s.length(ROOT) == max
+    } else {
+        false
+    }
+}
+
+fn max_list_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
+    let max = max_list_size(actors);
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(ROOT) <= max
     } else {
