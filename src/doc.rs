@@ -136,4 +136,8 @@ impl Doc {
     pub fn merge(&mut self, other: &mut Automerge) {
         self.am.merge(other).unwrap();
     }
+
+    pub fn length(&self, obj: automerge::ObjId) -> usize {
+        self.am.length(obj)
+    }
 }

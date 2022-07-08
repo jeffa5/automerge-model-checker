@@ -1,4 +1,5 @@
 use automerge::Automerge;
+use automerge::ROOT;
 use clap::Parser;
 use client::Client;
 use client::ClientMsg;
@@ -244,7 +245,42 @@ impl ModelCfg {
                     })
                 },
             )
+            .property(
+                stateright::Expectation::Sometimes,
+                "reach max map size",
+                |model, state| {
+                    state
+                        .actor_states
+                        .iter()
+                        .any(|s| state_has_max_map_size(&model.actors, s))
+                },
+            )
             .init_network(Network::new_ordered(vec![]))
+    }
+}
+
+fn max_map_size(actors: &[MyRegisterActor]) -> usize {
+    actors
+        .iter()
+        .map(|a| match a {
+            MyRegisterActor::Client(c) => match c {
+                Client::MapSinglePutter(c) => c.request_count,
+                Client::MapSingleDeleter(_)
+                | Client::ListStartPutter(_)
+                | Client::ListDeleter(_)
+                | Client::ListInserter(_) => 0,
+            },
+            MyRegisterActor::Server(_) => 0,
+        })
+        .sum()
+}
+
+fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
+    let max = max_map_size(actors);
+    if let MyRegisterActorState::Server(s) = &**state {
+        s.length(ROOT) == max
+    } else {
+        false
     }
 }
 
