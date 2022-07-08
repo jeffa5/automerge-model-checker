@@ -259,25 +259,28 @@ fn all_same_state(actors: &[Arc<MyRegisterActorState>]) -> bool {
     })
 }
 
-fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
-    // first check that the network has no sync messages in-flight.
+fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
             MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw { .. }) => {
-                return true;
+                return false;
             }
             MyRegisterMsg::Internal(PeerMsg::SyncChangeRaw { .. }) => {
-                return true;
+                return false;
             }
             MyRegisterMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
-                return true;
+                return false;
             }
             MyRegisterMsg::Client(_) => {}
         }
     }
+    true
+}
 
+fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
+    // first check that the network has no sync messages in-flight.
     // next, check that all actors are in the same states (using sub-property checker)
-    all_same_state(&state.actor_states)
+    !syncing_done(state) || all_same_state(&state.actor_states)
 }
 
 fn save_load_same(state: &ActorModelState<MyRegisterActor>) -> bool {
