@@ -131,7 +131,7 @@ impl Actor for MyRegisterActor {
     }
 }
 
-struct ModelCfg {
+struct ModelBuilder {
     put_clients: usize,
     delete_clients: usize,
     insert_clients: usize,
@@ -141,7 +141,7 @@ struct ModelCfg {
     message_acks: bool,
 }
 
-impl ModelCfg {
+impl ModelBuilder {
     fn into_actor_model(self) -> ActorModel<MyRegisterActor, (), ()> {
         let mut model = ActorModel::new((), ());
         for i in 0..self.servers {
@@ -460,7 +460,7 @@ enum SubCmd {
 fn main() {
     let opts = Opts::parse();
 
-    let model = ModelCfg {
+    let model = ModelBuilder {
         put_clients: opts.put_clients,
         delete_clients: opts.delete_clients,
         insert_clients: opts.insert_clients,
