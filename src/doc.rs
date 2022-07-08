@@ -54,21 +54,40 @@ impl Doc {
     }
 
     pub fn get(&self, key: &str) -> Option<String> {
+        let (_, map) = self.am.get(ROOT, MAP_KEY).ok().flatten()?;
         self.am
-            .get(ROOT, key)
+            .get(map, key)
             .unwrap()
             .map(|(v, _)| v.into_string().unwrap())
     }
 
+    fn get_map(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+        if let Some((_, id)) = tx.get(ROOT, MAP_KEY).ok().flatten() {
+            id
+        } else {
+            tx.put_object(ROOT, MAP_KEY, ObjType::Map).unwrap()
+        }
+    }
+
+    fn get_list(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+        if let Some((_, id)) = tx.get(ROOT, LIST_KEY).ok().flatten() {
+            id
+        } else {
+            tx.put_object(ROOT, LIST_KEY, ObjType::List).unwrap()
+        }
+    }
+
     pub fn put(&mut self, key: String, value: String) {
         let mut tx = self.am.transaction();
-        tx.put(ROOT, key, value).unwrap();
+        let map = Self::get_map(&mut tx);
+        tx.put(map, key, value).unwrap();
         tx.commit();
     }
 
     pub fn put_list(&mut self, index: usize, value: String) {
         let mut tx = self.am.transaction();
-        tx.put(ROOT, index, value).unwrap();
+        let list = Self::get_list(&mut tx);
+        tx.put(list, index, value).unwrap();
         tx.commit();
     }
 
@@ -93,13 +112,15 @@ impl Doc {
 
     pub fn delete(&mut self, key: &str) {
         let mut tx = self.am.transaction();
-        tx.delete(ROOT, key).unwrap();
+        let map = Self::get_map(&mut tx);
+        tx.delete(map, key).unwrap();
         tx.commit();
     }
 
     pub fn delete_list(&mut self, index: usize) {
         let mut tx = self.am.transaction();
-        tx.delete(ROOT, index).unwrap();
+        let list = Self::get_list(&mut tx);
+        tx.delete(list, index).unwrap();
         tx.commit();
     }
 

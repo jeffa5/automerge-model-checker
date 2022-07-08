@@ -30,15 +30,15 @@ impl Actor for ListInserter {
 
         let server_id = Id::from(index % self.server_count);
         // ensure we have a list to insert into
-        let unique_request_id = index; // next will be 2 * index
-        o.send(
-            server_id,
-            MyRegisterMsg::Client(ClientMsg::PutObject(
-                unique_request_id,
-                LIST_KEY.to_owned(),
-                ObjType::List,
-            )),
-        );
+        // let unique_request_id = index; // next will be 2 * index
+        // o.send(
+        //     server_id,
+        //     MyRegisterMsg::Client(ClientMsg::PutObject(
+        //         unique_request_id,
+        //         LIST_KEY.to_owned(),
+        //         ObjType::List,
+        //     )),
+        // );
         for i in 1..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
