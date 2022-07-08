@@ -5,6 +5,8 @@ use automerge::transaction::Transactable;
 use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ObjType, Value, ROOT};
 use stateright::actor::Id;
 
+pub const LIST_KEY: &str = "list";
+
 #[derive(Clone, Debug)]
 pub struct Doc {
     am: Automerge,
@@ -77,7 +79,7 @@ impl Doc {
 
     pub fn insert(&mut self, index: usize, value: String) {
         let mut tx = self.am.transaction();
-        let list = match tx.get(ROOT, "list") {
+        let list = match tx.get(ROOT, LIST_KEY) {
             Ok(Some((Value::Object(ObjType::List), list))) => list,
             _ => {
                 self.error = true;

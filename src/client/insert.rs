@@ -1,7 +1,7 @@
 use automerge::ObjType;
 use stateright::actor::{Actor, Id};
 
-use crate::MyRegisterMsg;
+use crate::{doc::LIST_KEY, MyRegisterMsg};
 
 use super::ClientMsg;
 
@@ -35,7 +35,7 @@ impl Actor for ListInserter {
             server_id,
             MyRegisterMsg::Client(ClientMsg::PutObject(
                 unique_request_id,
-                "list".to_owned(),
+                LIST_KEY.to_owned(),
                 ObjType::List,
             )),
         );
