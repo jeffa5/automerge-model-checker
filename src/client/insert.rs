@@ -1,7 +1,7 @@
 use automerge::ObjType;
 use stateright::actor::{Actor, Id};
 
-use crate::{doc::LIST_KEY, MyRegisterMsg};
+use crate::{doc::LIST_KEY, GlobalMsg};
 
 use super::ClientMsg;
 
@@ -14,7 +14,7 @@ pub struct ListInserter {
 }
 
 impl Actor for ListInserter {
-    type Msg = MyRegisterMsg;
+    type Msg = GlobalMsg;
 
     type State = ();
 
@@ -43,7 +43,7 @@ impl Actor for ListInserter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = ClientMsg::Insert(unique_request_id, self.index, value.to_string());
-            o.send(server_id, MyRegisterMsg::Client(msg));
+            o.send(server_id, GlobalMsg::Client(msg));
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::MyRegisterMsg;
+use crate::GlobalMsg;
 use crate::{Key, RequestId, Value};
 use automerge::ObjType;
 use stateright::actor::{Actor, Out};
@@ -48,7 +48,7 @@ pub enum ClientMsg {
 }
 
 impl Actor for Client {
-    type Msg = MyRegisterMsg;
+    type Msg = GlobalMsg;
 
     type State = ();
 

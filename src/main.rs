@@ -44,7 +44,7 @@ enum MyRegisterActorState {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum MyRegisterMsg {
+pub enum GlobalMsg {
     /// A message specific to the register system's internal protocol.
     Internal(PeerMsg),
 
@@ -53,7 +53,7 @@ pub enum MyRegisterMsg {
 }
 
 impl Actor for MyRegisterActor {
-    type Msg = MyRegisterMsg;
+    type Msg = GlobalMsg;
 
     type State = MyRegisterActorState;
 
@@ -374,16 +374,16 @@ fn all_same_state(actors: &[Arc<MyRegisterActorState>]) -> bool {
 fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
-            MyRegisterMsg::Internal(PeerMsg::SyncMessageRaw { .. }) => {
+            GlobalMsg::Internal(PeerMsg::SyncMessageRaw { .. }) => {
                 return false;
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncChangeRaw { .. }) => {
+            GlobalMsg::Internal(PeerMsg::SyncChangeRaw { .. }) => {
                 return false;
             }
-            MyRegisterMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
+            GlobalMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
                 return false;
             }
-            MyRegisterMsg::Client(_) => {}
+            GlobalMsg::Client(_) => {}
         }
     }
     true

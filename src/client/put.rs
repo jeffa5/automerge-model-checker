@@ -1,6 +1,6 @@
 use stateright::actor::{Actor, Id};
 
-use crate::MyRegisterMsg;
+use crate::GlobalMsg;
 
 use super::ClientMsg;
 
@@ -13,7 +13,7 @@ pub struct MapSinglePutter {
 }
 
 impl Actor for MapSinglePutter {
-    type Msg = MyRegisterMsg;
+    type Msg = GlobalMsg;
 
     type State = ();
 
@@ -31,10 +31,7 @@ impl Actor for MapSinglePutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = ClientMsg::PutMap(unique_request_id, self.key.clone(), value.to_string());
-            o.send(
-                Id::from(index % self.server_count),
-                MyRegisterMsg::Client(msg),
-            );
+            o.send(Id::from(index % self.server_count), GlobalMsg::Client(msg));
         }
     }
 }
@@ -47,7 +44,7 @@ pub struct ListStartPutter {
 }
 
 impl Actor for ListStartPutter {
-    type Msg = MyRegisterMsg;
+    type Msg = GlobalMsg;
 
     type State = ();
 
@@ -65,10 +62,7 @@ impl Actor for ListStartPutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = ClientMsg::PutList(unique_request_id, 0, value.to_string());
-            o.send(
-                Id::from(index % self.server_count),
-                MyRegisterMsg::Client(msg),
-            );
+            o.send(Id::from(index % self.server_count), GlobalMsg::Client(msg));
         }
     }
 }
