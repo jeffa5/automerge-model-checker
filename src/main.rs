@@ -1,8 +1,9 @@
 use automerge::Automerge;
-use automerge::ROOT;
 use clap::Parser;
 use client::Client;
 use client::ClientMsg;
+use doc::LIST_KEY;
+use doc::MAP_KEY;
 use peer::Peer;
 use peer::PeerMsg;
 use peer::SyncMethod;
@@ -326,7 +327,7 @@ fn max_list_size(actors: &[MyRegisterActor]) -> usize {
 fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
     let max = max_map_size(actors);
     if let MyRegisterActorState::Server(s) = &**state {
-        s.length(ROOT) == max
+        s.length(MAP_KEY) == max
     } else {
         false
     }
@@ -335,7 +336,7 @@ fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActo
 fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
     let max = max_map_size(actors);
     if let MyRegisterActorState::Server(s) = &**state {
-        s.length(ROOT) <= max
+        s.length(MAP_KEY) <= max
     } else {
         true
     }
@@ -344,7 +345,7 @@ fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterAct
 fn state_has_max_list_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
     let max = max_list_size(actors);
     if let MyRegisterActorState::Server(s) = &**state {
-        s.length(ROOT) == max
+        s.length(LIST_KEY) == max
     } else {
         false
     }
@@ -353,7 +354,7 @@ fn state_has_max_list_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterAct
 fn max_list_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
     let max = max_list_size(actors);
     if let MyRegisterActorState::Server(s) = &**state {
-        s.length(ROOT) <= max
+        s.length(LIST_KEY) <= max
     } else {
         true
     }

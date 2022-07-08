@@ -6,6 +6,7 @@ use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ObjType, Value, RO
 use stateright::actor::Id;
 
 pub const LIST_KEY: &str = "list";
+pub const MAP_KEY: &str = "map";
 
 #[derive(Clone, Debug)]
 pub struct Doc {
@@ -139,7 +140,12 @@ impl Doc {
         self.am.merge(other).unwrap();
     }
 
-    pub fn length(&self, obj: automerge::ObjId) -> usize {
-        self.am.length(obj)
+    pub fn length(&self, key: &str) -> usize {
+        self.am
+            .get(ROOT, key)
+            .ok()
+            .flatten()
+            .map(|(_, id)| self.am.length(id))
+            .unwrap_or_default()
     }
 }
