@@ -255,6 +255,16 @@ impl ModelCfg {
                         .any(|s| state_has_max_map_size(&model.actors, s))
                 },
             )
+            .property(
+                stateright::Expectation::Always,
+                "max map size is the max",
+                |model, state| {
+                    state
+                        .actor_states
+                        .iter()
+                        .all(|s| max_map_size_is_the_max(&model.actors, s))
+                },
+            )
             .init_network(Network::new_ordered(vec![]))
     }
 }
@@ -281,6 +291,15 @@ fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActo
         s.length(ROOT) == max
     } else {
         false
+    }
+}
+
+fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
+    let max = max_map_size(actors);
+    if let MyRegisterActorState::Server(s) = &**state {
+        s.length(ROOT) <= max
+    } else {
+        true
     }
 }
 
