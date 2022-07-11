@@ -18,7 +18,6 @@ use stateright::Checker;
 use stateright::CheckerBuilder;
 use stateright::{actor::Id, Model};
 use std::borrow::Cow;
-use std::collections::HashSet;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -132,6 +131,11 @@ impl Actor for MyRegisterActor {
     }
 }
 
+struct ModelConfig {
+    max_map_size: usize,
+    max_list_size: usize,
+}
+
 struct ModelBuilder {
     put_clients: usize,
     delete_clients: usize,
@@ -143,8 +147,13 @@ struct ModelBuilder {
 }
 
 impl ModelBuilder {
-    fn into_actor_model(self) -> ActorModel<MyRegisterActor, (), ()> {
-        let mut model = ActorModel::new((), ());
+    fn into_actor_model(self) -> ActorModel<MyRegisterActor, ModelConfig, ()> {
+        let insert_request_count = 2;
+        let config = ModelConfig {
+            max_map_size: std::cmp::min(1, self.put_clients),
+            max_list_size: self.insert_clients * insert_request_count,
+        };
+        let mut model = ActorModel::new(config, ());
         for i in 0..self.servers {
             model = model.actor(MyRegisterActor::Server(Peer {
                 peers: model_peers(i, self.servers),
@@ -204,7 +213,7 @@ impl ModelBuilder {
                     model = model.actor(MyRegisterActor::Client(Client::ListInserter(
                         client::ListInserter {
                             index: 0,
-                            request_count: 2,
+                            request_count: insert_request_count,
                             server_count: self.servers,
                         },
                     )))
@@ -254,7 +263,7 @@ impl ModelBuilder {
                     state
                         .actor_states
                         .iter()
-                        .any(|s| state_has_max_map_size(&model.actors, s))
+                        .any(|s| state_has_max_map_size(s, &model.cfg))
                 },
             )
             .property(
@@ -264,7 +273,7 @@ impl ModelBuilder {
                     state
                         .actor_states
                         .iter()
-                        .all(|s| max_map_size_is_the_max(&model.actors, s))
+                        .all(|s| max_map_size_is_the_max(s, &model.cfg))
                 },
             )
             .property(
@@ -274,7 +283,7 @@ impl ModelBuilder {
                     state
                         .actor_states
                         .iter()
-                        .any(|s| state_has_max_list_size(&model.actors, s))
+                        .any(|s| state_has_max_list_size(s, &model.cfg))
                 },
             )
             .property(
@@ -284,50 +293,15 @@ impl ModelBuilder {
                     state
                         .actor_states
                         .iter()
-                        .all(|s| max_list_size_is_the_max(&model.actors, s))
+                        .all(|s| max_list_size_is_the_max(s, &model.cfg))
                 },
             )
             .init_network(Network::new_ordered(vec![]))
     }
 }
 
-// TODO: move this to a precalculated field on a config struct that is shared.
-fn max_map_size(actors: &[MyRegisterActor]) -> usize {
-    actors
-        .iter()
-        .filter_map(|a| match a {
-            MyRegisterActor::Client(c) => match c {
-                Client::MapSinglePutter(c) => Some(c.key.clone()),
-                Client::MapSingleDeleter(_)
-                | Client::ListStartPutter(_)
-                | Client::ListDeleter(_)
-                | Client::ListInserter(_) => None,
-            },
-            MyRegisterActor::Server(_) => None,
-        })
-        .collect::<HashSet<_>>()
-        .len()
-}
-
-// TODO: move this to a precalculated field on a config struct that is shared.
-fn max_list_size(actors: &[MyRegisterActor]) -> usize {
-    actors
-        .iter()
-        .map(|a| match a {
-            MyRegisterActor::Client(c) => match c {
-                Client::MapSinglePutter(_)
-                | Client::MapSingleDeleter(_)
-                | Client::ListStartPutter(_)
-                | Client::ListDeleter(_) => 0,
-                Client::ListInserter(c) => c.request_count,
-            },
-            MyRegisterActor::Server(_) => 0,
-        })
-        .sum()
-}
-
-fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
-    let max = max_map_size(actors);
+fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+    let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) == max
     } else {
@@ -335,8 +309,8 @@ fn state_has_max_map_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActo
     }
 }
 
-fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
-    let max = max_map_size(actors);
+fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+    let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) <= max
     } else {
@@ -344,8 +318,8 @@ fn max_map_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterAct
     }
 }
 
-fn state_has_max_list_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
-    let max = max_list_size(actors);
+fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+    let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) == max
     } else {
@@ -353,8 +327,8 @@ fn state_has_max_list_size(actors: &[MyRegisterActor], state: &Arc<MyRegisterAct
     }
 }
 
-fn max_list_size_is_the_max(actors: &[MyRegisterActor], state: &Arc<MyRegisterActorState>) -> bool {
-    let max = max_list_size(actors);
+fn max_list_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+    let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) <= max
     } else {
@@ -477,7 +451,7 @@ fn main() {
     run(opts, model)
 }
 
-fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor>>) {
+fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor, ModelConfig>>) {
     println!("Running with config {:?}", opts);
     match opts.command {
         SubCmd::Serve => {

@@ -1,7 +1,6 @@
-use automerge::ObjType;
 use stateright::actor::{Actor, Id};
 
-use crate::{doc::LIST_KEY, GlobalMsg};
+use crate::GlobalMsg;
 
 use super::ClientMsg;
 
