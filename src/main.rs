@@ -151,7 +151,11 @@ impl ModelBuilder {
         let insert_request_count = 2;
         let config = ModelConfig {
             max_map_size: std::cmp::min(1, self.put_clients),
-            max_list_size: self.insert_clients * insert_request_count,
+            max_list_size: if self.object_type == ObjectType::Map {
+                0
+            } else {
+                self.insert_clients * insert_request_count
+            },
         };
         let mut model = ActorModel::new(config, ());
         for i in 0..self.servers {
