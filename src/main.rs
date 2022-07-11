@@ -18,6 +18,7 @@ use stateright::Checker;
 use stateright::CheckerBuilder;
 use stateright::{actor::Id, Model};
 use std::borrow::Cow;
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -294,17 +295,18 @@ impl ModelBuilder {
 fn max_map_size(actors: &[MyRegisterActor]) -> usize {
     actors
         .iter()
-        .map(|a| match a {
+        .filter_map(|a| match a {
             MyRegisterActor::Client(c) => match c {
-                Client::MapSinglePutter(c) => c.request_count,
+                Client::MapSinglePutter(c) => Some(c.key.clone()),
                 Client::MapSingleDeleter(_)
                 | Client::ListStartPutter(_)
                 | Client::ListDeleter(_)
-                | Client::ListInserter(_) => 0,
+                | Client::ListInserter(_) => None,
             },
-            MyRegisterActor::Server(_) => 0,
+            MyRegisterActor::Server(_) => None,
         })
-        .sum()
+        .collect::<HashSet<_>>()
+        .len()
 }
 
 // TODO: move this to a precalculated field on a config struct that is shared.
