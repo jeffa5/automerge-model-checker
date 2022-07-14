@@ -1,7 +1,7 @@
 use clap::Parser;
-use peer::SyncMethod;
 use register::MyRegisterActor;
 use report::Reporter;
+use server::SyncMethod;
 use stateright::actor::ActorModel;
 use stateright::Checker;
 use stateright::CheckerBuilder;
@@ -11,9 +11,9 @@ use std::hash::Hash;
 mod client;
 mod doc;
 mod model;
-mod peer;
 mod register;
 mod report;
+mod server;
 
 type RequestId = usize;
 type Key = String;

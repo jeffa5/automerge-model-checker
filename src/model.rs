@@ -2,11 +2,11 @@ use crate::client;
 use crate::client::Client;
 use crate::doc::LIST_KEY;
 use crate::doc::MAP_KEY;
-use crate::peer::Server;
-use crate::peer::ServerMsg;
 use crate::register::GlobalMsg;
+use crate::server::Server;
+use crate::server::ServerMsg;
 use crate::{
-    peer::SyncMethod, register::MyRegisterActor, register::MyRegisterActorState, ObjectType,
+    register::MyRegisterActor, register::MyRegisterActorState, server::SyncMethod, ObjectType,
 };
 use automerge::Automerge;
 use stateright::actor::{model_peers, ActorModel};

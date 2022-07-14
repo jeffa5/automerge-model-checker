@@ -4,7 +4,7 @@ use stateright::actor::{Actor, Id, Out};
 
 use crate::{
     client::{Client, Request, Response},
-    peer::{Server, ServerMsg},
+    server::{Server, ServerMsg},
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
