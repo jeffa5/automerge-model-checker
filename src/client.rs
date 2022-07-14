@@ -82,7 +82,9 @@ impl Actor for Client {
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => {
+                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
                     })
@@ -95,7 +97,9 @@ impl Actor for Client {
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => {
+                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
                     })
@@ -108,7 +112,9 @@ impl Actor for Client {
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => {
+                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
                     })
@@ -121,7 +127,9 @@ impl Actor for Client {
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => {
+                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
                     })
@@ -134,7 +142,9 @@ impl Actor for Client {
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => {
+                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
                     })

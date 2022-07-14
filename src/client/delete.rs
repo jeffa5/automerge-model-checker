@@ -1,4 +1,3 @@
-use crate::client::ClientMsg;
 use stateright::actor::{Actor, Id};
 
 use super::Request;
@@ -12,7 +11,7 @@ pub struct MapSingleDeleter {
 }
 
 impl Actor for MapSingleDeleter {
-    type Msg = ClientMsg;
+    type Msg = Request;
 
     type State = ();
 
@@ -29,7 +28,7 @@ impl Actor for MapSingleDeleter {
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteMap(unique_request_id, self.key.clone());
-            o.send(Id::from(index % self.server_count), ClientMsg::Request(msg));
+            o.send(Id::from(index % self.server_count), msg);
         }
     }
 }
@@ -43,7 +42,7 @@ pub struct ListDeleter {
 }
 
 impl Actor for ListDeleter {
-    type Msg = ClientMsg;
+    type Msg = Request;
 
     type State = ();
 
@@ -60,7 +59,7 @@ impl Actor for ListDeleter {
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteList(unique_request_id, self.index);
-            o.send(Id::from(index % self.server_count), ClientMsg::Request(msg));
+            o.send(Id::from(index % self.server_count), msg);
         }
     }
 }
