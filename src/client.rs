@@ -1,4 +1,4 @@
-use crate::GlobalMsg;
+use crate::register::GlobalMsg;
 use crate::{Key, RequestId, Value};
 use automerge::ObjType;
 use stateright::actor::{Actor, Out};

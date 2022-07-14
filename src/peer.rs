@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::client::Request;
 use crate::client::Response;
 use crate::doc::Doc;
-use crate::GlobalMsg;
+use crate::register::GlobalMsg;
 use automerge::sync;
 use automerge::Automerge;
 use automerge::Change;

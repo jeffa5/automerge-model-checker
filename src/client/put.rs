@@ -1,6 +1,6 @@
 use stateright::actor::{Actor, Id};
 
-use crate::GlobalMsg;
+use crate::register::GlobalMsg;
 
 use super::Request;
 
