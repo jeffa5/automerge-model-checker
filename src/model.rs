@@ -245,8 +245,7 @@ fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
             GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Request(_) => {}
-            GlobalMsg::Response(_) => {}
+            GlobalMsg::External(_) => {}
         }
     }
     true

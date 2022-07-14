@@ -1,3 +1,4 @@
+use crate::client::ClientMsg;
 use stateright::actor::{Actor, Id};
 
 use crate::register::GlobalMsg;
@@ -42,7 +43,7 @@ impl Actor for ListInserter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = Request::Insert(unique_request_id, self.index, value.to_string());
-            o.send(server_id, GlobalMsg::Request(msg));
+            o.send(server_id, GlobalMsg::External(ClientMsg::Request(msg)));
         }
     }
 }

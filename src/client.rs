@@ -26,6 +26,15 @@ pub enum Client {
     ListInserter(insert::ListInserter),
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub enum ClientMsg {
+    /// Message originating from clients to servers.
+    Request(Request),
+
+    /// Message originating from server to client.
+    Response(Response),
+}
+
 /// Messages that clients send to servers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Request {

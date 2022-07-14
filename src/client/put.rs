@@ -1,3 +1,4 @@
+use crate::client::ClientMsg;
 use stateright::actor::{Actor, Id};
 
 use crate::register::GlobalMsg;
@@ -31,7 +32,10 @@ impl Actor for MapSinglePutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = Request::PutMap(unique_request_id, self.key.clone(), value.to_string());
-            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
+            o.send(
+                Id::from(index % self.server_count),
+                GlobalMsg::External(ClientMsg::Request(msg)),
+            );
         }
     }
 }
@@ -62,7 +66,10 @@ impl Actor for ListStartPutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = Request::PutList(unique_request_id, 0, value.to_string());
-            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
+            o.send(
+                Id::from(index % self.server_count),
+                GlobalMsg::External(ClientMsg::Request(msg)),
+            );
         }
     }
 }

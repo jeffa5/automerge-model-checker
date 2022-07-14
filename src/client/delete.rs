@@ -1,3 +1,4 @@
+use crate::client::ClientMsg;
 use stateright::actor::{Actor, Id};
 
 use crate::register::GlobalMsg;
@@ -30,7 +31,10 @@ impl Actor for MapSingleDeleter {
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteMap(unique_request_id, self.key.clone());
-            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
+            o.send(
+                Id::from(index % self.server_count),
+                GlobalMsg::External(ClientMsg::Request(msg)),
+            );
         }
     }
 }
@@ -61,7 +65,10 @@ impl Actor for ListDeleter {
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteList(unique_request_id, self.index);
-            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
+            o.send(
+                Id::from(index % self.server_count),
+                GlobalMsg::External(ClientMsg::Request(msg)),
+            );
         }
     }
 }

@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use stateright::actor::{Actor, Id, Out};
 
 use crate::{
-    client::{Client, Request, Response},
+    client::{Client, ClientMsg},
     server::{Server, ServerMsg},
 };
 
@@ -12,11 +12,8 @@ pub enum GlobalMsg {
     /// A message specific to the register system's internal protocol.
     Internal(ServerMsg),
 
-    /// Message originating from clients to servers.
-    Request(Request),
-
-    /// Message originating from server to client.
-    Response(Response),
+    /// A message between clients and servers.
+    External(ClientMsg),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
