@@ -1,5 +1,4 @@
 use crate::register::GlobalMsg;
-use crate::{Key, RequestId, Value};
 use automerge::ObjType;
 use stateright::actor::{Actor, Out};
 
@@ -12,6 +11,10 @@ pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;
 pub use put::ListStartPutter;
 pub use put::MapSinglePutter;
+
+type RequestId = usize;
+type Key = String;
+type Value = String;
 
 /// A client that generates actions for peers to process.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]

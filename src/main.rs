@@ -1,23 +1,12 @@
+use amc::model;
+use amc::register::MyRegisterActor;
+use amc::report::Reporter;
+use amc::server::SyncMethod;
 use clap::Parser;
-use register::MyRegisterActor;
-use report::Reporter;
-use server::SyncMethod;
 use stateright::actor::ActorModel;
 use stateright::Checker;
 use stateright::CheckerBuilder;
 use stateright::Model;
-use std::hash::Hash;
-
-mod client;
-mod doc;
-mod model;
-mod register;
-mod report;
-mod server;
-
-type RequestId = usize;
-type Key = String;
-type Value = String;
 
 #[derive(Parser, Debug)]
 struct Opts {
@@ -44,16 +33,10 @@ struct Opts {
 
     // What object type to check.
     #[clap(long, arg_enum, global = true, default_value = "map")]
-    object_type: ObjectType,
+    object_type: amc::ObjectType,
 
     #[clap(long, default_value = "8080")]
     port: u16,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
-pub enum ObjectType {
-    Map,
-    List,
 }
 
 #[derive(clap::Subcommand, Debug)]
