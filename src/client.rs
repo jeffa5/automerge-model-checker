@@ -1,5 +1,6 @@
 use crate::register::GlobalMsg;
 use automerge::ObjType;
+use stateright::actor::Command;
 use stateright::actor::{Actor, Out};
 
 mod delete;
@@ -78,26 +79,66 @@ impl Actor for Client {
             Client::MapSinglePutter(p) => {
                 let mut out = Out::new();
                 p.on_start(id, &mut out);
+                let mut out: Out<Client> = out
+                    .into_iter()
+                    .map(|m| match m {
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::SetTimer(r) => Command::SetTimer(r),
+                        Command::CancelTimer => Command::CancelTimer,
+                    })
+                    .collect();
                 o.append(&mut out);
             }
             Client::ListStartPutter(p) => {
                 let mut out = Out::new();
                 p.on_start(id, &mut out);
+                let mut out: Out<Client> = out
+                    .into_iter()
+                    .map(|m| match m {
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::SetTimer(r) => Command::SetTimer(r),
+                        Command::CancelTimer => Command::CancelTimer,
+                    })
+                    .collect();
                 o.append(&mut out);
             }
             Client::MapSingleDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
+                let mut out: Out<Client> = out
+                    .into_iter()
+                    .map(|m| match m {
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::SetTimer(r) => Command::SetTimer(r),
+                        Command::CancelTimer => Command::CancelTimer,
+                    })
+                    .collect();
                 o.append(&mut out);
             }
             Client::ListDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
+                let mut out: Out<Client> = out
+                    .into_iter()
+                    .map(|m| match m {
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::SetTimer(r) => Command::SetTimer(r),
+                        Command::CancelTimer => Command::CancelTimer,
+                    })
+                    .collect();
                 o.append(&mut out);
             }
             Client::ListInserter(a) => {
                 let mut out = Out::new();
                 a.on_start(id, &mut out);
+                let mut out: Out<Client> = out
+                    .into_iter()
+                    .map(|m| match m {
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::SetTimer(r) => Command::SetTimer(r),
+                        Command::CancelTimer => Command::CancelTimer,
+                    })
+                    .collect();
                 o.append(&mut out);
             }
         }

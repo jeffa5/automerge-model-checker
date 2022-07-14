@@ -1,8 +1,6 @@
 use crate::client::ClientMsg;
 use stateright::actor::{Actor, Id};
 
-use crate::register::GlobalMsg;
-
 use super::Request;
 
 /// A client strategy that just puts at a single key into a map.
@@ -14,7 +12,7 @@ pub struct MapSinglePutter {
 }
 
 impl Actor for MapSinglePutter {
-    type Msg = GlobalMsg;
+    type Msg = ClientMsg;
 
     type State = ();
 
@@ -32,10 +30,7 @@ impl Actor for MapSinglePutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = Request::PutMap(unique_request_id, self.key.clone(), value.to_string());
-            o.send(
-                Id::from(index % self.server_count),
-                GlobalMsg::External(ClientMsg::Request(msg)),
-            );
+            o.send(Id::from(index % self.server_count), ClientMsg::Request(msg));
         }
     }
 }
@@ -48,7 +43,7 @@ pub struct ListStartPutter {
 }
 
 impl Actor for ListStartPutter {
-    type Msg = GlobalMsg;
+    type Msg = ClientMsg;
 
     type State = ();
 
@@ -66,10 +61,7 @@ impl Actor for ListStartPutter {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
             let msg = Request::PutList(unique_request_id, 0, value.to_string());
-            o.send(
-                Id::from(index % self.server_count),
-                GlobalMsg::External(ClientMsg::Request(msg)),
-            );
+            o.send(Id::from(index % self.server_count), ClientMsg::Request(msg));
         }
     }
 }
