@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
-use crate::client::ClientMsg;
+use crate::client::Request;
+use crate::client::Response;
 use crate::doc::Doc;
 use crate::GlobalMsg;
 use automerge::sync;
@@ -59,76 +60,76 @@ impl Actor for Peer {
         o: &mut Out<Self>,
     ) {
         match msg {
-            GlobalMsg::Client(ClientMsg::PutMap(id, key, value)) => {
+            GlobalMsg::Request(Request::PutMap(id, key, value)) => {
                 // apply the op locally
                 state.to_mut().put(key, value);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o)
             }
-            GlobalMsg::Client(ClientMsg::PutList(id, index, value)) => {
+            GlobalMsg::Request(Request::PutList(id, index, value)) => {
                 // apply the op locally
                 state.to_mut().put_list(index, value);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o);
             }
-            GlobalMsg::Client(ClientMsg::PutObject(id, key, obj_type)) => {
+            GlobalMsg::Request(Request::PutObject(id, key, obj_type)) => {
                 // apply the op locally
                 state.to_mut().put_object(key, obj_type);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o);
             }
-            GlobalMsg::Client(ClientMsg::Insert(id, index, value)) => {
+            GlobalMsg::Request(Request::Insert(id, index, value)) => {
                 // apply the op locally
                 state.to_mut().insert(index, value);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o);
             }
-            GlobalMsg::Client(ClientMsg::Get(id, key)) => {
+            GlobalMsg::Request(Request::Get(id, key)) => {
                 if let Some(value) = state.get(&key) {
                     if self.message_acks {
                         // respond to the query (not totally necessary for this)
-                        o.send(src, GlobalMsg::Client(ClientMsg::AckWithValue(id, value)))
+                        o.send(src, GlobalMsg::Response(Response::AckWithValue(id, value)))
                     }
                 }
             }
-            GlobalMsg::Client(ClientMsg::DeleteMap(id, key)) => {
+            GlobalMsg::Request(Request::DeleteMap(id, key)) => {
                 // apply the op locally
                 state.to_mut().delete(&key);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o);
             }
-            GlobalMsg::Client(ClientMsg::DeleteList(id, index)) => {
+            GlobalMsg::Request(Request::DeleteList(id, index)) => {
                 // apply the op locally
                 state.to_mut().delete_list(index);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
-                    o.send(src, GlobalMsg::Client(ClientMsg::Ack(id)));
+                    o.send(src, GlobalMsg::Response(Response::Ack(id)));
                 }
 
                 self.sync(state, o);
@@ -155,8 +156,8 @@ impl Actor for Peer {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
                 state.to_mut().merge(&mut other_doc);
             }
-            GlobalMsg::Client(ClientMsg::AckWithValue(_id, _value)) => {}
-            GlobalMsg::Client(ClientMsg::Ack(_id)) => {}
+            GlobalMsg::Response(Response::AckWithValue(_id, _value)) => {}
+            GlobalMsg::Response(Response::Ack(_id)) => {}
         }
     }
 }

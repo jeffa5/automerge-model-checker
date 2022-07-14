@@ -2,7 +2,7 @@ use stateright::actor::{Actor, Id};
 
 use crate::GlobalMsg;
 
-use super::ClientMsg;
+use super::Request;
 
 /// A client strategy that just inserts at the start of the list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -41,8 +41,8 @@ impl Actor for ListInserter {
         for i in 1..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let value = (b'A' + (index % self.server_count) as u8) as char;
-            let msg = ClientMsg::Insert(unique_request_id, self.index, value.to_string());
-            o.send(server_id, GlobalMsg::Client(msg));
+            let msg = Request::Insert(unique_request_id, self.index, value.to_string());
+            o.send(server_id, GlobalMsg::Request(msg));
         }
     }
 }

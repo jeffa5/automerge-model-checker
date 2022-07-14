@@ -2,7 +2,7 @@ use stateright::actor::{Actor, Id};
 
 use crate::GlobalMsg;
 
-use super::ClientMsg;
+use super::Request;
 
 /// A client strategy that just deletes a single key in a map.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -29,8 +29,8 @@ impl Actor for MapSingleDeleter {
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = ClientMsg::DeleteMap(unique_request_id, self.key.clone());
-            o.send(Id::from(index % self.server_count), GlobalMsg::Client(msg));
+            let msg = Request::DeleteMap(unique_request_id, self.key.clone());
+            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
         }
     }
 }
@@ -60,8 +60,8 @@ impl Actor for ListDeleter {
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = ClientMsg::DeleteList(unique_request_id, self.index);
-            o.send(Id::from(index % self.server_count), GlobalMsg::Client(msg));
+            let msg = Request::DeleteList(unique_request_id, self.index);
+            o.send(Id::from(index % self.server_count), GlobalMsg::Request(msg));
         }
     }
 }

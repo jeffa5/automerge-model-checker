@@ -23,9 +23,9 @@ pub enum Client {
     ListInserter(insert::ListInserter),
 }
 
-/// Messages that clients send to peers.
+/// Messages that clients send to servers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ClientMsg {
+pub enum Request {
     /// Indicates that a value should be written.
     PutMap(RequestId, Key, Value),
     /// Indicates that a list element should be overwritten.
@@ -40,7 +40,11 @@ pub enum ClientMsg {
     DeleteMap(RequestId, Key),
     /// Indicates that a list element should be deleted.
     DeleteList(RequestId, usize),
+}
 
+/// Messages that servers send to clients.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub enum Response {
     /// Indicates a successful request with a value response. Analogous to an HTTP 2XX.
     AckWithValue(RequestId, Value),
     /// Indicates a successful request with no value response. Analogous to an HTTP 2XX.

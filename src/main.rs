@@ -1,7 +1,8 @@
 use automerge::Automerge;
 use clap::Parser;
 use client::Client;
-use client::ClientMsg;
+use client::Request;
+use client::Response;
 use doc::LIST_KEY;
 use doc::MAP_KEY;
 use peer::Peer;
@@ -48,8 +49,11 @@ pub enum GlobalMsg {
     /// A message specific to the register system's internal protocol.
     Internal(PeerMsg),
 
-    /// Messages originating or destined for clients.
-    Client(ClientMsg),
+    /// Message originating from clients to servers.
+    Request(Request),
+
+    /// Message originating from server to client.
+    Response(Response),
 }
 
 impl Actor for MyRegisterActor {
@@ -363,7 +367,8 @@ fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
             GlobalMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Client(_) => {}
+            GlobalMsg::Request(_) => {}
+            GlobalMsg::Response(_) => {}
         }
     }
     true
