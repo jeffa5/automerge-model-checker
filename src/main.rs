@@ -49,7 +49,7 @@ enum SubCmd {
 fn main() {
     let opts = Opts::parse();
 
-    let model = model::ModelBuilder {
+    let model = model::Builder {
         put_clients: opts.put_clients,
         delete_clients: opts.delete_clients,
         insert_clients: opts.insert_clients,
@@ -64,7 +64,7 @@ fn main() {
     run(opts, model)
 }
 
-fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor, model::ModelConfig>>) {
+fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor, model::Config>>) {
     println!("Running with config {:?}", opts);
     match opts.command {
         SubCmd::Serve => {

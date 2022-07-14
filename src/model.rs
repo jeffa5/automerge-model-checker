@@ -13,12 +13,12 @@ use stateright::actor::{model_peers, ActorModel};
 use stateright::actor::{ActorModelState, Network};
 use std::sync::Arc;
 
-pub struct ModelConfig {
+pub struct Config {
     pub max_map_size: usize,
     pub max_list_size: usize,
 }
 
-pub struct ModelBuilder {
+pub struct Builder {
     pub put_clients: usize,
     pub delete_clients: usize,
     pub insert_clients: usize,
@@ -28,10 +28,10 @@ pub struct ModelBuilder {
     pub message_acks: bool,
 }
 
-impl ModelBuilder {
-    pub fn into_actor_model(self) -> ActorModel<MyRegisterActor, ModelConfig, ()> {
+impl Builder {
+    pub fn into_actor_model(self) -> ActorModel<MyRegisterActor, Config, ()> {
         let insert_request_count = 2;
-        let config = ModelConfig {
+        let config = Config {
             max_map_size: std::cmp::min(1, self.put_clients),
             max_list_size: if self.object_type == ObjectType::Map {
                 0
@@ -186,7 +186,7 @@ impl ModelBuilder {
     }
 }
 
-fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) == max
@@ -195,7 +195,7 @@ fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) 
     }
 }
 
-fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) <= max
@@ -204,7 +204,7 @@ fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig)
     }
 }
 
-fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) == max
@@ -213,7 +213,7 @@ fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig)
     }
 }
 
-fn max_list_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &ModelConfig) -> bool {
+fn max_list_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) <= max
