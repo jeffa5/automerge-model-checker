@@ -13,11 +13,11 @@ use stateright::actor::Out;
 
 /// A peer in the automerge network.
 ///
-/// Peers can be thought of user's applications.
+/// Servers can be thought of user's applications.
 /// They keep state over restarts and can process operations from clients, as well as sync these to
 /// other peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Peer {
+pub struct Server {
     pub peers: Vec<Id>,
     pub sync_method: SyncMethod,
     pub message_acks: bool,
@@ -31,21 +31,21 @@ pub enum SyncMethod {
     SaveLoad,
 }
 
-/// Messages that peers send to each other.
+/// Messages that servers send to each other.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum PeerMsg {
+pub enum ServerMsg {
     // TODO: make this use the raw struct to avoid serde overhead
     SyncMessageRaw { message_bytes: Vec<u8> },
     SyncChangeRaw { change_bytes: Vec<u8> },
     SyncSaveLoadRaw { doc_bytes: Vec<u8> },
 }
 
-impl Actor for Peer {
+impl Actor for Server {
     type Msg = GlobalMsg;
 
     type State = Box<Doc>;
 
-    /// Peers don't do things on their own unless told to.
+    /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
         Box::new(Doc::new(id))
     }
@@ -134,7 +134,7 @@ impl Actor for Peer {
 
                 self.sync(state, o);
             }
-            GlobalMsg::Internal(PeerMsg::SyncMessageRaw { message_bytes }) => {
+            GlobalMsg::Internal(ServerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes).unwrap();
                 // receive the sync message
                 state.to_mut().receive_sync_message(src.into(), message);
@@ -142,17 +142,17 @@ impl Actor for Peer {
                 if let Some(message) = state.to_mut().generate_sync_message(src.into()) {
                     o.send(
                         src,
-                        GlobalMsg::Internal(PeerMsg::SyncMessageRaw {
+                        GlobalMsg::Internal(ServerMsg::SyncMessageRaw {
                             message_bytes: message.encode(),
                         }),
                     )
                 }
             }
-            GlobalMsg::Internal(PeerMsg::SyncChangeRaw { change_bytes }) => {
+            GlobalMsg::Internal(ServerMsg::SyncChangeRaw { change_bytes }) => {
                 let change = Change::from_bytes(change_bytes).unwrap();
                 state.to_mut().apply_change(change)
             }
-            GlobalMsg::Internal(PeerMsg::SyncSaveLoadRaw { doc_bytes }) => {
+            GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { doc_bytes }) => {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
                 state.to_mut().merge(&mut other_doc);
             }
@@ -162,7 +162,7 @@ impl Actor for Peer {
     }
 }
 
-impl Peer {
+impl Server {
     /// Handle generating a sync message after some changes have been made.
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match self.sync_method {
@@ -170,7 +170,7 @@ impl Peer {
                 if let Some(change) = state.last_local_change() {
                     o.broadcast(
                         &self.peers,
-                        &GlobalMsg::Internal(PeerMsg::SyncChangeRaw {
+                        &GlobalMsg::Internal(ServerMsg::SyncChangeRaw {
                             change_bytes: change.raw_bytes().to_vec(),
                         }),
                     )
@@ -182,7 +182,7 @@ impl Peer {
                     if let Some(message) = state.to_mut().generate_sync_message((*peer).into()) {
                         o.send(
                             *peer,
-                            GlobalMsg::Internal(PeerMsg::SyncMessageRaw {
+                            GlobalMsg::Internal(ServerMsg::SyncMessageRaw {
                                 message_bytes: message.encode(),
                             }),
                         )
@@ -193,7 +193,7 @@ impl Peer {
                 let bytes = state.to_mut().save();
                 o.broadcast(
                     &self.peers,
-                    &GlobalMsg::Internal(PeerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
+                    &GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
                 );
             }
         }

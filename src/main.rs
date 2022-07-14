@@ -5,8 +5,8 @@ use client::Request;
 use client::Response;
 use doc::LIST_KEY;
 use doc::MAP_KEY;
-use peer::Peer;
-use peer::PeerMsg;
+use peer::Server;
+use peer::ServerMsg;
 use peer::SyncMethod;
 use report::Reporter;
 use stateright::actor::model_peers;
@@ -35,19 +35,19 @@ type Value = String;
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum MyRegisterActor {
     Client(Client),
-    Server(Peer),
+    Server(Server),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum MyRegisterActorState {
     Client(<Client as Actor>::State),
-    Server(<Peer as Actor>::State),
+    Server(<Server as Actor>::State),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum GlobalMsg {
     /// A message specific to the register system's internal protocol.
-    Internal(PeerMsg),
+    Internal(ServerMsg),
 
     /// Message originating from clients to servers.
     Request(Request),
@@ -163,7 +163,7 @@ impl ModelBuilder {
         };
         let mut model = ActorModel::new(config, ());
         for i in 0..self.servers {
-            model = model.actor(MyRegisterActor::Server(Peer {
+            model = model.actor(MyRegisterActor::Server(Server {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 message_acks: self.message_acks,
@@ -358,13 +358,13 @@ fn all_same_state(actors: &[Arc<MyRegisterActorState>]) -> bool {
 fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
-            GlobalMsg::Internal(PeerMsg::SyncMessageRaw { .. }) => {
+            GlobalMsg::Internal(ServerMsg::SyncMessageRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Internal(PeerMsg::SyncChangeRaw { .. }) => {
+            GlobalMsg::Internal(ServerMsg::SyncChangeRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Internal(PeerMsg::SyncSaveLoadRaw { .. }) => {
+            GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { .. }) => {
                 return false;
             }
             GlobalMsg::Request(_) => {}
