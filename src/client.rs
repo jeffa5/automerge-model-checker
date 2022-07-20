@@ -1,7 +1,7 @@
 use crate::register::GlobalMsg;
 use automerge::ObjType;
-use stateright::actor::Command;
 use stateright::actor::{Actor, Out};
+use stateright::actor::{Command, Id};
 
 mod delete;
 mod insert;
@@ -17,9 +17,17 @@ type RequestId = usize;
 type Key = String;
 type Value = String;
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct Client {
+    /// the handler for creating messages to the document.
+    pub handler: ClientHandler,
+    /// The server that this client talks to.
+    pub server: Id,
+}
+
 /// A client that generates actions for peers to process.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum Client {
+pub enum ClientHandler {
     MapSinglePutter(put::MapSinglePutter),
     ListStartPutter(put::ListStartPutter),
     MapSingleDeleter(delete::MapSingleDeleter),
@@ -75,15 +83,15 @@ impl Actor for Client {
         id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        match self {
-            Client::MapSinglePutter(p) => {
+        match &self.handler {
+            ClientHandler::MapSinglePutter(p) => {
                 let mut out = Out::new();
                 p.on_start(id, &mut out);
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => {
-                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        Command::Send(_, msg) => {
+                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
                         }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
@@ -91,14 +99,14 @@ impl Actor for Client {
                     .collect();
                 o.append(&mut out);
             }
-            Client::ListStartPutter(p) => {
+            ClientHandler::ListStartPutter(p) => {
                 let mut out = Out::new();
                 p.on_start(id, &mut out);
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => {
-                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        Command::Send(_, msg) => {
+                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
                         }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
@@ -106,14 +114,14 @@ impl Actor for Client {
                     .collect();
                 o.append(&mut out);
             }
-            Client::MapSingleDeleter(d) => {
+            ClientHandler::MapSingleDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => {
-                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        Command::Send(_, msg) => {
+                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
                         }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
@@ -121,14 +129,14 @@ impl Actor for Client {
                     .collect();
                 o.append(&mut out);
             }
-            Client::ListDeleter(d) => {
+            ClientHandler::ListDeleter(d) => {
                 let mut out = Out::new();
                 d.on_start(id, &mut out);
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => {
-                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        Command::Send(_, msg) => {
+                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
                         }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,
@@ -136,14 +144,14 @@ impl Actor for Client {
                     .collect();
                 o.append(&mut out);
             }
-            Client::ListInserter(a) => {
+            ClientHandler::ListInserter(a) => {
                 let mut out = Out::new();
                 a.on_start(id, &mut out);
                 let mut out: Out<Client> = out
                     .into_iter()
                     .map(|m| match m {
-                        Command::Send(id, msg) => {
-                            Command::Send(id, GlobalMsg::External(ClientMsg::Request(msg)))
+                        Command::Send(_, msg) => {
+                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
                         }
                         Command::SetTimer(r) => Command::SetTimer(r),
                         Command::CancelTimer => Command::CancelTimer,

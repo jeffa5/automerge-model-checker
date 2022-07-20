@@ -7,7 +7,6 @@ use super::Request;
 pub struct ListInserter {
     pub index: usize,
     pub request_count: usize,
-    pub server_count: usize,
 }
 
 impl Actor for ListInserter {
@@ -21,11 +20,7 @@ impl Actor for ListInserter {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         let index: usize = id.into();
-        if index < self.server_count {
-            panic!("MyRegisterActor clients must be added to the model after servers.");
-        }
 
-        let server_id = Id::from(index % self.server_count);
         // ensure we have a list to insert into
         // let unique_request_id = index; // next will be 2 * index
         // o.send(
@@ -38,9 +33,9 @@ impl Actor for ListInserter {
         // );
         for i in 1..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let value = (b'A' + (index % self.server_count) as u8) as char;
+            let value = 'A';
             let msg = Request::Insert(unique_request_id, self.index, value.to_string());
-            o.send(server_id, msg);
+            o.send(Id::from(0), msg);
         }
     }
 }

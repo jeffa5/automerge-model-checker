@@ -7,7 +7,6 @@ use super::Request;
 pub struct MapSingleDeleter {
     pub key: String,
     pub request_count: usize,
-    pub server_count: usize,
 }
 
 impl Actor for MapSingleDeleter {
@@ -21,14 +20,11 @@ impl Actor for MapSingleDeleter {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         let index: usize = id.into();
-        if index < self.server_count {
-            panic!("MyRegisterActor clients must be added to the model after servers.");
-        }
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteMap(unique_request_id, self.key.clone());
-            o.send(Id::from(index % self.server_count), msg);
+            o.send(Id::from(0), msg);
         }
     }
 }
@@ -38,7 +34,6 @@ impl Actor for MapSingleDeleter {
 pub struct ListDeleter {
     pub index: usize,
     pub request_count: usize,
-    pub server_count: usize,
 }
 
 impl Actor for ListDeleter {
@@ -52,14 +47,11 @@ impl Actor for ListDeleter {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         let index: usize = id.into();
-        if index < self.server_count {
-            panic!("MyRegisterActor clients must be added to the model after servers.");
-        }
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
             let msg = Request::DeleteList(unique_request_id, self.index);
-            o.send(Id::from(index % self.server_count), msg);
+            o.send(Id::from(0), msg);
         }
     }
 }

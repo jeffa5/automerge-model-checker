@@ -7,7 +7,6 @@ use super::Request;
 pub struct MapSinglePutter {
     pub key: String,
     pub request_count: usize,
-    pub server_count: usize,
 }
 
 impl Actor for MapSinglePutter {
@@ -21,15 +20,12 @@ impl Actor for MapSinglePutter {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         let index: usize = id.into();
-        if index < self.server_count {
-            panic!("MyRegisterActor clients must be added to the model after servers.");
-        }
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let value = (b'A' + (index % self.server_count) as u8) as char;
+            let value = 'A';
             let msg = Request::PutMap(unique_request_id, self.key.clone(), value.to_string());
-            o.send(Id::from(index % self.server_count), msg);
+            o.send(Id::from(0), msg);
         }
     }
 }
@@ -38,7 +34,6 @@ impl Actor for MapSinglePutter {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ListStartPutter {
     pub request_count: usize,
-    pub server_count: usize,
 }
 
 impl Actor for ListStartPutter {
@@ -52,15 +47,12 @@ impl Actor for ListStartPutter {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         let index: usize = id.into();
-        if index < self.server_count {
-            panic!("MyRegisterActor clients must be added to the model after servers.");
-        }
 
         for i in 0..self.request_count {
             let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let value = (b'A' + (index % self.server_count) as u8) as char;
+            let value = 'A';
             let msg = Request::PutList(unique_request_id, 0, value.to_string());
-            o.send(Id::from(index % self.server_count), msg);
+            o.send(Id::from(0), msg);
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::client;
 use crate::client::Client;
+use crate::client::ClientHandler;
 use crate::doc::LIST_KEY;
 use crate::doc::MAP_KEY;
 use crate::register::GlobalMsg;
@@ -48,67 +49,70 @@ impl Builder {
             }))
         }
 
-        for _ in 0..self.put_clients {
-            match self.object_type {
-                ObjectType::Map => {
-                    model = model.actor(MyRegisterActor::Client(Client::MapSinglePutter(
-                        client::MapSinglePutter {
-                            request_count: 2,
-                            server_count: self.servers,
-                            key: "key".to_owned(),
-                        },
-                    )))
-                }
-                ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Client(Client::ListStartPutter(
-                        client::ListStartPutter {
-                            request_count: 2,
-                            server_count: self.servers,
-                        },
-                    )))
-                }
-            }
-        }
-
-        for _ in 0..self.delete_clients {
-            match self.object_type {
-                ObjectType::Map => {
-                    model = model.actor(MyRegisterActor::Client(Client::MapSingleDeleter(
-                        client::MapSingleDeleter {
-                            request_count: 2,
-                            server_count: self.servers,
-                            key: "key".to_owned(),
-                        },
-                    )))
-                }
-                ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Client(Client::ListDeleter(
-                        client::ListDeleter {
-                            index: 0,
-                            request_count: 2,
-                            server_count: self.servers,
-                        },
-                    )))
+        for i in 0..self.servers {
+            let i = stateright::actor::Id::from(i);
+            for _ in 0..self.put_clients {
+                match self.object_type {
+                    ObjectType::Map => {
+                        model = model.actor(MyRegisterActor::Client(Client {
+                            handler: ClientHandler::MapSinglePutter(client::MapSinglePutter {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                            }),
+                            server: i,
+                        }))
+                    }
+                    ObjectType::List => {
+                        model = model.actor(MyRegisterActor::Client(Client {
+                            handler: ClientHandler::ListStartPutter(client::ListStartPutter {
+                                request_count: 2,
+                            }),
+                            server: i,
+                        }))
+                    }
                 }
             }
-        }
 
-        for _ in 0..self.insert_clients {
-            match self.object_type {
-                ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Client(Client::ListInserter(
-                        client::ListInserter {
-                            index: 0,
-                            request_count: insert_request_count,
-                            server_count: self.servers,
-                        },
-                    )))
+            for _ in 0..self.delete_clients {
+                match self.object_type {
+                    ObjectType::Map => {
+                        model = model.actor(MyRegisterActor::Client(Client {
+                            handler: ClientHandler::MapSingleDeleter(client::MapSingleDeleter {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                            }),
+                            server: i,
+                        }))
+                    }
+                    ObjectType::List => {
+                        model = model.actor(MyRegisterActor::Client(Client {
+                            handler: ClientHandler::ListDeleter(client::ListDeleter {
+                                index: 0,
+                                request_count: 2,
+                            }),
+                            server: i,
+                        }))
+                    }
                 }
-                ObjectType::Map => {
-                    println!(
+            }
+
+            for _ in 0..self.insert_clients {
+                match self.object_type {
+                    ObjectType::List => {
+                        model = model.actor(MyRegisterActor::Client(Client {
+                            handler: ClientHandler::ListInserter(client::ListInserter {
+                                index: 0,
+                                request_count: insert_request_count,
+                            }),
+                            server: i,
+                        }))
+                    }
+                    ObjectType::Map => {
+                        println!(
                         "had {} insert_clients but using a map object, no insert clients will be used", self.insert_clients
                     );
-                    break;
+                        break;
+                    }
                 }
             }
         }
