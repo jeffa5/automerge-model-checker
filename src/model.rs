@@ -20,9 +20,6 @@ pub struct Config {
 }
 
 pub struct Builder {
-    pub put_clients: usize,
-    pub delete_clients: usize,
-    pub insert_clients: usize,
     pub object_type: ObjectType,
     pub servers: usize,
     pub sync_method: SyncMethod,
@@ -33,11 +30,11 @@ impl Builder {
     pub fn into_actor_model(self) -> ActorModel<MyRegisterActor, Config, ()> {
         let insert_request_count = 2;
         let config = Config {
-            max_map_size: std::cmp::min(1, self.put_clients),
+            max_map_size: 1,
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                self.insert_clients * insert_request_count
+                self.servers * insert_request_count
             },
         };
         let mut model = ActorModel::new(config, ());
@@ -51,68 +48,44 @@ impl Builder {
 
         for i in 0..self.servers {
             let i = stateright::actor::Id::from(i);
-            for _ in 0..self.put_clients {
-                match self.object_type {
-                    ObjectType::Map => {
-                        model = model.actor(MyRegisterActor::Client(Client {
-                            handler: ClientHandler::MapSinglePutter(client::MapSinglePutter {
-                                request_count: 2,
-                                key: "key".to_owned(),
-                            }),
-                            server: i,
-                        }))
-                    }
-                    ObjectType::List => {
-                        model = model.actor(MyRegisterActor::Client(Client {
-                            handler: ClientHandler::ListStartPutter(client::ListStartPutter {
-                                request_count: 2,
-                            }),
-                            server: i,
-                        }))
-                    }
+            match self.object_type {
+                ObjectType::Map => {
+                    model = model.actor(MyRegisterActor::Client(Client {
+                        handler: ClientHandler::MapSinglePutter(client::MapSinglePutter {
+                            request_count: 2,
+                            key: "key".to_owned(),
+                        }),
+                        server: i,
+                    }));
+                    model = model.actor(MyRegisterActor::Client(Client {
+                        handler: ClientHandler::MapSingleDeleter(client::MapSingleDeleter {
+                            request_count: 2,
+                            key: "key".to_owned(),
+                        }),
+                        server: i,
+                    }));
                 }
-            }
-
-            for _ in 0..self.delete_clients {
-                match self.object_type {
-                    ObjectType::Map => {
-                        model = model.actor(MyRegisterActor::Client(Client {
-                            handler: ClientHandler::MapSingleDeleter(client::MapSingleDeleter {
-                                request_count: 2,
-                                key: "key".to_owned(),
-                            }),
-                            server: i,
-                        }))
-                    }
-                    ObjectType::List => {
-                        model = model.actor(MyRegisterActor::Client(Client {
-                            handler: ClientHandler::ListDeleter(client::ListDeleter {
-                                index: 0,
-                                request_count: 2,
-                            }),
-                            server: i,
-                        }))
-                    }
-                }
-            }
-
-            for _ in 0..self.insert_clients {
-                match self.object_type {
-                    ObjectType::List => {
-                        model = model.actor(MyRegisterActor::Client(Client {
-                            handler: ClientHandler::ListInserter(client::ListInserter {
-                                index: 0,
-                                request_count: insert_request_count,
-                            }),
-                            server: i,
-                        }))
-                    }
-                    ObjectType::Map => {
-                        println!(
-                        "had {} insert_clients but using a map object, no insert clients will be used", self.insert_clients
-                    );
-                        break;
-                    }
+                ObjectType::List => {
+                    model = model.actor(MyRegisterActor::Client(Client {
+                        handler: ClientHandler::ListStartPutter(client::ListStartPutter {
+                            request_count: 2,
+                        }),
+                        server: i,
+                    }));
+                    model = model.actor(MyRegisterActor::Client(Client {
+                        handler: ClientHandler::ListDeleter(client::ListDeleter {
+                            index: 0,
+                            request_count: 2,
+                        }),
+                        server: i,
+                    }));
+                    model = model.actor(MyRegisterActor::Client(Client {
+                        handler: ClientHandler::ListInserter(client::ListInserter {
+                            index: 0,
+                            request_count: insert_request_count,
+                        }),
+                        server: i,
+                    }));
                 }
             }
         }

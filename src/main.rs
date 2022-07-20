@@ -14,15 +14,6 @@ struct Opts {
     command: SubCmd,
 
     #[clap(long, short, global = true, default_value = "2")]
-    put_clients: usize,
-
-    #[clap(long, short, global = true, default_value = "2")]
-    delete_clients: usize,
-
-    #[clap(long, short, global = true, default_value = "2")]
-    insert_clients: usize,
-
-    #[clap(long, short, global = true, default_value = "2")]
     servers: usize,
 
     #[clap(long, global = true)]
@@ -50,9 +41,6 @@ fn main() {
     let opts = Opts::parse();
 
     let model = model::Builder {
-        put_clients: opts.put_clients,
-        delete_clients: opts.delete_clients,
-        insert_clients: opts.insert_clients,
         servers: opts.servers,
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,
