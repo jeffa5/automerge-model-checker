@@ -39,7 +39,6 @@ pub enum ClientHandler {
 pub enum ClientMsg {
     /// Message originating from clients to servers.
     Request(Request),
-
     /// Message originating from server to client.
     Response(Response),
 }
