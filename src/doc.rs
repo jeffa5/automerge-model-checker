@@ -77,7 +77,7 @@ impl Doc {
         }
     }
 
-    pub fn put(&mut self, key: String, value: String) {
+    pub fn put_map(&mut self, key: String, value: String) {
         let mut tx = self.am.transaction();
         let map = Self::get_map(&mut tx);
         tx.put(map, key, value).unwrap();

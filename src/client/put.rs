@@ -16,15 +16,12 @@ impl Actor for MapSinglePutter {
 
     fn on_start(
         &self,
-        id: stateright::actor::Id,
+        _id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        let index: usize = id.into();
-
-        for i in 0..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
+        for _ in 0..self.request_count {
             let value = 'A';
-            let msg = Request::PutMap(unique_request_id, self.key.clone(), value.to_string());
+            let msg = Request::PutMap(self.key.clone(), value.to_string());
             o.send(Id::from(0), msg);
         }
     }
@@ -43,15 +40,12 @@ impl Actor for ListStartPutter {
 
     fn on_start(
         &self,
-        id: stateright::actor::Id,
+        _id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        let index: usize = id.into();
-
-        for i in 0..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
+        for _ in 0..self.request_count {
             let value = 'A';
-            let msg = Request::PutList(unique_request_id, 0, value.to_string());
+            let msg = Request::PutList(0, value.to_string());
             o.send(Id::from(0), msg);
         }
     }

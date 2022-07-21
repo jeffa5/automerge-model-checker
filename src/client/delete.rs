@@ -16,14 +16,11 @@ impl Actor for MapSingleDeleter {
 
     fn on_start(
         &self,
-        id: stateright::actor::Id,
+        _id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        let index: usize = id.into();
-
-        for i in 0..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = Request::DeleteMap(unique_request_id, self.key.clone());
+        for _ in 0..self.request_count {
+            let msg = Request::DeleteMap(self.key.clone());
             o.send(Id::from(0), msg);
         }
     }
@@ -43,14 +40,11 @@ impl Actor for ListDeleter {
 
     fn on_start(
         &self,
-        id: stateright::actor::Id,
+        _id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        let index: usize = id.into();
-
-        for i in 0..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
-            let msg = Request::DeleteList(unique_request_id, self.index);
+        for _ in 0..self.request_count {
+            let msg = Request::DeleteList(self.index);
             o.send(Id::from(0), msg);
         }
     }

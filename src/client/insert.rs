@@ -16,11 +16,9 @@ impl Actor for ListInserter {
 
     fn on_start(
         &self,
-        id: stateright::actor::Id,
+        _id: stateright::actor::Id,
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
-        let index: usize = id.into();
-
         // ensure we have a list to insert into
         // let unique_request_id = index; // next will be 2 * index
         // o.send(
@@ -31,10 +29,9 @@ impl Actor for ListInserter {
         //         ObjType::List,
         //     )),
         // );
-        for i in 1..self.request_count {
-            let unique_request_id = (i + 1) * index; // next will be 2 * index
+        for _ in 1..self.request_count {
             let value = 'A';
-            let msg = Request::Insert(unique_request_id, self.index, value.to_string());
+            let msg = Request::Insert(self.index, value.to_string());
             o.send(Id::from(0), msg);
         }
     }
