@@ -1,38 +1,20 @@
-use stateright::actor::{Actor, Id};
-
-use super::Request;
+use super::ClientFunction;
 
 /// A client strategy that just inserts at the start of the list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ListInserter {
-    pub index: usize,
-    pub request_count: usize,
-}
+pub struct ListInserter;
 
-impl Actor for ListInserter {
-    type Msg = Request;
+impl ClientFunction for ListInserter {
+    type Input = usize;
 
-    type State = ();
+    type Output = ();
 
-    fn on_start(
+    fn execute(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        // ensure we have a list to insert into
-        // let unique_request_id = index; // next will be 2 * index
-        // o.send(
-        //     server_id,
-        //     MyRegisterMsg::Client(ClientMsg::PutObject(
-        //         unique_request_id,
-        //         LIST_KEY.to_owned(),
-        //         ObjType::List,
-        //     )),
-        // );
-        for _ in 1..self.request_count {
-            let value = 'A';
-            let msg = Request::Insert(self.index, value.to_string());
-            o.send(Id::from(0), msg);
-        }
+        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        input: Self::Input,
+    ) -> Self::Output {
+        let value = 'A';
+        document.to_mut().insert(input, value.to_string());
     }
 }

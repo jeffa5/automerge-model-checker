@@ -1,7 +1,9 @@
-use crate::register::GlobalMsg;
-use automerge::ObjType;
-use stateright::actor::{Actor, Out};
-use stateright::actor::{Command, Id};
+use std::borrow::Cow;
+use std::fmt::Debug;
+use std::hash::Hash;
+
+use crate::doc::Doc;
+use crate::trigger::TriggerMsg;
 
 mod delete;
 mod insert;
@@ -10,156 +12,47 @@ mod put;
 pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;
-pub use put::ListStartPutter;
+pub use put::ListPutter;
 pub use put::MapSinglePutter;
-
-type Key = String;
-type Value = String;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Client {
-    /// the handler for creating messages to the document.
-    pub handler: ClientHandler,
-    /// The server that this client talks to.
-    pub server: Id,
-}
-
-/// A client that generates actions for peers to process.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ClientHandler {
-    MapSinglePutter(put::MapSinglePutter),
-    ListStartPutter(put::ListStartPutter),
-    MapSingleDeleter(delete::MapSingleDeleter),
-    ListDeleter(delete::ListDeleter),
-    ListInserter(insert::ListInserter),
+    pub map_single_putter: put::MapSinglePutter,
+    pub list_start_putter: put::ListPutter,
+    pub map_single_deleter: delete::MapSingleDeleter,
+    pub list_deleter: delete::ListDeleter,
+    pub list_inserter: insert::ListInserter,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ClientMsg {
+pub enum ClientMsg<C: ClientFunction> {
     /// Message originating from clients to servers.
-    Request(Request),
+    Request(C::Input),
     /// Message originating from server to client.
-    Response(Response),
+    Response(C::Output),
 }
 
-/// Messages that clients send to servers.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum Request {
-    /// Indicates that a value should be written.
-    PutMap(Key, Value),
-    /// Indicates that a list element should be overwritten.
-    PutList(usize, Value),
-    /// Indicates that an object should be created.
-    PutObjectMap(Key, ObjType),
-    PutObjectList(usize, ObjType),
-    /// Indicates that a value should be inserted into the list.
-    Insert(usize, Value),
-    InsertObject(usize, ObjType),
-    /// Indicates that a value should be retrieved.
-    GetMap(Key),
-    GetList(usize),
-    /// Indicates that a value should be deleted.
-    DeleteMap(Key),
-    /// Indicates that a list element should be deleted.
-    DeleteList(usize),
+/// A ClientFunction is coupled with a server and implements an atomic action against the document.
+/// This ensures that no sync messages are applied within the body of execution.
+pub trait ClientFunction: Clone + Hash + Eq + Debug {
+    type Input: Clone + Hash + Eq + Debug;
+    type Output: Clone + Hash + Eq + Debug;
+
+    fn execute(&self, document: &mut Cow<Box<Doc>>, input: Self::Input) -> Self::Output;
 }
 
-/// Messages that servers send to clients.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum Response {
-    /// Indicates a successful request with a value response. Analogous to an HTTP 2XX.
-    AckWithValue(Value),
-    /// Indicates a successful request with no value response. Analogous to an HTTP 2XX.
-    Ack,
-}
+impl ClientFunction for Client {
+    type Input = TriggerMsg;
 
-impl Actor for Client {
-    type Msg = GlobalMsg;
+    type Output = ();
 
-    type State = ();
-
-    /// Clients generate all of their actions on start so we only need to initialise them.
-    fn on_start(
-        &self,
-        id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        match &self.handler {
-            ClientHandler::MapSinglePutter(p) => {
-                let mut out = Out::new();
-                p.on_start(id, &mut out);
-                let mut out: Out<Client> = out
-                    .into_iter()
-                    .map(|m| match m {
-                        Command::Send(_, msg) => {
-                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
-                        }
-                        Command::SetTimer(r) => Command::SetTimer(r),
-                        Command::CancelTimer => Command::CancelTimer,
-                    })
-                    .collect();
-                o.append(&mut out);
-            }
-            ClientHandler::ListStartPutter(p) => {
-                let mut out = Out::new();
-                p.on_start(id, &mut out);
-                let mut out: Out<Client> = out
-                    .into_iter()
-                    .map(|m| match m {
-                        Command::Send(_, msg) => {
-                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
-                        }
-                        Command::SetTimer(r) => Command::SetTimer(r),
-                        Command::CancelTimer => Command::CancelTimer,
-                    })
-                    .collect();
-                o.append(&mut out);
-            }
-            ClientHandler::MapSingleDeleter(d) => {
-                let mut out = Out::new();
-                d.on_start(id, &mut out);
-                let mut out: Out<Client> = out
-                    .into_iter()
-                    .map(|m| match m {
-                        Command::Send(_, msg) => {
-                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
-                        }
-                        Command::SetTimer(r) => Command::SetTimer(r),
-                        Command::CancelTimer => Command::CancelTimer,
-                    })
-                    .collect();
-                o.append(&mut out);
-            }
-            ClientHandler::ListDeleter(d) => {
-                let mut out = Out::new();
-                d.on_start(id, &mut out);
-                let mut out: Out<Client> = out
-                    .into_iter()
-                    .map(|m| match m {
-                        Command::Send(_, msg) => {
-                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
-                        }
-                        Command::SetTimer(r) => Command::SetTimer(r),
-                        Command::CancelTimer => Command::CancelTimer,
-                    })
-                    .collect();
-                o.append(&mut out);
-            }
-            ClientHandler::ListInserter(a) => {
-                let mut out = Out::new();
-                a.on_start(id, &mut out);
-                let mut out: Out<Client> = out
-                    .into_iter()
-                    .map(|m| match m {
-                        Command::Send(_, msg) => {
-                            Command::Send(self.server, GlobalMsg::External(ClientMsg::Request(msg)))
-                        }
-                        Command::SetTimer(r) => Command::SetTimer(r),
-                        Command::CancelTimer => Command::CancelTimer,
-                    })
-                    .collect();
-                o.append(&mut out);
-            }
+    fn execute(&self, document: &mut Cow<Box<Doc>>, input: Self::Input) -> Self::Output {
+        match input {
+            TriggerMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
+            TriggerMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),
+            TriggerMsg::ListPut { index } => self.list_start_putter.execute(document, index),
+            TriggerMsg::ListDelete { index } => self.list_deleter.execute(document, index),
+            TriggerMsg::ListInsert { index } => self.list_inserter.execute(document, index),
         }
     }
 }

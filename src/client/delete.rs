@@ -1,51 +1,37 @@
-use stateright::actor::{Actor, Id};
-
-use super::Request;
+use super::ClientFunction;
 
 /// A client strategy that just deletes a single key in a map.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct MapSingleDeleter {
-    pub key: String,
-    pub request_count: usize,
-}
+pub struct MapSingleDeleter;
 
-impl Actor for MapSingleDeleter {
-    type Msg = Request;
+impl ClientFunction for MapSingleDeleter {
+    type Input = String;
 
-    type State = ();
+    type Output = ();
 
-    fn on_start(
+    fn execute(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        for _ in 0..self.request_count {
-            let msg = Request::DeleteMap(self.key.clone());
-            o.send(Id::from(0), msg);
-        }
+        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        input: Self::Input,
+    ) -> Self::Output {
+        document.to_mut().delete(&input);
     }
 }
 
 /// A client strategy that just deletes the first element in a list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ListDeleter {
-    pub index: usize,
-    pub request_count: usize,
-}
+pub struct ListDeleter;
 
-impl Actor for ListDeleter {
-    type Msg = Request;
+impl ClientFunction for ListDeleter {
+    type Input = usize;
 
-    type State = ();
+    type Output = ();
 
-    fn on_start(
+    fn execute(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        for _ in 0..self.request_count {
-            let msg = Request::DeleteList(self.index);
-            o.send(Id::from(0), msg);
-        }
+        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        input: Self::Input,
+    ) -> Self::Output {
+        document.to_mut().delete_list(input);
     }
 }

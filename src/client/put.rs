@@ -1,52 +1,39 @@
-use stateright::actor::{Actor, Id};
-
-use super::Request;
+use super::ClientFunction;
 
 /// A client strategy that just puts at a single key into a map.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct MapSinglePutter {
-    pub key: String,
-    pub request_count: usize,
-}
+pub struct MapSinglePutter;
 
-impl Actor for MapSinglePutter {
-    type Msg = Request;
+impl ClientFunction for MapSinglePutter {
+    type Input = String;
 
-    type State = ();
+    type Output = ();
 
-    fn on_start(
+    fn execute(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        for _ in 0..self.request_count {
-            let value = 'A';
-            let msg = Request::PutMap(self.key.clone(), value.to_string());
-            o.send(Id::from(0), msg);
-        }
+        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        input: Self::Input,
+    ) -> Self::Output {
+        let value = 'A';
+        document.to_mut().put_map(input, value.to_string());
     }
 }
 
 /// A client strategy that just puts at the start of a list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ListStartPutter {
-    pub request_count: usize,
-}
+pub struct ListPutter;
 
-impl Actor for ListStartPutter {
-    type Msg = Request;
+impl ClientFunction for ListPutter {
+    type Input = usize;
 
-    type State = ();
+    type Output = ();
 
-    fn on_start(
+    fn execute(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
-        for _ in 0..self.request_count {
-            let value = 'A';
-            let msg = Request::PutList(0, value.to_string());
-            o.send(Id::from(0), msg);
-        }
+        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        input: Self::Input,
+    ) -> Self::Output {
+        let value = 'A';
+        document.to_mut().put_list(input, value.to_string());
     }
 }

@@ -95,7 +95,10 @@ impl Doc {
     pub fn put_list(&mut self, index: usize, value: String) {
         let mut tx = self.am.transaction();
         let list = Self::get_list_obj(&mut tx);
-        tx.put(list, index, value).unwrap();
+        if tx.put(list, index, value).is_err() {
+            self.error = true;
+            return;
+        };
         tx.commit();
     }
 
@@ -147,7 +150,10 @@ impl Doc {
     pub fn delete_list(&mut self, index: usize) {
         let mut tx = self.am.transaction();
         let list = Self::get_list_obj(&mut tx);
-        tx.delete(list, index).unwrap();
+        if tx.delete(list, index).is_err() {
+            self.error = true;
+            return;
+        };
         tx.commit();
     }
 

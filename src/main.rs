@@ -1,3 +1,5 @@
+use amc::client;
+use amc::client::Client;
 use amc::model;
 use amc::register::MyRegisterActor;
 use amc::report::Reporter;
@@ -45,6 +47,13 @@ fn main() {
         sync_method: opts.sync_method,
         message_acks: opts.message_acks,
         object_type: opts.object_type,
+        client_function: Client {
+            map_single_putter: client::MapSinglePutter,
+            list_start_putter: client::ListPutter,
+            map_single_deleter: client::MapSingleDeleter,
+            list_deleter: client::ListDeleter,
+            list_inserter: client::ListInserter,
+        },
     }
     .into_actor_model()
     .checker()
