@@ -61,7 +61,15 @@ impl Doc {
             .map(|(v, _)| v.into_string().unwrap())
     }
 
-    fn get_map(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+    pub fn get_list(&self, index: usize) -> Option<String> {
+        let (_, map) = self.am.get(ROOT, LIST_KEY).ok().flatten()?;
+        self.am
+            .get(map, index)
+            .unwrap()
+            .map(|(v, _)| v.into_string().unwrap())
+    }
+
+    fn get_map_obj(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
         if let Some((_, id)) = tx.get(ROOT, MAP_KEY).ok().flatten() {
             id
         } else {
@@ -69,7 +77,7 @@ impl Doc {
         }
     }
 
-    fn get_list(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+    fn get_list_obj(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
         if let Some((_, id)) = tx.get(ROOT, LIST_KEY).ok().flatten() {
             id
         } else {
@@ -79,14 +87,14 @@ impl Doc {
 
     pub fn put_map(&mut self, key: String, value: String) {
         let mut tx = self.am.transaction();
-        let map = Self::get_map(&mut tx);
+        let map = Self::get_map_obj(&mut tx);
         tx.put(map, key, value).unwrap();
         tx.commit();
     }
 
     pub fn put_list(&mut self, index: usize, value: String) {
         let mut tx = self.am.transaction();
-        let list = Self::get_list(&mut tx);
+        let list = Self::get_list_obj(&mut tx);
         tx.put(list, index, value).unwrap();
         tx.commit();
     }
@@ -94,6 +102,12 @@ impl Doc {
     pub fn put_object(&mut self, key: String, value: ObjType) {
         let mut tx = self.am.transaction();
         tx.put_object(ROOT, key, value).unwrap();
+        tx.commit();
+    }
+
+    pub fn put_object_list(&mut self, index: usize, value: ObjType) {
+        let mut tx = self.am.transaction();
+        tx.put_object(ROOT, index, value).unwrap();
         tx.commit();
     }
 
@@ -110,16 +124,29 @@ impl Doc {
         tx.commit();
     }
 
+    pub fn insert_object(&mut self, index: usize, value: ObjType) {
+        let mut tx = self.am.transaction();
+        let list = match tx.get(ROOT, LIST_KEY) {
+            Ok(Some((Value::Object(ObjType::List), list))) => list,
+            _ => {
+                self.error = true;
+                return;
+            }
+        };
+        tx.insert_object(list, index, value).unwrap();
+        tx.commit();
+    }
+
     pub fn delete(&mut self, key: &str) {
         let mut tx = self.am.transaction();
-        let map = Self::get_map(&mut tx);
+        let map = Self::get_map_obj(&mut tx);
         tx.delete(map, key).unwrap();
         tx.commit();
     }
 
     pub fn delete_list(&mut self, index: usize) {
         let mut tx = self.am.transaction();
-        let list = Self::get_list(&mut tx);
+        let list = Self::get_list_obj(&mut tx);
         tx.delete(list, index).unwrap();
         tx.commit();
     }

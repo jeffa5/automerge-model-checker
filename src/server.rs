@@ -83,9 +83,20 @@ impl Actor for Server {
 
                 self.sync(state, o);
             }
-            GlobalMsg::External(ClientMsg::Request(Request::PutObject(key, obj_type))) => {
+            GlobalMsg::External(ClientMsg::Request(Request::PutObjectMap(key, obj_type))) => {
                 // apply the op locally
                 state.to_mut().put_object(key, obj_type);
+
+                if self.message_acks {
+                    // respond to the query (not totally necessary for this)
+                    o.send(src, GlobalMsg::External(ClientMsg::Response(Response::Ack)));
+                }
+
+                self.sync(state, o);
+            }
+            GlobalMsg::External(ClientMsg::Request(Request::PutObjectList(index, obj_type))) => {
+                // apply the op locally
+                state.to_mut().put_object_list(index, obj_type);
 
                 if self.message_acks {
                     // respond to the query (not totally necessary for this)
@@ -105,8 +116,30 @@ impl Actor for Server {
 
                 self.sync(state, o);
             }
-            GlobalMsg::External(ClientMsg::Request(Request::Get(key))) => {
+            GlobalMsg::External(ClientMsg::Request(Request::InsertObject(index, objtype))) => {
+                // apply the op locally
+                state.to_mut().insert_object(index, objtype);
+
+                if self.message_acks {
+                    // respond to the query (not totally necessary for this)
+                    o.send(src, GlobalMsg::External(ClientMsg::Response(Response::Ack)));
+                }
+
+                self.sync(state, o);
+            }
+            GlobalMsg::External(ClientMsg::Request(Request::GetMap(key))) => {
                 if let Some(value) = state.get(&key) {
+                    if self.message_acks {
+                        // respond to the query (not totally necessary for this)
+                        o.send(
+                            src,
+                            GlobalMsg::External(ClientMsg::Response(Response::AckWithValue(value))),
+                        )
+                    }
+                }
+            }
+            GlobalMsg::External(ClientMsg::Request(Request::GetList(index))) => {
+                if let Some(value) = state.get_list(index) {
                     if self.message_acks {
                         // respond to the query (not totally necessary for this)
                         o.send(

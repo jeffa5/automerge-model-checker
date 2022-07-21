@@ -50,11 +50,14 @@ pub enum Request {
     /// Indicates that a list element should be overwritten.
     PutList(usize, Value),
     /// Indicates that an object should be created.
-    PutObject(Key, ObjType),
+    PutObjectMap(Key, ObjType),
+    PutObjectList(usize, ObjType),
     /// Indicates that a value should be inserted into the list.
     Insert(usize, Value),
+    InsertObject(usize, ObjType),
     /// Indicates that a value should be retrieved.
-    Get(Key),
+    GetMap(Key),
+    GetList(usize),
     /// Indicates that a value should be deleted.
     DeleteMap(Key),
     /// Indicates that a list element should be deleted.
