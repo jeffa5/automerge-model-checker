@@ -2,13 +2,14 @@ use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-use crate::doc::Doc;
+use crate::app::App;
 use crate::trigger::TriggerMsg;
 
 mod delete;
 mod insert;
 mod put;
 
+use amc_core::client::ClientFunction;
 pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;
@@ -24,29 +25,14 @@ pub struct Client {
     pub list_inserter: insert::ListInserter,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ClientMsg<C: ClientFunction> {
-    /// Message originating from clients to servers.
-    Request(C::Input),
-    /// Message originating from server to client.
-    Response(C::Output),
-}
-
-/// A ClientFunction is coupled with a server and implements an atomic action against the document.
-/// This ensures that no sync messages are applied within the body of execution.
-pub trait ClientFunction: Clone + Hash + Eq + Debug {
-    type Input: Clone + Hash + Eq + Debug;
-    type Output: Clone + Hash + Eq + Debug;
-
-    fn execute(&self, document: &mut Cow<Box<Doc>>, input: Self::Input) -> Self::Output;
-}
-
 impl ClientFunction for Client {
     type Input = TriggerMsg;
 
     type Output = ();
 
-    fn execute(&self, document: &mut Cow<Box<Doc>>, input: Self::Input) -> Self::Output {
+    type Application = App;
+
+    fn execute(&self, document: &mut Cow<Self::Application>, input: Self::Input) -> Self::Output {
         match input {
             TriggerMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
             TriggerMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),

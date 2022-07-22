@@ -1,17 +1,22 @@
+use crate::app::LIST_KEY;
+use crate::app::MAP_KEY;
 use crate::client::Client;
-use crate::doc::LIST_KEY;
-use crate::doc::MAP_KEY;
-use crate::register::GlobalMsg;
-use crate::server::Server;
-use crate::server::ServerMsg;
 use crate::trigger::Trigger;
-use crate::{
-    register::MyRegisterActor, register::MyRegisterActorState, server::SyncMethod, ObjectType,
-};
+use crate::ObjectType;
+use amc_core::app::Application;
+use amc_core::msg::GlobalMsg;
+use amc_core::register::MyRegisterActor;
+use amc_core::register::MyRegisterActorState;
+use amc_core::server::Server;
+use amc_core::server::ServerMsg;
+use amc_core::server::SyncMethod;
 use automerge::Automerge;
 use stateright::actor::{model_peers, ActorModel};
 use stateright::actor::{ActorModelState, Network};
 use std::sync::Arc;
+
+pub type State = MyRegisterActorState<Trigger, Client>;
+pub type Actor = MyRegisterActor<Trigger, Client>;
 
 pub struct Config {
     pub max_map_size: usize,
@@ -27,7 +32,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    pub fn into_actor_model(self) -> ActorModel<MyRegisterActor, Config, ()> {
+    pub fn into_actor_model(self) -> ActorModel<MyRegisterActor<Trigger, Client>, Config, ()> {
         let insert_request_count = 2;
         let config = Config {
             max_map_size: 1,
@@ -114,7 +119,7 @@ impl Builder {
                 |_, state| {
                     state.actor_states.iter().all(|s| {
                         if let MyRegisterActorState::Server(s) = &**s {
-                            !s.has_error()
+                            !s.document().has_error()
                         } else {
                             true
                         }
@@ -165,7 +170,7 @@ impl Builder {
     }
 }
 
-fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
+fn state_has_max_map_size(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) == max
@@ -174,7 +179,7 @@ fn state_has_max_map_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bo
     }
 }
 
-fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
+fn max_map_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(MAP_KEY) <= max
@@ -183,7 +188,7 @@ fn max_map_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> b
     }
 }
 
-fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
+fn state_has_max_list_size(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) == max
@@ -192,7 +197,7 @@ fn state_has_max_list_size(state: &Arc<MyRegisterActorState>, cfg: &Config) -> b
     }
 }
 
-fn max_list_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> bool {
+fn max_list_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
     if let MyRegisterActorState::Server(s) = &**state {
         s.length(LIST_KEY) <= max
@@ -201,7 +206,7 @@ fn max_list_size_is_the_max(state: &Arc<MyRegisterActorState>, cfg: &Config) -> 
     }
 }
 
-fn all_same_state(actors: &[Arc<MyRegisterActorState>]) -> bool {
+fn all_same_state(actors: &[Arc<State>]) -> bool {
     actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
         (MyRegisterActorState::Trigger(_), MyRegisterActorState::Trigger(_)) => true,
         (MyRegisterActorState::Trigger(_), MyRegisterActorState::Server(_)) => true,
@@ -212,7 +217,7 @@ fn all_same_state(actors: &[Arc<MyRegisterActorState>]) -> bool {
     })
 }
 
-fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
+fn syncing_done(state: &ActorModelState<Actor>) -> bool {
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
             GlobalMsg::Internal(ServerMsg::SyncMessageRaw { .. }) => {
@@ -230,22 +235,22 @@ fn syncing_done(state: &ActorModelState<MyRegisterActor>) -> bool {
     true
 }
 
-fn syncing_done_and_in_sync(state: &ActorModelState<MyRegisterActor>) -> bool {
+fn syncing_done_and_in_sync(state: &ActorModelState<Actor>) -> bool {
     // first check that the network has no sync messages in-flight.
     // next, check that all actors are in the same states (using sub-property checker)
     !syncing_done(state) || all_same_state(&state.actor_states)
 }
 
-fn save_load_same(state: &ActorModelState<MyRegisterActor>) -> bool {
+fn save_load_same(state: &ActorModelState<Actor>) -> bool {
     for actor in &state.actor_states {
         match &**actor {
             MyRegisterActorState::Trigger(_) => {
                 // clients don't have state to save and load
             }
             MyRegisterActorState::Server(s) => {
-                let bytes = s.clone().save();
+                let bytes = s.clone().document_mut().save();
                 let doc = Automerge::load(&bytes).unwrap();
-                if doc.get_heads() != s.heads() {
+                if doc.get_heads() != s.document().heads() {
                     return false;
                 }
             }

@@ -1,17 +1,15 @@
 use stateright::actor::{Actor, Id};
 
-use crate::{
-    client::{Client, ClientMsg},
-    register::GlobalMsg,
-};
+use crate::client::Client;
+use amc_core::client::ClientMsg;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Trigger {
     pub func: TriggerState,
     pub server: Id,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TriggerState {
     MapSinglePut { request_count: usize, key: String },
     MapSingleDelete { request_count: usize, key: String },
@@ -29,8 +27,10 @@ pub enum TriggerMsg {
     ListInsert { index: usize },
 }
 
+impl amc_core::trigger::Trigger<Client> for Trigger {}
+
 impl Actor for Trigger {
-    type Msg = GlobalMsg<Client>;
+    type Msg = ClientMsg<Client>;
 
     type State = ();
 
@@ -44,9 +44,7 @@ impl Actor for Trigger {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        GlobalMsg::External(ClientMsg::Request(TriggerMsg::MapSinglePut {
-                            key: key.clone(),
-                        })),
+                        ClientMsg::Request(TriggerMsg::MapSinglePut { key: key.clone() }),
                     );
                 }
             }
@@ -54,9 +52,7 @@ impl Actor for Trigger {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        GlobalMsg::External(ClientMsg::Request(TriggerMsg::MapSingleDelete {
-                            key: key.clone(),
-                        })),
+                        ClientMsg::Request(TriggerMsg::MapSingleDelete { key: key.clone() }),
                     );
                 }
             }
@@ -67,9 +63,7 @@ impl Actor for Trigger {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        GlobalMsg::External(ClientMsg::Request(TriggerMsg::ListPut {
-                            index: *index,
-                        })),
+                        ClientMsg::Request(TriggerMsg::ListPut { index: *index }),
                     );
                 }
             }
@@ -80,9 +74,7 @@ impl Actor for Trigger {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        GlobalMsg::External(ClientMsg::Request(TriggerMsg::ListDelete {
-                            index: *index,
-                        })),
+                        ClientMsg::Request(TriggerMsg::ListDelete { index: *index }),
                     );
                 }
             }
@@ -93,9 +85,7 @@ impl Actor for Trigger {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        GlobalMsg::External(ClientMsg::Request(TriggerMsg::ListInsert {
-                            index: *index,
-                        })),
+                        ClientMsg::Request(TriggerMsg::ListInsert { index: *index }),
                     );
                 }
             }

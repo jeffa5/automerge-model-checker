@@ -1,38 +1,24 @@
 use std::borrow::Cow;
 
-use stateright::actor::{Actor, Id, Out};
-
-use crate::{
-    client::{Client, ClientFunction, ClientMsg},
-    server::{Server, ServerMsg},
-    trigger::Trigger,
-};
-
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum GlobalMsg<C: ClientFunction> {
-    /// A message specific to the register system's internal protocol.
-    Internal(ServerMsg),
-
-    /// A message between clients and servers.
-    External(ClientMsg<C>),
-}
+use crate::{client::ClientFunction, msg::GlobalMsg, server::Server, trigger::Trigger};
+use stateright::actor::{Actor, Command, Id, Out};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum MyRegisterActor {
-    Trigger(Trigger),
-    Server(Server<Client>),
+pub enum MyRegisterActor<T, C> {
+    Trigger(T),
+    Server(Server<C>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum MyRegisterActorState {
-    Trigger(<Trigger as Actor>::State),
-    Server(<Server<Client> as Actor>::State),
+#[derive(Clone, Debug, PartialEq, Hash)]
+pub enum MyRegisterActorState<T: Trigger<C>, C: ClientFunction> {
+    Trigger(<T as Actor>::State),
+    Server(<Server<C> as Actor>::State),
 }
 
-impl Actor for MyRegisterActor {
-    type Msg = GlobalMsg<Client>;
+impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
+    type Msg = GlobalMsg<C>;
 
-    type State = MyRegisterActorState;
+    type State = MyRegisterActorState<T, C>;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
@@ -40,7 +26,15 @@ impl Actor for MyRegisterActor {
                 let mut trigger_out = Out::new();
                 let state =
                     MyRegisterActorState::Trigger(trigger_actor.on_start(id, &mut trigger_out));
-                o.append(&mut trigger_out);
+                let mut new_out: Out<Self> = trigger_out
+                    .into_iter()
+                    .map(|o| match o {
+                        Command::CancelTimer => Command::CancelTimer,
+                        Command::SetTimer(t) => Command::SetTimer(t),
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                    })
+                    .collect();
+                o.append(&mut new_out);
                 state
             }
             MyRegisterActor::Server(server_actor) => {
@@ -64,17 +58,27 @@ impl Actor for MyRegisterActor {
         use MyRegisterActor as A;
         use MyRegisterActorState as S;
 
-        match (self, &**state) {
-            (A::Trigger(client_actor), S::Trigger(client_state)) => {
+        match (self, &**state, msg) {
+            (A::Trigger(trigger_actor), S::Trigger(client_state), GlobalMsg::External(tmsg)) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
-                client_actor.on_msg(id, &mut client_state, src, msg, &mut client_out);
+                trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);
                 if let Cow::Owned(client_state) = client_state {
                     *state = Cow::Owned(MyRegisterActorState::Trigger(client_state))
                 }
-                o.append(&mut client_out);
+
+                let mut new_out: Out<Self> = client_out
+                    .into_iter()
+                    .map(|o| match o {
+                        Command::CancelTimer => Command::CancelTimer,
+                        Command::SetTimer(t) => Command::SetTimer(t),
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                    })
+                    .collect();
+
+                o.append(&mut new_out);
             }
-            (A::Server(server_actor), S::Server(server_state)) => {
+            (A::Server(server_actor), S::Server(server_state), msg) => {
                 let mut server_state = Cow::Borrowed(server_state);
                 let mut server_out = Out::new();
                 server_actor.on_msg(id, &mut server_state, src, msg, &mut server_out);
@@ -83,8 +87,9 @@ impl Actor for MyRegisterActor {
                 }
                 o.append(&mut server_out);
             }
-            (A::Server(_), S::Trigger(_)) => {}
-            (A::Trigger(_), S::Server(_)) => {}
+            (A::Trigger(_), S::Trigger(_), GlobalMsg::Internal(_)) => {}
+            (A::Server(_), S::Trigger(_), _) => {}
+            (A::Trigger(_), S::Server(_), _) => {}
         }
     }
 

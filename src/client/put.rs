@@ -1,3 +1,5 @@
+use crate::app::App;
+
 use super::ClientFunction;
 
 /// A client strategy that just puts at a single key into a map.
@@ -9,9 +11,11 @@ impl ClientFunction for MapSinglePutter {
 
     type Output = ();
 
+    type Application = App;
+
     fn execute(
         &self,
-        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        document: &mut std::borrow::Cow<Self::Application>,
         input: Self::Input,
     ) -> Self::Output {
         let value = 'A';
@@ -27,10 +31,11 @@ impl ClientFunction for ListPutter {
     type Input = usize;
 
     type Output = ();
+    type Application = App;
 
     fn execute(
         &self,
-        document: &mut std::borrow::Cow<Box<crate::doc::Doc>>,
+        document: &mut std::borrow::Cow<Self::Application>,
         input: Self::Input,
     ) -> Self::Output {
         let value = 'A';

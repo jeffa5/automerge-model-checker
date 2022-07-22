@@ -1,9 +1,7 @@
 use amc::client;
 use amc::client::Client;
 use amc::model;
-use amc::register::MyRegisterActor;
 use amc::report::Reporter;
-use amc::server::SyncMethod;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::Checker;
@@ -32,6 +30,14 @@ struct Opts {
     port: u16,
 }
 
+/// Methods for syncing.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
+pub enum SyncMethod {
+    Changes,
+    Messages,
+    SaveLoad,
+}
+
 #[derive(clap::Subcommand, Debug)]
 enum SubCmd {
     Serve,
@@ -44,7 +50,11 @@ fn main() {
 
     let model = model::Builder {
         servers: opts.servers,
-        sync_method: opts.sync_method,
+        sync_method: match opts.sync_method {
+            SyncMethod::SaveLoad => amc_core::server::SyncMethod::SaveLoad,
+            SyncMethod::Changes => amc_core::server::SyncMethod::Changes,
+            SyncMethod::Messages => amc_core::server::SyncMethod::Messages,
+        },
         message_acks: opts.message_acks,
         object_type: opts.object_type,
         client_function: Client {
@@ -61,7 +71,7 @@ fn main() {
     run(opts, model)
 }
 
-fn run(opts: Opts, model: CheckerBuilder<ActorModel<MyRegisterActor, model::Config>>) {
+fn run(opts: Opts, model: CheckerBuilder<ActorModel<crate::model::Actor, model::Config>>) {
     println!("Running with config {:?}", opts);
     match opts.command {
         SubCmd::Serve => {
