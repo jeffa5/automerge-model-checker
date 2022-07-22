@@ -4,9 +4,9 @@ use crate::client::Client;
 use crate::trigger::Trigger;
 use crate::ObjectType;
 use amc_core::Application;
+use amc_core::GlobalActor;
+use amc_core::GlobalActorState;
 use amc_core::GlobalMsg;
-use amc_core::MyRegisterActor;
-use amc_core::MyRegisterActorState;
 use amc_core::Server;
 use amc_core::ServerMsg;
 use amc_core::SyncMethod;
@@ -15,8 +15,8 @@ use stateright::actor::{model_peers, ActorModel};
 use stateright::actor::{ActorModelState, Network};
 use std::sync::Arc;
 
-pub type State = MyRegisterActorState<Trigger, Client>;
-pub type Actor = MyRegisterActor<Trigger, Client>;
+pub type State = GlobalActorState<Trigger, Client>;
+pub type Actor = GlobalActor<Trigger, Client>;
 
 pub struct Config {
     pub max_map_size: usize,
@@ -32,7 +32,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    pub fn into_actor_model(self) -> ActorModel<MyRegisterActor<Trigger, Client>, Config, ()> {
+    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, Client>, Config, ()> {
         let insert_request_count = 2;
         let config = Config {
             max_map_size: 1,
@@ -44,7 +44,7 @@ impl Builder {
         };
         let mut model = ActorModel::new(config, ());
         for i in 0..self.servers {
-            model = model.actor(MyRegisterActor::Server(Server {
+            model = model.actor(GlobalActor::Server(Server {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 message_acks: self.message_acks,
@@ -56,14 +56,14 @@ impl Builder {
             let i = stateright::actor::Id::from(i);
             match self.object_type {
                 ObjectType::Map => {
-                    model = model.actor(MyRegisterActor::Trigger(Trigger {
+                    model = model.actor(GlobalActor::Trigger(Trigger {
                         func: crate::trigger::TriggerState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
                         server: i,
                     }));
-                    model = model.actor(MyRegisterActor::Trigger(Trigger {
+                    model = model.actor(GlobalActor::Trigger(Trigger {
                         func: crate::trigger::TriggerState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
@@ -72,21 +72,21 @@ impl Builder {
                     }));
                 }
                 ObjectType::List => {
-                    model = model.actor(MyRegisterActor::Trigger(Trigger {
+                    model = model.actor(GlobalActor::Trigger(Trigger {
                         func: crate::trigger::TriggerState::ListStartPut {
                             request_count: 2,
                             index: 0,
                         },
                         server: i,
                     }));
-                    model = model.actor(MyRegisterActor::Trigger(Trigger {
+                    model = model.actor(GlobalActor::Trigger(Trigger {
                         func: crate::trigger::TriggerState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
                         server: i,
                     }));
-                    model = model.actor(MyRegisterActor::Trigger(Trigger {
+                    model = model.actor(GlobalActor::Trigger(Trigger {
                         func: crate::trigger::TriggerState::ListInsert {
                             request_count: insert_request_count,
                             index: 0,
@@ -118,7 +118,7 @@ impl Builder {
                 "no errors set (from panics)",
                 |_, state| {
                     state.actor_states.iter().all(|s| {
-                        if let MyRegisterActorState::Server(s) = &**s {
+                        if let GlobalActorState::Server(s) = &**s {
                             !s.document().has_error()
                         } else {
                             true
@@ -172,7 +172,7 @@ impl Builder {
 
 fn state_has_max_map_size(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
-    if let MyRegisterActorState::Server(s) = &**state {
+    if let GlobalActorState::Server(s) = &**state {
         s.length(MAP_KEY) == max
     } else {
         false
@@ -181,7 +181,7 @@ fn state_has_max_map_size(state: &Arc<State>, cfg: &Config) -> bool {
 
 fn max_map_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_map_size;
-    if let MyRegisterActorState::Server(s) = &**state {
+    if let GlobalActorState::Server(s) = &**state {
         s.length(MAP_KEY) <= max
     } else {
         true
@@ -190,7 +190,7 @@ fn max_map_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
 
 fn state_has_max_list_size(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
-    if let MyRegisterActorState::Server(s) = &**state {
+    if let GlobalActorState::Server(s) = &**state {
         s.length(LIST_KEY) == max
     } else {
         false
@@ -199,7 +199,7 @@ fn state_has_max_list_size(state: &Arc<State>, cfg: &Config) -> bool {
 
 fn max_list_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
     let max = cfg.max_list_size;
-    if let MyRegisterActorState::Server(s) = &**state {
+    if let GlobalActorState::Server(s) = &**state {
         s.length(LIST_KEY) <= max
     } else {
         true
@@ -208,12 +208,10 @@ fn max_list_size_is_the_max(state: &Arc<State>, cfg: &Config) -> bool {
 
 fn all_same_state(actors: &[Arc<State>]) -> bool {
     actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
-        (MyRegisterActorState::Trigger(_), MyRegisterActorState::Trigger(_)) => true,
-        (MyRegisterActorState::Trigger(_), MyRegisterActorState::Server(_)) => true,
-        (MyRegisterActorState::Server(_), MyRegisterActorState::Trigger(_)) => true,
-        (MyRegisterActorState::Server(a), MyRegisterActorState::Server(b)) => {
-            a.values() == b.values()
-        }
+        (GlobalActorState::Trigger(_), GlobalActorState::Trigger(_)) => true,
+        (GlobalActorState::Trigger(_), GlobalActorState::Server(_)) => true,
+        (GlobalActorState::Server(_), GlobalActorState::Trigger(_)) => true,
+        (GlobalActorState::Server(a), GlobalActorState::Server(b)) => a.values() == b.values(),
     })
 }
 
@@ -244,10 +242,10 @@ fn syncing_done_and_in_sync(state: &ActorModelState<Actor>) -> bool {
 fn save_load_same(state: &ActorModelState<Actor>) -> bool {
     for actor in &state.actor_states {
         match &**actor {
-            MyRegisterActorState::Trigger(_) => {
+            GlobalActorState::Trigger(_) => {
                 // clients don't have state to save and load
             }
-            MyRegisterActorState::Server(s) => {
+            GlobalActorState::Server(s) => {
                 let bytes = s.clone().document_mut().save();
                 let doc = Automerge::load(&bytes).unwrap();
                 if doc.get_heads() != s.document().heads() {

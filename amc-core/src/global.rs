@@ -1,31 +1,40 @@
 use std::borrow::Cow;
 
-use crate::{client::ClientFunction, msg::GlobalMsg, server::Server, trigger::Trigger};
+use crate::{ClientFunction, ClientMsg, ServerMsg};
+use crate::{Server, Trigger};
 use stateright::actor::{Actor, Command, Id, Out};
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub enum GlobalMsg<C: ClientFunction> {
+    /// A message specific to the register system's internal protocol.
+    Internal(ServerMsg),
+
+    /// A message between clients and servers.
+    External(ClientMsg<C>),
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum MyRegisterActor<T, C> {
+pub enum GlobalActor<T, C> {
     Trigger(T),
     Server(Server<C>),
 }
 
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub enum MyRegisterActorState<T: Trigger<C>, C: ClientFunction> {
+pub enum GlobalActorState<T: Trigger<C>, C: ClientFunction> {
     Trigger(<T as Actor>::State),
     Server(<Server<C> as Actor>::State),
 }
 
-impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
+impl<T: Trigger<C>, C: ClientFunction> Actor for GlobalActor<T, C> {
     type Msg = GlobalMsg<C>;
 
-    type State = MyRegisterActorState<T, C>;
+    type State = GlobalActorState<T, C>;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
-            MyRegisterActor::Trigger(trigger_actor) => {
+            GlobalActor::Trigger(trigger_actor) => {
                 let mut trigger_out = Out::new();
-                let state =
-                    MyRegisterActorState::Trigger(trigger_actor.on_start(id, &mut trigger_out));
+                let state = GlobalActorState::Trigger(trigger_actor.on_start(id, &mut trigger_out));
                 let mut new_out: Out<Self> = trigger_out
                     .into_iter()
                     .map(|o| match o {
@@ -37,10 +46,9 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
                 o.append(&mut new_out);
                 state
             }
-            MyRegisterActor::Server(server_actor) => {
+            GlobalActor::Server(server_actor) => {
                 let mut server_out = Out::new();
-                let state =
-                    MyRegisterActorState::Server(server_actor.on_start(id, &mut server_out));
+                let state = GlobalActorState::Server(server_actor.on_start(id, &mut server_out));
                 o.append(&mut server_out);
                 state
             }
@@ -55,8 +63,8 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
         msg: Self::Msg,
         o: &mut Out<Self>,
     ) {
-        use MyRegisterActor as A;
-        use MyRegisterActorState as S;
+        use GlobalActor as A;
+        use GlobalActorState as S;
 
         match (self, &**state, msg) {
             (A::Trigger(trigger_actor), S::Trigger(client_state), GlobalMsg::External(tmsg)) => {
@@ -64,7 +72,7 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
                 let mut client_out = Out::new();
                 trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);
                 if let Cow::Owned(client_state) = client_state {
-                    *state = Cow::Owned(MyRegisterActorState::Trigger(client_state))
+                    *state = Cow::Owned(GlobalActorState::Trigger(client_state))
                 }
 
                 let mut new_out: Out<Self> = client_out
@@ -83,7 +91,7 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
                 let mut server_out = Out::new();
                 server_actor.on_msg(id, &mut server_state, src, msg, &mut server_out);
                 if let Cow::Owned(server_state) = server_state {
-                    *state = Cow::Owned(MyRegisterActorState::Server(server_state))
+                    *state = Cow::Owned(GlobalActorState::Server(server_state))
                 }
                 o.append(&mut server_out);
             }
@@ -94,8 +102,8 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
     }
 
     fn on_timeout(&self, id: Id, state: &mut Cow<Self::State>, o: &mut Out<Self>) {
-        use MyRegisterActor as A;
-        use MyRegisterActorState as S;
+        use GlobalActor as A;
+        use GlobalActorState as S;
         match (self, &**state) {
             (A::Trigger(_), S::Trigger(_)) => {}
             (A::Trigger(_), S::Server(_)) => {}
@@ -104,7 +112,7 @@ impl<T: Trigger<C>, C: ClientFunction> Actor for MyRegisterActor<T, C> {
                 let mut server_out = Out::new();
                 server_actor.on_timeout(id, &mut server_state, &mut server_out);
                 if let Cow::Owned(server_state) = server_state {
-                    *state = Cow::Owned(MyRegisterActorState::Server(server_state))
+                    *state = Cow::Owned(GlobalActorState::Server(server_state))
                 }
                 o.append(&mut server_out);
             }

@@ -2,7 +2,7 @@ use std::{fmt::Debug, hash::Hash};
 
 use stateright::actor::Id;
 
-use crate::document::Document;
+use crate::Document;
 
 /// A users application that runs alongside the document, implementing the business logic.
 ///

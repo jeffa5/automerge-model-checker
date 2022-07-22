@@ -2,10 +2,10 @@ use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-use crate::application::Application;
-use crate::client::ClientFunction;
-use crate::client::ClientMsg;
-use crate::msg::GlobalMsg;
+use crate::Application;
+use crate::ClientFunction;
+use crate::ClientMsg;
+use crate::GlobalMsg;
 use automerge::sync;
 use automerge::Automerge;
 use automerge::Change;

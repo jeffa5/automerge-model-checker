@@ -2,7 +2,7 @@ use std::{fmt::Debug, hash::Hash};
 
 use stateright::actor::Actor;
 
-use crate::client::{ClientFunction, ClientMsg};
+use crate::{ClientFunction, ClientMsg};
 
 /// A triggerer of the client functionality. Similar to function invocation.
 pub trait Trigger<C: ClientFunction>:
