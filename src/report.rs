@@ -43,7 +43,7 @@ where
         <M as Model>::State: std::fmt::Debug,
     {
         for (name, discovery) in discoveries {
-            let _ = print!(
+            print!(
                 "Discovered \"{}\" {} {}",
                 name, discovery.classification, discovery.path,
             );
