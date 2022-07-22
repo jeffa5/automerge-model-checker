@@ -5,6 +5,7 @@ use automerge::transaction::Transaction;
 use automerge::{sync, ActorId, Automerge, Change, ChangeHash};
 use stateright::actor::Id;
 
+/// A document that holds an automerge object and also the sync states for peers.
 #[derive(Clone, Debug)]
 pub struct Document {
     am: Automerge,

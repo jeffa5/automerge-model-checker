@@ -51,9 +51,9 @@ fn main() {
     let model = model::Builder {
         servers: opts.servers,
         sync_method: match opts.sync_method {
-            SyncMethod::SaveLoad => amc_core::server::SyncMethod::SaveLoad,
-            SyncMethod::Changes => amc_core::server::SyncMethod::Changes,
-            SyncMethod::Messages => amc_core::server::SyncMethod::Messages,
+            SyncMethod::SaveLoad => amc_core::SyncMethod::SaveLoad,
+            SyncMethod::Changes => amc_core::SyncMethod::Changes,
+            SyncMethod::Messages => amc_core::SyncMethod::Messages,
         },
         message_acks: opts.message_acks,
         object_type: opts.object_type,

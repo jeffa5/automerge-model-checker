@@ -12,6 +12,7 @@ pub trait ClientFunction: Clone + Hash + Eq + Debug {
     fn execute(&self, document: &mut Cow<Self::Application>, input: Self::Input) -> Self::Output;
 }
 
+/// A ClientMsg contains the request or response to or from a client's execution.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ClientMsg<C: ClientFunction> {
     /// Message originating from clients to servers.

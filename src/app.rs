@@ -1,5 +1,5 @@
-use amc_core::application::Application;
-use amc_core::doc::Document;
+use amc_core::Application;
+use amc_core::Document;
 use automerge::transaction::Transactable;
 use automerge::ObjType;
 use automerge::Value;
