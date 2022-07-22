@@ -17,7 +17,7 @@ stateright = "0.29.0"
 amc-core = { path = "amc-core" }
 
 [patch.crates-io]
-stateright = { git = "https://github.com/jeffa5/stateright", branch = "report-data" }
+stateright = { git = "https://github.com/jeffa5/stateright", branch = "dev" }
 
 # [patch."https://github.com/automerge/automerge-rs"]
 # automerge = { git = "https://github.com/jeffa5/automerge-rs", branch = "more-sync-opt" }
