@@ -1,4 +1,4 @@
-pub mod app;
+pub mod application;
 pub mod client;
 pub mod doc;
 pub mod msg;

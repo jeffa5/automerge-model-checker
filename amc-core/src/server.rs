@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-use crate::app::Application;
+use crate::application::Application;
 use crate::client::ClientFunction;
 use crate::client::ClientMsg;
 use crate::msg::GlobalMsg;

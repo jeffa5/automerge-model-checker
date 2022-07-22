@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt::Debug, hash::Hash};
 
-use crate::app::Application;
+use crate::application::Application;
 
 /// A ClientFunction is coupled with a server and implements an atomic action against the document.
 /// This ensures that no sync messages are applied within the body of execution.
