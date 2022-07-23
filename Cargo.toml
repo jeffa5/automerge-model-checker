@@ -1,20 +1,11 @@
 [workspace]
 members = [
-"amc-core",
-".",
+    "amc-core",
+    "amc",
 ]
 
-[package]
-name = "amc"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-automerge = { git = "https://github.com/automerge/automerge-rs" }
-clap = { version = "3.1.18", features = ["derive"] }
-num_cpus = "1.13.1"
-stateright = "0.29.0"
-amc-core = { path = "amc-core" }
+[profile.release]
+debug = true
 
 [patch.crates-io]
 stateright = { git = "https://github.com/jeffa5/stateright", branch = "dev" }
@@ -22,6 +13,3 @@ stateright = { git = "https://github.com/jeffa5/stateright", branch = "dev" }
 # [patch."https://github.com/automerge/automerge-rs"]
 # automerge = { git = "https://github.com/jeffa5/automerge-rs", branch = "more-sync-opt" }
 # automerge = { path = "../automerge-rs/automerge" }
-
-[profile.release]
-debug = true
