@@ -1,6 +1,5 @@
 pub mod app;
 pub mod client;
-pub mod doc;
 pub mod model;
 pub mod report;
 pub mod trigger;
