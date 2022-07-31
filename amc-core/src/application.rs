@@ -13,6 +13,7 @@ pub trait Application: Clone + Eq + Hash + Debug {
 
     /// Get the document.
     fn document(&self) -> &Document;
+
     /// Get a mutable reference to the document.
     fn document_mut(&mut self) -> &mut Document;
 }

@@ -4,6 +4,7 @@ use crate::{ClientFunction, ClientMsg, ServerMsg};
 use crate::{Server, Trigger};
 use stateright::actor::{Actor, Command, Id, Out};
 
+/// The root message type.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum GlobalMsg<C: ClientFunction> {
     /// A message specific to the register system's internal protocol.
