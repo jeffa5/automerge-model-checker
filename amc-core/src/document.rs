@@ -1,17 +1,39 @@
+use std::fmt::Debug;
 use std::hash::Hash;
 use std::{collections::BTreeMap, ops::Deref};
 
 use automerge::transaction::Transaction;
-use automerge::{sync, ActorId, Automerge, Change, ChangeHash};
+use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ROOT};
 use stateright::actor::Id;
 
 /// A document that holds an automerge object and also the sync states for peers.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Document {
     am: Automerge,
     sync_states: BTreeMap<usize, sync::State>,
     /// Whether this document has encountered an error (indicates an application failure).
     error: bool,
+    /// Whether to show the json repr in debug.
+    debug_materialize: bool,
+}
+
+impl Debug for Document {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = f.debug_struct("Document");
+        if self.debug_materialize {
+            // todo: materialize
+            let mut m = BTreeMap::new();
+            for (k, v, _) in self.am.map_range(ROOT, ..) {
+                m.insert(k, v);
+            }
+            s.field("doc", &m);
+        } else {
+            s.field("am", &self.am)
+                .field("sync_states", &self.sync_states)
+                .field("error", &self.error);
+        }
+        s.finish()
+    }
 }
 
 impl PartialEq for Document {
@@ -41,6 +63,7 @@ impl Document {
             am: doc,
             sync_states: BTreeMap::new(),
             error: false,
+            debug_materialize: true,
         }
     }
 
