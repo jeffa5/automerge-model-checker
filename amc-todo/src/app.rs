@@ -42,11 +42,11 @@ impl Application for App {
 }
 
 impl App {
-    pub fn new(id: stateright::actor::Id) -> Self {
+    pub fn new(id: stateright::actor::Id, sequential_ids: bool) -> Self {
         let seed = usize::from(id) as u64;
         Self {
             doc: Box::new(Document::new(id)),
-            sequential_ids: true,
+            sequential_ids,
             seed,
             rng: StdRng::seed_from_u64(seed),
         }

@@ -62,7 +62,9 @@ fn main() {
             SyncMethod::Messages => amc_core::SyncMethod::Messages,
         },
         message_acks: opts.message_acks,
-        client_function: Client {},
+        client_function: Client {
+            sequential_ids: opts.sequential_ids,
+        },
     }
     .into_actor_model()
     .checker()

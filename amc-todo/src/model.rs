@@ -1,4 +1,3 @@
-use crate::app::App;
 use crate::client::Client;
 use crate::trigger::Trigger;
 use crate::trigger::TriggerMsg;
@@ -15,16 +14,20 @@ use amc_core::ServerMsg;
 use amc_core::SyncMethod;
 use automerge::Automerge;
 use automerge::ROOT;
+use stateright::actor::Id;
 use stateright::actor::{model_peers, ActorModel};
 use stateright::actor::{ActorModelState, Network};
 use stateright::Expectation;
+use std::borrow::Cow;
 use std::sync::Arc;
 
 pub type State = GlobalActorState<Trigger, Client>;
 pub type Actor = GlobalActor<Trigger, Client>;
 pub type History = Vec<(GlobalMsg<Client>, GlobalMsg<Client>)>;
 
-pub struct Config {}
+pub struct Config {
+    client_function: Client,
+}
 
 pub struct Builder {
     pub servers: usize,
@@ -35,7 +38,9 @@ pub struct Builder {
 
 impl Builder {
     pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, Client>, Config, History> {
-        let config = Config {};
+        let config = Config {
+            client_function: self.client_function.clone(),
+        };
         let mut model = ActorModel::new(config, Vec::new());
         for i in 0..self.servers {
             model = model.actor(GlobalActor::Server(Server {
@@ -98,14 +103,13 @@ impl Builder {
             .property(
                 Expectation::Always,
                 "all apps have the right number of tasks",
-                |_, state| {
+                |model, state| {
                     if !syncing_done(state) {
                         return true;
                     }
 
-                    let mut single_app =
-                        std::borrow::Cow::Owned(App::new(stateright::actor::Id::from(0)));
-                    let cf = Client {};
+                    let cf = &model.cfg.client_function;
+                    let mut single_app = Cow::Owned(cf.init(Id::from(0)));
 
                     for m in &state.history {
                         match m {
