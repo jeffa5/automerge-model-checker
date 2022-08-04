@@ -32,8 +32,9 @@ struct Opts {
     #[clap(long, default_value = "8080")]
     port: u16,
 
-    #[clap(long, default_value = "false")]
-    sequential_ids: bool,
+    /// Whether to use random ids for todo creation.
+    #[clap(long, global = true)]
+    random_ids: bool,
 }
 
 /// Methods for syncing.
@@ -63,7 +64,7 @@ fn main() {
         },
         message_acks: opts.message_acks,
         client_function: Client {
-            sequential_ids: opts.sequential_ids,
+            random_ids: opts.random_ids,
         },
     }
     .into_actor_model()

@@ -12,7 +12,7 @@ use std::hash::Hash;
 #[derive(Clone, Debug, Eq)]
 pub struct App {
     doc: Box<Document>,
-    sequential_ids: bool,
+    random_ids: bool,
     seed: u64,
     rng: StdRng,
 }
@@ -41,11 +41,11 @@ impl DerefDocument for App {
 }
 
 impl App {
-    pub fn new(id: stateright::actor::Id, sequential_ids: bool) -> Self {
+    pub fn new(id: stateright::actor::Id, random_ids: bool) -> Self {
         let seed = usize::from(id) as u64;
         Self {
             doc: Box::new(Document::new(id)),
-            sequential_ids,
+            random_ids,
             seed,
             rng: StdRng::seed_from_u64(seed),
         }
@@ -54,15 +54,15 @@ impl App {
     // create a todo in the document and return its id
     pub fn create_todo(&mut self, text: String) -> u32 {
         let mut tx = self.doc.transaction();
-        let new_id: u32 = if self.sequential_ids {
+        let new_id: u32 = if self.random_ids {
+            self.rng.gen()
+        } else {
             let last_id = tx.keys(ROOT).next_back();
             if let Some(last_id) = last_id.and_then(|id| id.parse::<u32>().ok()) {
                 last_id + 1
             } else {
                 1
             }
-        } else {
-            self.rng.gen()
         };
         let todo = tx
             .put_object(ROOT, new_id.to_string(), ObjType::Map)

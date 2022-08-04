@@ -6,7 +6,7 @@ use crate::{app::App, trigger::TriggerResponse};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Client {
-    pub sequential_ids: bool,
+    pub random_ids: bool,
 }
 
 impl amc_core::Application for Client {
@@ -17,7 +17,7 @@ impl amc_core::Application for Client {
     type State = App;
 
     fn init(&self, id: Id) -> Self::State {
-        App::new(id, self.sequential_ids)
+        App::new(id, self.random_ids)
     }
 
     fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
