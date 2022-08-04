@@ -32,16 +32,6 @@ impl PartialEq for App {
 }
 
 impl Application for App {
-    fn new(id: stateright::actor::Id) -> Self {
-        let seed = usize::from(id) as u64;
-        Self {
-            doc: Box::new(Document::new(id)),
-            sequential_ids: true,
-            seed,
-            rng: StdRng::seed_from_u64(seed),
-        }
-    }
-
     fn document(&self) -> &Document {
         &self.doc
     }
@@ -52,6 +42,16 @@ impl Application for App {
 }
 
 impl App {
+    pub fn new(id: stateright::actor::Id) -> Self {
+        let seed = usize::from(id) as u64;
+        Self {
+            doc: Box::new(Document::new(id)),
+            sequential_ids: true,
+            seed,
+            rng: StdRng::seed_from_u64(seed),
+        }
+    }
+
     // create a todo in the document and return its id
     pub fn create_todo(&mut self, text: String) -> u32 {
         let mut tx = self.doc.transaction();

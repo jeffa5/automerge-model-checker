@@ -11,11 +11,15 @@ impl ClientFunction for ListInserter {
 
     type Output = ();
 
-    type Application = App;
+    type State = App;
+
+    fn init(&self, id: stateright::actor::Id) -> Self::State {
+        App::new(id)
+    }
 
     fn execute(
         &self,
-        document: &mut std::borrow::Cow<Self::Application>,
+        document: &mut std::borrow::Cow<Self::State>,
         input: Self::Input,
     ) -> Self::Output {
         let value = 'A';

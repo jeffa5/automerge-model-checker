@@ -15,12 +15,6 @@ pub struct App {
 }
 
 impl Application for App {
-    fn new(id: stateright::actor::Id) -> Self {
-        Self {
-            doc: Box::new(Document::new(id)),
-        }
-    }
-
     fn document(&self) -> &Document {
         &self.doc
     }
@@ -31,6 +25,12 @@ impl Application for App {
 }
 
 impl App {
+    pub fn new(id: stateright::actor::Id) -> Self {
+        Self {
+            doc: Box::new(Document::new(id)),
+        }
+    }
+
     pub fn get(&self, key: &str) -> Option<String> {
         let (_, map) = self.doc.get(ROOT, MAP_KEY).ok().flatten()?;
         self.doc

@@ -46,11 +46,11 @@ pub enum ServerMsg {
 impl<C: ClientFunction> Actor for Server<C> {
     type Msg = GlobalMsg<C>;
 
-    type State = C::Application;
+    type State = C::State;
 
     /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
-        C::Application::new(id)
+        self.client_function.init(id)
     }
 
     /// Process a message from another peer or client.

@@ -1,5 +1,7 @@
 use std::{borrow::Cow, fmt::Debug, hash::Hash};
 
+use stateright::actor::Id;
+
 use crate::Application;
 
 /// A ClientFunction is coupled with a server and implements an atomic action against the document.
@@ -7,9 +9,11 @@ use crate::Application;
 pub trait ClientFunction: Clone + Hash + Eq + Debug {
     type Input: Clone + Hash + Eq + Debug;
     type Output: Clone + Hash + Eq + Debug;
-    type Application: Application;
+    type State: Application;
 
-    fn execute(&self, document: &mut Cow<Self::Application>, input: Self::Input) -> Self::Output;
+    fn init(&self, id: Id) -> Self::State;
+
+    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output;
 }
 
 /// A ClientMsg contains the request or response to or from a client's execution.

@@ -30,9 +30,13 @@ impl ClientFunction for Client {
 
     type Output = ();
 
-    type Application = App;
+    type State = App;
 
-    fn execute(&self, document: &mut Cow<Self::Application>, input: Self::Input) -> Self::Output {
+    fn init(&self, id: stateright::actor::Id) -> Self::State {
+        App::new(id)
+    }
+
+    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
             TriggerMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
             TriggerMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),

@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use stateright::actor::Id;
+
 use crate::{app::App, trigger::TriggerResponse};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -10,9 +12,13 @@ impl amc_core::ClientFunction for Client {
 
     type Output = crate::trigger::TriggerResponse;
 
-    type Application = App;
+    type State = App;
 
-    fn execute(&self, document: &mut Cow<Self::Application>, input: Self::Input) -> Self::Output {
+    fn init(&self, id: Id) -> Self::State {
+        App::new(id)
+    }
+
+    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
             crate::trigger::TriggerMsg::CreateTodo(text) => {
                 let id = document.to_mut().create_todo(text);
