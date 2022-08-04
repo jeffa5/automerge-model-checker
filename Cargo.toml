@@ -2,6 +2,7 @@
 members = [
     "amc-core",
     "amc",
+    "amc-todo",
 ]
 
 [profile.release]
