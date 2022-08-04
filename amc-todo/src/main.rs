@@ -31,6 +31,9 @@ struct Opts {
 
     #[clap(long, default_value = "8080")]
     port: u16,
+
+    #[clap(long, default_value = "false")]
+    sequential_ids: bool,
 }
 
 /// Methods for syncing.

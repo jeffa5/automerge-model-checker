@@ -10,9 +10,10 @@ use rand::Rng;
 use rand::SeedableRng;
 
 /// The app that clients work with.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq)]
 pub struct App {
     doc: Box<Document>,
+    sequential_ids: bool,
     seed: u64,
     rng: StdRng,
 }
@@ -24,12 +25,20 @@ impl Hash for App {
     }
 }
 
+impl PartialEq for App {
+    fn eq(&self, other: &Self) -> bool {
+        self.doc == other.doc && self.seed == other.seed
+    }
+}
+
 impl Application for App {
     fn new(id: stateright::actor::Id) -> Self {
+        let seed = usize::from(id) as u64;
         Self {
             doc: Box::new(Document::new(id)),
-            seed: usize::from(id) as u64,
-            rng: StdRng::seed_from_u64(usize::from(id) as u64),
+            sequential_ids: true,
+            seed,
+            rng: StdRng::seed_from_u64(seed),
         }
     }
 
@@ -46,13 +55,16 @@ impl App {
     // create a todo in the document and return its id
     pub fn create_todo(&mut self, text: String) -> u32 {
         let mut tx = self.doc.transaction();
-        let new_id: u32 = self.rng.gen();
-        // let last_id = tx.keys(ROOT).next_back();
-        // let new_id = if let Some(last_id) = last_id.and_then(|id| id.parse::<u32>().ok()) {
-        //     last_id + 1
-        // } else {
-        //     1
-        // };
+        let new_id: u32 = if self.sequential_ids {
+            let last_id = tx.keys(ROOT).next_back();
+            if let Some(last_id) = last_id.and_then(|id| id.parse::<u32>().ok()) {
+                last_id + 1
+            } else {
+                1
+            }
+        } else {
+            self.rng.gen()
+        };
         let todo = tx
             .put_object(ROOT, new_id.to_string(), ObjType::Map)
             .unwrap();
