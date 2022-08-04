@@ -1,12 +1,12 @@
 use crate::app::App;
 
-use super::ClientFunction;
+use super::Application;
 
 /// A client strategy that just deletes a single key in a map.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct MapSingleDeleter;
 
-impl ClientFunction for MapSingleDeleter {
+impl Application for MapSingleDeleter {
     type Input = String;
 
     type Output = ();
@@ -30,7 +30,7 @@ impl ClientFunction for MapSingleDeleter {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ListDeleter;
 
-impl ClientFunction for ListDeleter {
+impl Application for ListDeleter {
     type Input = usize;
 
     type Output = ();

@@ -1,12 +1,12 @@
 use crate::app::App;
 
-use super::ClientFunction;
+use super::Application;
 
 /// A client strategy that just inserts at the start of the list.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ListInserter;
 
-impl ClientFunction for ListInserter {
+impl Application for ListInserter {
     type Input = usize;
 
     type Output = ();

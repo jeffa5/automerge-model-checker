@@ -9,7 +9,7 @@ pub struct Client {
     pub sequential_ids: bool,
 }
 
-impl amc_core::ClientFunction for Client {
+impl amc_core::Application for Client {
     type Input = crate::trigger::TriggerMsg;
 
     type Output = crate::trigger::TriggerResponse;

@@ -1,4 +1,4 @@
-use amc_core::Application;
+use amc_core::DerefDocument;
 use amc_core::Document;
 use automerge::transaction::Transactable;
 use automerge::ObjType;
@@ -14,7 +14,7 @@ pub struct App {
     doc: Box<Document>,
 }
 
-impl Application for App {
+impl DerefDocument for App {
     fn document(&self) -> &Document {
         &self.doc
     }

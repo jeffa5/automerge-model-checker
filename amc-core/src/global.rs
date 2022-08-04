@@ -1,12 +1,12 @@
 use std::borrow::Cow;
 
-use crate::{ClientFunction, ClientMsg, ServerMsg};
+use crate::{Application, ClientMsg, ServerMsg};
 use crate::{Server, Trigger};
 use stateright::actor::{Actor, Command, Id, Out};
 
 /// The root message type.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum GlobalMsg<C: ClientFunction> {
+pub enum GlobalMsg<C: Application> {
     /// A message specific to the register system's internal protocol.
     Internal(ServerMsg),
 
@@ -21,12 +21,12 @@ pub enum GlobalActor<T, C> {
 }
 
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub enum GlobalActorState<T: Trigger<C>, C: ClientFunction> {
+pub enum GlobalActorState<T: Trigger<C>, C: Application> {
     Trigger(<T as Actor>::State),
     Server(<Server<C> as Actor>::State),
 }
 
-impl<T: Trigger<C>, C: ClientFunction> Actor for GlobalActor<T, C> {
+impl<T: Trigger<C>, C: Application> Actor for GlobalActor<T, C> {
     type Msg = GlobalMsg<C>;
 
     type State = GlobalActorState<T, C>;

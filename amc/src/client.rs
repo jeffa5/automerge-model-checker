@@ -9,7 +9,7 @@ mod delete;
 mod insert;
 mod put;
 
-use amc_core::ClientFunction;
+use amc_core::Application;
 pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;
@@ -25,7 +25,7 @@ pub struct Client {
     pub list_inserter: insert::ListInserter,
 }
 
-impl ClientFunction for Client {
+impl Application for Client {
     type Input = TriggerMsg;
 
     type Output = ();

@@ -3,8 +3,8 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 use crate::Application;
-use crate::ClientFunction;
 use crate::ClientMsg;
+use crate::DerefDocument;
 use crate::GlobalMsg;
 use automerge::sync;
 use automerge::Automerge;
@@ -43,7 +43,7 @@ pub enum ServerMsg {
     SyncSaveLoadRaw { doc_bytes: Vec<u8> },
 }
 
-impl<C: ClientFunction> Actor for Server<C> {
+impl<C: Application> Actor for Server<C> {
     type Msg = GlobalMsg<C>;
 
     type State = C::State;
@@ -99,7 +99,7 @@ impl<C: ClientFunction> Actor for Server<C> {
     }
 }
 
-impl<C: ClientFunction> Server<C> {
+impl<C: Application> Server<C> {
     /// Handle generating a sync message after some changes have been made.
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match self.sync_method {

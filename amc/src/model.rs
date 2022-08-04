@@ -3,7 +3,7 @@ use crate::app::MAP_KEY;
 use crate::client::Client;
 use crate::trigger::Trigger;
 use crate::ObjectType;
-use amc_core::Application;
+use amc_core::DerefDocument;
 use amc_core::GlobalActor;
 use amc_core::GlobalActorState;
 use amc_core::GlobalMsg;

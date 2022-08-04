@@ -1,6 +1,4 @@
-use std::hash::Hash;
-
-use amc_core::Application;
+use amc_core::DerefDocument;
 use amc_core::Document;
 use automerge::transaction::Transactable;
 use automerge::ObjType;
@@ -8,6 +6,7 @@ use automerge::ROOT;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
+use std::hash::Hash;
 
 /// The app that clients work with.
 #[derive(Clone, Debug, Eq)]
@@ -31,7 +30,7 @@ impl PartialEq for App {
     }
 }
 
-impl Application for App {
+impl DerefDocument for App {
     fn document(&self) -> &Document {
         &self.doc
     }

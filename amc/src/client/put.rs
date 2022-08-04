@@ -1,12 +1,12 @@
 use crate::app::App;
 
-use super::ClientFunction;
+use super::Application;
 
 /// A client strategy that just puts at a single key into a map.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct MapSinglePutter;
 
-impl ClientFunction for MapSinglePutter {
+impl Application for MapSinglePutter {
     type Input = String;
 
     type Output = ();
@@ -31,7 +31,7 @@ impl ClientFunction for MapSinglePutter {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ListPutter;
 
-impl ClientFunction for ListPutter {
+impl Application for ListPutter {
     type Input = usize;
 
     type Output = ();
