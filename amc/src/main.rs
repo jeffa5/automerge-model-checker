@@ -57,7 +57,7 @@ fn main() {
         },
         message_acks: opts.message_acks,
         object_type: opts.object_type,
-        client_function: Client {
+        app: Client {
             map_single_putter: client::MapSinglePutter,
             list_start_putter: client::ListPutter,
             map_single_deleter: client::MapSingleDeleter,

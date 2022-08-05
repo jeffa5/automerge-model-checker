@@ -19,11 +19,11 @@ use stateright::actor::Out;
 /// They keep state over restarts and can process operations from clients, as well as sync these to
 /// other peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Server<C> {
+pub struct Server<A> {
     pub peers: Vec<Id>,
     pub sync_method: SyncMethod,
     pub message_acks: bool,
-    pub client_function: C,
+    pub app: A,
 }
 
 /// Methods for syncing.
@@ -43,14 +43,14 @@ pub enum ServerMsg {
     SyncSaveLoadRaw { doc_bytes: Vec<u8> },
 }
 
-impl<C: Application> Actor for Server<C> {
-    type Msg = GlobalMsg<C>;
+impl<A: Application> Actor for Server<A> {
+    type Msg = GlobalMsg<A>;
 
-    type State = C::State;
+    type State = A::State;
 
     /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
-        self.client_function.init(id)
+        self.app.init(id)
     }
 
     /// Process a message from another peer or client.
@@ -64,7 +64,7 @@ impl<C: Application> Actor for Server<C> {
     ) {
         match msg {
             GlobalMsg::External(ClientMsg::Request(request)) => {
-                let output = self.client_function.execute(state, request);
+                let output = self.app.execute(state, request);
                 o.send(src, GlobalMsg::External(ClientMsg::Response(output)));
 
                 self.sync(state, o)
@@ -99,7 +99,7 @@ impl<C: Application> Actor for Server<C> {
     }
 }
 
-impl<C: Application> Server<C> {
+impl<A: Application> Server<A> {
     /// Handle generating a sync message after some changes have been made.
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match self.sync_method {

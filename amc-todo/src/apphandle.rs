@@ -5,11 +5,11 @@ use stateright::actor::Id;
 use crate::{app::App, trigger::TriggerResponse};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Client {
+pub struct AppHandle {
     pub random_ids: bool,
 }
 
-impl amc_core::Application for Client {
+impl amc_core::Application for AppHandle {
     type Input = crate::trigger::TriggerMsg;
 
     type Output = crate::trigger::TriggerResponse;

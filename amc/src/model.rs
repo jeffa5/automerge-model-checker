@@ -28,7 +28,7 @@ pub struct Builder {
     pub servers: usize,
     pub sync_method: SyncMethod,
     pub message_acks: bool,
-    pub client_function: Client,
+    pub app: Client,
 }
 
 impl Builder {
@@ -48,7 +48,7 @@ impl Builder {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 message_acks: self.message_acks,
-                client_function: self.client_function.clone(),
+                app: self.app.clone(),
             }))
         }
 

@@ -1,6 +1,6 @@
 /// amc-todo shows how to implement the application side and client side with a concrete example
 ///
-use crate::client::Client;
+use crate::apphandle::AppHandle;
 use crate::report::Reporter;
 use clap::Parser;
 use model::History;
@@ -10,7 +10,7 @@ use stateright::CheckerBuilder;
 use stateright::Model;
 
 mod app;
-mod client;
+mod apphandle;
 mod model;
 mod report;
 mod trigger;
@@ -63,7 +63,7 @@ fn main() {
             SyncMethod::Messages => amc_core::SyncMethod::Messages,
         },
         message_acks: opts.message_acks,
-        client_function: Client {
+        app: AppHandle {
             random_ids: opts.random_ids,
         },
     }

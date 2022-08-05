@@ -1,4 +1,4 @@
-use crate::client::Client;
+use crate::apphandle::AppHandle;
 use crate::trigger::Trigger;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
@@ -21,25 +21,25 @@ use stateright::Expectation;
 use std::borrow::Cow;
 use std::sync::Arc;
 
-pub type State = GlobalActorState<Trigger, Client>;
-pub type Actor = GlobalActor<Trigger, Client>;
-pub type History = Vec<(GlobalMsg<Client>, GlobalMsg<Client>)>;
+pub type State = GlobalActorState<Trigger, AppHandle>;
+pub type Actor = GlobalActor<Trigger, AppHandle>;
+pub type History = Vec<(GlobalMsg<AppHandle>, GlobalMsg<AppHandle>)>;
 
 pub struct Config {
-    client_function: Client,
+    app: AppHandle,
 }
 
 pub struct Builder {
     pub servers: usize,
     pub sync_method: SyncMethod,
     pub message_acks: bool,
-    pub client_function: Client,
+    pub app: AppHandle,
 }
 
 impl Builder {
-    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, Client>, Config, History> {
+    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, AppHandle>, Config, History> {
         let config = Config {
-            client_function: self.client_function.clone(),
+            app: self.app.clone(),
         };
         let mut model = ActorModel::new(config, Vec::new());
         for i in 0..self.servers {
@@ -47,7 +47,7 @@ impl Builder {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 message_acks: self.message_acks,
-                client_function: self.client_function.clone(),
+                app: self.app.clone(),
             }))
         }
 
@@ -108,7 +108,7 @@ impl Builder {
                         return true;
                     }
 
-                    let cf = &model.cfg.client_function;
+                    let cf = &model.cfg.app;
                     let mut single_app = Cow::Owned(cf.init(Id::from(0)));
 
                     for m in &state.history {

@@ -1,6 +1,6 @@
 use stateright::actor::{Actor, Id};
 
-use crate::client::Client;
+use crate::apphandle::AppHandle;
 use amc_core::ClientMsg;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -31,10 +31,10 @@ pub enum TriggerResponse {
     DeleteTodo(bool),
 }
 
-impl amc_core::Trigger<Client> for Trigger {}
+impl amc_core::Trigger<AppHandle> for Trigger {}
 
 impl Actor for Trigger {
-    type Msg = ClientMsg<Client>;
+    type Msg = ClientMsg<AppHandle>;
 
     type State = ();
 
