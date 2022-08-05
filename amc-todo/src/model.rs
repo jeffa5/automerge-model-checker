@@ -61,7 +61,7 @@ impl Builder {
                 server: i,
             }));
             model = model.actor(GlobalActor::Trigger(Trigger {
-                func: TriggerState::Deleter(1),
+                func: TriggerState::Deleter,
                 server: i,
             }));
         }

@@ -14,7 +14,7 @@ pub enum TriggerState {
     Creater,
     Updater,
     Toggler,
-    Deleter(u32),
+    Deleter,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -61,8 +61,8 @@ impl Actor for Trigger {
             TriggerState::Toggler => {
                 o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
             }
-            TriggerState::Deleter(id) => {
-                o.send(self.server, ClientMsg::Request(TriggerMsg::DeleteTodo(id)));
+            TriggerState::Deleter => {
+                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
             }
         }
     }
@@ -92,6 +92,11 @@ impl Actor for Trigger {
                             self.server,
                             ClientMsg::Request(TriggerMsg::ToggleActive(id)),
                         );
+                    }
+                }
+                (TriggerState::Deleter, TriggerResponse::ListTodos(ids)) => {
+                    for id in ids {
+                        o.send(self.server, ClientMsg::Request(TriggerMsg::DeleteTodo(id)));
                     }
                 }
                 _ => {}
