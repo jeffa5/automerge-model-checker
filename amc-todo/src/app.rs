@@ -114,4 +114,11 @@ impl App {
     pub fn num_todos(&self) -> usize {
         self.doc.length(ROOT)
     }
+
+    pub fn list_todos(&self) -> Vec<u32> {
+        self.doc
+            .map_range(ROOT, ..)
+            .map(|(k, _, _)| k.parse().unwrap())
+            .collect()
+    }
 }

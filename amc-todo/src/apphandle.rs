@@ -38,6 +38,10 @@ impl amc_core::Application for AppHandle {
                 let was_present = document.to_mut().delete_todo(id);
                 TriggerResponse::DeleteTodo(was_present)
             }
+            crate::trigger::TriggerMsg::ListTodos => {
+                let ids = document.list_todos();
+                TriggerResponse::ListTodos(ids)
+            }
         }
     }
 }

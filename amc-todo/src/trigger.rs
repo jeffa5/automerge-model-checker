@@ -12,7 +12,7 @@ pub struct Trigger {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TriggerState {
     Creater,
-    Updater(u32),
+    Updater,
     Toggler(u32),
     Deleter(u32),
 }
@@ -23,6 +23,7 @@ pub enum TriggerMsg {
     Update(u32, String),
     ToggleActive(u32),
     DeleteTodo(u32),
+    ListTodos,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -32,6 +33,7 @@ pub enum TriggerResponse {
     Update(bool),
     ToggleActive(bool),
     DeleteTodo(bool),
+    ListTodos(Vec<u32>),
 }
 
 impl amc_core::Trigger<AppHandle> for Trigger {}
@@ -53,11 +55,8 @@ impl Actor for Trigger {
                     ClientMsg::Request(TriggerMsg::CreateTodo("todo 1".to_owned())),
                 );
             }
-            TriggerState::Updater(id) => {
-                o.send(
-                    self.server,
-                    ClientMsg::Request(TriggerMsg::Update(id, "updated todo 1".to_owned())),
-                );
+            TriggerState::Updater => {
+                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
             }
             TriggerState::Toggler(id) => {
                 o.send(
@@ -77,15 +76,20 @@ impl Actor for Trigger {
         _state: &mut std::borrow::Cow<Self::State>,
         _src: Id,
         msg: Self::Msg,
-        _o: &mut stateright::actor::Out<Self>,
+        o: &mut stateright::actor::Out<Self>,
     ) {
         match msg {
             ClientMsg::Request(_) => unreachable!("clients don't handle requests"),
-            ClientMsg::Response(r) => match r {
-                TriggerResponse::CreateTodo(_) => {}
-                TriggerResponse::Update(_) => {}
-                TriggerResponse::ToggleActive(_) => {}
-                TriggerResponse::DeleteTodo(_was_present) => {}
+            ClientMsg::Response(r) => match (&self.func, r) {
+                (TriggerState::Updater, TriggerResponse::ListTodos(ids)) => {
+                    for id in ids {
+                        o.send(
+                            self.server,
+                            ClientMsg::Request(TriggerMsg::Update(id, "updated todo".to_owned())),
+                        )
+                    }
+                }
+                _ => {}
             },
         }
     }

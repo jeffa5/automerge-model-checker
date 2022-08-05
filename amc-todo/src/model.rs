@@ -53,7 +53,7 @@ impl Builder {
                 server: i,
             }));
             model = model.actor(GlobalActor::Trigger(Trigger {
-                func: TriggerState::Updater(1),
+                func: TriggerState::Updater,
                 server: i,
             }));
             model = model.actor(GlobalActor::Trigger(Trigger {
@@ -101,8 +101,17 @@ impl Builder {
                                         cf.execute(&mut single_app, req.clone());
                                     }
                                 }
-                                _ => {
-                                    unreachable!()
+                                (
+                                    TriggerMsg::Update(_id, _text),
+                                    TriggerResponse::Update(success),
+                                ) => {
+                                    if *success {
+                                        cf.execute(&mut single_app, req.clone());
+                                    }
+                                }
+                                (TriggerMsg::ListTodos, TriggerResponse::ListTodos(_ids)) => {}
+                                (a, b) => {
+                                    unreachable!("{:?}, {:?}", a, b)
                                 }
                             },
                             (GlobalMsg::External(ClientMsg::Response(_)), _) => {}
