@@ -73,6 +73,17 @@ impl App {
         new_id
     }
 
+    pub fn update_text(&mut self, id: u32, text: String) -> bool {
+        let mut tx = self.doc.transaction();
+        if let Some((_, todo)) = tx.get(ROOT, id.to_string()).unwrap() {
+            tx.put(todo, "text", text).unwrap();
+            tx.commit();
+            true
+        } else {
+            false
+        }
+    }
+
     // toggle whether the given todo is active and return the new status
     pub fn toggle_active(&mut self, id: u32) -> bool {
         let mut tx = self.doc.transaction();

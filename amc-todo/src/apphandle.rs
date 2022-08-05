@@ -26,6 +26,10 @@ impl amc_core::Application for AppHandle {
                 let id = document.to_mut().create_todo(text);
                 TriggerResponse::CreateTodo(id)
             }
+            crate::trigger::TriggerMsg::Update(id, text) => {
+                let success = document.to_mut().update_text(id, text);
+                TriggerResponse::Update(success)
+            }
             crate::trigger::TriggerMsg::ToggleActive(id) => {
                 let b = document.to_mut().toggle_active(id);
                 TriggerResponse::ToggleActive(b)

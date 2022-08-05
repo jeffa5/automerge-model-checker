@@ -12,6 +12,7 @@ pub struct Trigger {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TriggerState {
     Creater,
+    Updater(u32),
     Toggler(u32),
     Deleter(u32),
 }
@@ -19,6 +20,7 @@ pub enum TriggerState {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TriggerMsg {
     CreateTodo(String),
+    Update(u32, String),
     ToggleActive(u32),
     DeleteTodo(u32),
 }
@@ -27,6 +29,7 @@ pub enum TriggerMsg {
 pub enum TriggerResponse {
     /// The id of the created task.
     CreateTodo(u32),
+    Update(bool),
     ToggleActive(bool),
     DeleteTodo(bool),
 }
@@ -48,6 +51,12 @@ impl Actor for Trigger {
                 o.send(
                     self.server,
                     ClientMsg::Request(TriggerMsg::CreateTodo("todo 1".to_owned())),
+                );
+            }
+            TriggerState::Updater(id) => {
+                o.send(
+                    self.server,
+                    ClientMsg::Request(TriggerMsg::Update(id, "updated todo 1".to_owned())),
                 );
             }
             TriggerState::Toggler(id) => {
@@ -74,6 +83,7 @@ impl Actor for Trigger {
             ClientMsg::Request(_) => unreachable!("clients don't handle requests"),
             ClientMsg::Response(r) => match r {
                 TriggerResponse::CreateTodo(_) => {}
+                TriggerResponse::Update(_) => {}
                 TriggerResponse::ToggleActive(_) => {}
                 TriggerResponse::DeleteTodo(_was_present) => {}
             },
