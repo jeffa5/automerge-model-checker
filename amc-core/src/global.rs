@@ -6,30 +6,30 @@ use stateright::actor::{Actor, Command, Id, Out};
 
 /// The root message type.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum GlobalMsg<C: Application> {
+pub enum GlobalMsg<A: Application> {
     /// A message specific to the register system's internal protocol.
     Internal(ServerMsg),
 
     /// A message between clients and servers.
-    External(ClientMsg<C>),
+    External(ClientMsg<A>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum GlobalActor<T, C> {
+pub enum GlobalActor<T, A> {
     Trigger(T),
-    Server(Server<C>),
+    Server(Server<A>),
 }
 
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub enum GlobalActorState<T: Trigger<C>, C: Application> {
+pub enum GlobalActorState<T: Trigger<A>, A: Application> {
     Trigger(<T as Actor>::State),
-    Server(<Server<C> as Actor>::State),
+    Server(<Server<A> as Actor>::State),
 }
 
-impl<T: Trigger<C>, C: Application> Actor for GlobalActor<T, C> {
-    type Msg = GlobalMsg<C>;
+impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
+    type Msg = GlobalMsg<A>;
 
-    type State = GlobalActorState<T, C>;
+    type State = GlobalActorState<T, A>;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
