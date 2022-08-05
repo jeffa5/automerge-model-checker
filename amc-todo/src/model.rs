@@ -57,7 +57,7 @@ impl Builder {
                 server: i,
             }));
             model = model.actor(GlobalActor::Trigger(Trigger {
-                func: TriggerState::Toggler(1),
+                func: TriggerState::Toggler,
                 server: i,
             }));
             model = model.actor(GlobalActor::Trigger(Trigger {

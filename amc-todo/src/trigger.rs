@@ -13,7 +13,7 @@ pub struct Trigger {
 pub enum TriggerState {
     Creater,
     Updater,
-    Toggler(u32),
+    Toggler,
     Deleter(u32),
 }
 
@@ -58,11 +58,8 @@ impl Actor for Trigger {
             TriggerState::Updater => {
                 o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
             }
-            TriggerState::Toggler(id) => {
-                o.send(
-                    self.server,
-                    ClientMsg::Request(TriggerMsg::ToggleActive(id)),
-                );
+            TriggerState::Toggler => {
+                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
             }
             TriggerState::Deleter(id) => {
                 o.send(self.server, ClientMsg::Request(TriggerMsg::DeleteTodo(id)));
@@ -87,6 +84,14 @@ impl Actor for Trigger {
                             self.server,
                             ClientMsg::Request(TriggerMsg::Update(id, "updated todo".to_owned())),
                         )
+                    }
+                }
+                (TriggerState::Toggler, TriggerResponse::ListTodos(ids)) => {
+                    for id in ids {
+                        o.send(
+                            self.server,
+                            ClientMsg::Request(TriggerMsg::ToggleActive(id)),
+                        );
                     }
                 }
                 _ => {}
