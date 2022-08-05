@@ -1,7 +1,7 @@
 /// amc-todo shows how to implement the application side and client side with a concrete example
 ///
 use crate::apphandle::AppHandle;
-use crate::report::Reporter;
+use amc_core::Reporter;
 use clap::Parser;
 use model::History;
 use stateright::actor::ActorModel;
@@ -12,7 +12,6 @@ use stateright::Model;
 mod app;
 mod apphandle;
 mod model;
-mod report;
 mod trigger;
 
 #[derive(Parser, Debug)]

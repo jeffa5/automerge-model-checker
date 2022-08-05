@@ -1,7 +1,7 @@
 use amc::client;
 use amc::client::Client;
 use amc::model;
-use amc::report::Reporter;
+use amc_core::Reporter;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::Checker;
