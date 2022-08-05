@@ -1,6 +1,7 @@
 mod client;
 mod document;
 mod global;
+pub mod model;
 mod report;
 mod server;
 mod trigger;

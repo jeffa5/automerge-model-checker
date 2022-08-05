@@ -3,25 +3,20 @@ use crate::trigger::Trigger;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
 use crate::trigger::TriggerState;
+use amc_core::model;
 use amc_core::Application;
 use amc_core::ClientMsg;
-use amc_core::DerefDocument;
 use amc_core::GlobalActor;
 use amc_core::GlobalActorState;
 use amc_core::GlobalMsg;
 use amc_core::Server;
-use amc_core::ServerMsg;
 use amc_core::SyncMethod;
-use automerge::Automerge;
-use automerge::ROOT;
 use stateright::actor::Id;
+use stateright::actor::Network;
 use stateright::actor::{model_peers, ActorModel};
-use stateright::actor::{ActorModelState, Network};
 use stateright::Expectation;
 use std::borrow::Cow;
-use std::sync::Arc;
 
-pub type State = GlobalActorState<Trigger, AppHandle>;
 pub type Actor = GlobalActor<Trigger, AppHandle>;
 pub type History = Vec<(GlobalMsg<AppHandle>, GlobalMsg<AppHandle>)>;
 
@@ -67,40 +62,13 @@ impl Builder {
             }));
         }
 
+        model = model::with_default_properties(model);
         model
-            .property(
-                stateright::Expectation::Eventually,
-                "all actors have the same value for all keys",
-                |_, state| all_same_state(&state.actor_states),
-            )
-            .property(
-                stateright::Expectation::Always,
-                "in sync when syncing is done and no in-flight requests",
-                |_, state| syncing_done_and_in_sync(state),
-            )
-            .property(
-                stateright::Expectation::Always,
-                "saving and loading the document gives the same document",
-                |_, state| save_load_same(state),
-            )
-            .property(
-                stateright::Expectation::Always,
-                "no errors set (from panics)",
-                |_, state| {
-                    state.actor_states.iter().all(|s| {
-                        if let GlobalActorState::Server(s) = &**s {
-                            !s.document().has_error()
-                        } else {
-                            true
-                        }
-                    })
-                },
-            )
             .property(
                 Expectation::Always,
                 "all apps have the right number of tasks",
                 |model, state| {
-                    if !syncing_done(state) {
+                    if !model::syncing_done(state) {
                         return true;
                     }
 
@@ -172,59 +140,4 @@ impl Builder {
             })
             .init_network(Network::new_ordered(vec![]))
     }
-}
-
-fn all_same_state(actors: &[Arc<State>]) -> bool {
-    actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
-        (GlobalActorState::Trigger(_), GlobalActorState::Trigger(_)) => true,
-        (GlobalActorState::Trigger(_), GlobalActorState::Server(_)) => true,
-        (GlobalActorState::Server(_), GlobalActorState::Trigger(_)) => true,
-        (GlobalActorState::Server(a), GlobalActorState::Server(b)) => {
-            let a_vals = a.document().values(ROOT).collect::<Vec<_>>();
-            let b_vals = b.document().values(ROOT).collect::<Vec<_>>();
-            a_vals == b_vals
-        }
-    })
-}
-
-fn syncing_done(state: &ActorModelState<Actor, History>) -> bool {
-    for envelope in state.network.iter_deliverable() {
-        match envelope.msg {
-            GlobalMsg::Internal(ServerMsg::SyncMessageRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::Internal(ServerMsg::SyncChangeRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::External(_) => {}
-        }
-    }
-    true
-}
-
-fn syncing_done_and_in_sync(state: &ActorModelState<Actor, History>) -> bool {
-    // first check that the network has no sync messages in-flight.
-    // next, check that all actors are in the same states (using sub-property checker)
-    !syncing_done(state) || all_same_state(&state.actor_states)
-}
-
-fn save_load_same(state: &ActorModelState<Actor, History>) -> bool {
-    for actor in &state.actor_states {
-        match &**actor {
-            GlobalActorState::Trigger(_) => {
-                // clients don't have state to save and load
-            }
-            GlobalActorState::Server(s) => {
-                let bytes = s.clone().document_mut().save();
-                let doc = Automerge::load(&bytes).unwrap();
-                if doc.get_heads() != s.document().heads() {
-                    return false;
-                }
-            }
-        }
-    }
-    true
 }
