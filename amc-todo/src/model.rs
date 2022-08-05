@@ -96,10 +96,6 @@ impl Builder {
                     })
                 },
             )
-            // TODO: run the client history against a single instance of the application to test if
-            // it has the same structure.
-            // This might not work for every situation but should work for creation since we
-            // shouldn't clash.
             .property(
                 Expectation::Always,
                 "all apps have the right number of tasks",
