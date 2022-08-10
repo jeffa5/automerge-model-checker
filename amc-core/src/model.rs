@@ -9,6 +9,10 @@ use crate::Application;
 use crate::Trigger;
 use crate::{GlobalActor, GlobalActorState, GlobalMsg, ServerMsg};
 
+/// Add default properties to a model.
+///
+/// These include checking for consistent states when syncing is completed, save and load
+/// consistency and others.
 pub fn with_default_properties<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
@@ -65,6 +69,8 @@ where
     })
 }
 
+/// Check whether syncing is complete at this time. That is, there are no sync messages pending
+/// delivery.
 pub fn syncing_done<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
 where
     T: Trigger<A>,

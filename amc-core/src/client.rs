@@ -16,6 +16,7 @@ pub trait Application: Clone + Hash + Eq + Debug {
     fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output;
 }
 
+/// Get access to a document.
 pub trait DerefDocument: Clone + Hash + Eq + Debug {
     /// Get the document.
     fn document(&self) -> &Document;

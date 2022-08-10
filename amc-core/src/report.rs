@@ -1,5 +1,6 @@
 use stateright::Model;
 
+/// A reporter with more information about the rate of new states being processed.
 #[derive(Debug, Default)]
 pub struct Reporter {
     last_total: usize,
