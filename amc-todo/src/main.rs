@@ -22,9 +22,6 @@ struct Opts {
     #[clap(long, short, global = true, default_value = "2")]
     servers: usize,
 
-    #[clap(long, global = true)]
-    message_acks: bool,
-
     #[clap(long, arg_enum, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 
@@ -61,7 +58,6 @@ fn main() {
             SyncMethod::Changes => amc_core::SyncMethod::Changes,
             SyncMethod::Messages => amc_core::SyncMethod::Messages,
         },
-        message_acks: opts.message_acks,
         app: AppHandle {
             random_ids: opts.random_ids,
         },

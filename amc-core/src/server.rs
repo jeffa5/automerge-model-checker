@@ -22,7 +22,6 @@ use stateright::actor::Out;
 pub struct Server<A> {
     pub peers: Vec<Id>,
     pub sync_method: SyncMethod,
-    pub message_acks: bool,
     pub app: A,
 }
 
