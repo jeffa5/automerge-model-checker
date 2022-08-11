@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 stateright = "0.29.0"
 automerge = { git = "https://github.com/automerge/automerge-rs" }
+
+[dev-dependencies]
+clap = { version = "3.1.18", features = ["derive"] }
