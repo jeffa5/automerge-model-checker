@@ -10,7 +10,3 @@ debug = true
 
 [patch.crates-io]
 stateright = { git = "https://github.com/jeffa5/stateright", branch = "dev" }
-
-# [patch."https://github.com/automerge/automerge-rs"]
-# automerge = { git = "https://github.com/jeffa5/automerge-rs", branch = "more-sync-opt" }
-# automerge = { path = "../automerge-rs/automerge" }
