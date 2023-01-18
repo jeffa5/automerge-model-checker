@@ -1,10 +1,10 @@
 use amc_core::DerefDocument;
 use amc_core::Document;
 use automerge::transaction::Transactable;
+use automerge::transaction::UnObserved;
 use automerge::ObjType;
 use automerge::Value;
 use automerge::ROOT;
-use automerge::transaction::UnObserved;
 
 pub const LIST_KEY: &str = "list";
 pub const MAP_KEY: &str = "map";

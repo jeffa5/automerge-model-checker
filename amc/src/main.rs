@@ -19,7 +19,7 @@ struct Opts {
     object_type: amc::ObjectType,
 
     #[clap(flatten)]
-    lib_opts : amc_cli::Opts,
+    lib_opts: amc_cli::Opts,
 }
 
 type ActorState = GlobalActorState<Trigger, Client>;
@@ -33,7 +33,9 @@ impl amc_cli::Cli for Opts {
 
     type Config = Config;
 
-    fn application(&mut self, _i: usize) -> Self::App {
+    type History = ();
+
+    fn application(&self, _i: usize) -> Self::App {
         let c = Client {
             map_single_putter: client::MapSinglePutter,
             list_start_putter: client::ListPutter,
@@ -45,7 +47,7 @@ impl amc_cli::Cli for Opts {
         c
     }
 
-    fn clients(&mut self, server: usize) -> Vec<Self::Client> {
+    fn clients(&self, server: usize) -> Vec<Self::Client> {
         let server = Id::from(server);
         let triggers = match self.object_type {
             ObjectType::Map => {
@@ -107,6 +109,10 @@ impl amc_cli::Cli for Opts {
         };
         println!("Built config {:?}", c);
         c
+    }
+
+    fn history(&self) -> Self::History {
+
     }
 
     fn properties(

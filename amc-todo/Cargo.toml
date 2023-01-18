@@ -11,4 +11,5 @@ automerge = "0.2.0"
 num_cpus = "1.13.1"
 stateright = "0.29.0"
 amc-core = { path = "../amc-core" }
+amc-cli = { path = "../amc-cli" }
 rand = "0.8.5"

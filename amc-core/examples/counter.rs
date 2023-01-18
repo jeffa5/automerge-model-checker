@@ -140,7 +140,7 @@ struct Opts {
     #[clap(long, global = true, default_value = "1")]
     decrements: usize,
 
-    #[clap(long,  global = true, default_value = "changes")]
+    #[clap(long, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 
     #[clap(long, default_value = "8080")]

@@ -1,10 +1,11 @@
 use amc_core::{model, Application, GlobalActor, Reporter, Server, Trigger};
+use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Network},
     Checker, Model, Property,
 };
-use std::{fmt::Debug, marker::Send};
-use clap::Parser;
+use std::fmt::Debug;
+use std::hash::Hash;
 
 /// Options for the main running.
 #[derive(Parser, Debug)]
@@ -44,22 +45,25 @@ pub trait Cli: Debug {
     type App: Application + 'static;
     type Client: Trigger<Self::App> + 'static;
     type Config: 'static;
+    type History: Clone + Debug + Hash;
 
-    fn application(&mut self, server: usize) -> Self::App;
-    fn clients(&mut self, server: usize) -> Vec<Self::Client>;
+    fn application(&self, server: usize) -> Self::App;
+    fn clients(&self, server: usize) -> Vec<Self::Client>;
 
     fn config(&self) -> Self::Config;
-    fn servers(&self) -> usize;
-    fn sync_method(&self) -> amc_core::SyncMethod;
+    fn history(&self) -> Self::History;
 
     fn properties(
         &self,
-    ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config>>>;
+    ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>>>;
+
+    fn servers(&self) -> usize;
+    fn sync_method(&self) -> amc_core::SyncMethod;
 
     fn actor_model(
         &mut self,
-    ) -> ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, ()> {
-        let mut model = ActorModel::new(self.config(), ());
+    ) -> ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History> {
+        let mut model = ActorModel::new(self.config(), self.history());
 
         // add servers
         for i in 0..self.servers() {
@@ -93,6 +97,7 @@ pub trait Cli: Debug {
         <Self as Cli>::Config: Sync,
         <<Self as Cli>::Client as Actor>::State: Sync,
         <<Self as Cli>::Client as Actor>::State: Send,
+        <Self as Cli>::History: Send + Sync + 'static,
     {
         println!("{:?}", self);
         let model = self.actor_model().checker().threads(num_cpus::get());
