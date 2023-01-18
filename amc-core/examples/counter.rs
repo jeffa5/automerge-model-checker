@@ -202,7 +202,7 @@ fn main() {
         false
     });
     model = model.record_msg_in(|_, h, m| {
-        if matches!(m.msg, GlobalMsg::External(ClientMsg::Request(_))) {
+        if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Request(_))) {
             let mut nh = h.clone();
             nh.push(m.msg.clone());
             Some(nh)

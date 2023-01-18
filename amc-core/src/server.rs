@@ -62,13 +62,13 @@ impl<A: Application> Actor for Server<A> {
         o: &mut Out<Self>,
     ) {
         match msg {
-            GlobalMsg::External(ClientMsg::Request(request)) => {
+            GlobalMsg::ClientToServer(ClientMsg::Request(request)) => {
                 let output = self.app.execute(state, request);
-                o.send(src, GlobalMsg::External(ClientMsg::Response(output)));
+                o.send(src, GlobalMsg::ClientToServer(ClientMsg::Response(output)));
 
                 self.sync(state, o)
             }
-            GlobalMsg::Internal(ServerMsg::SyncMessageRaw { message_bytes }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes).unwrap();
                 let document = state.to_mut().document_mut();
                 // receive the sync message
@@ -77,21 +77,21 @@ impl<A: Application> Actor for Server<A> {
                 if let Some(message) = document.generate_sync_message(src.into()) {
                     o.send(
                         src,
-                        GlobalMsg::Internal(ServerMsg::SyncMessageRaw {
+                        GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw {
                             message_bytes: message.encode(),
                         }),
                     )
                 }
             }
-            GlobalMsg::Internal(ServerMsg::SyncChangeRaw { change_bytes }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw { change_bytes }) => {
                 let change = Change::from_bytes(change_bytes).unwrap();
                 state.to_mut().document_mut().apply_change(change)
             }
-            GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { doc_bytes }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { doc_bytes }) => {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
                 state.to_mut().document_mut().merge(&mut other_doc);
             }
-            GlobalMsg::External(ClientMsg::Response(_)) => {
+            GlobalMsg::ClientToServer(ClientMsg::Response(_)) => {
                 // we shouldn't be receiving responses
             }
         }
@@ -106,7 +106,7 @@ impl<A: Application> Server<A> {
                 if let Some(change) = state.document().last_local_change() {
                     o.broadcast(
                         &self.peers,
-                        &GlobalMsg::Internal(ServerMsg::SyncChangeRaw {
+                        &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
                             change_bytes: change.raw_bytes().to_vec(),
                         }),
                     )
@@ -122,7 +122,7 @@ impl<A: Application> Server<A> {
                     {
                         o.send(
                             *peer,
-                            GlobalMsg::Internal(ServerMsg::SyncMessageRaw {
+                            GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw {
                                 message_bytes: message.encode(),
                             }),
                         )
@@ -133,7 +133,7 @@ impl<A: Application> Server<A> {
                 let bytes = state.to_mut().document_mut().save();
                 o.broadcast(
                     &self.peers,
-                    &GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
+                    &GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
                 );
             }
         }

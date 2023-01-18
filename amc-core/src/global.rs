@@ -8,10 +8,10 @@ use stateright::actor::{Actor, Command, Id, Out};
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum GlobalMsg<A: Application> {
     /// A message specific to the register system's internal protocol.
-    Internal(ServerMsg),
+    ServerToServer(ServerMsg),
 
     /// A message between clients and servers.
-    External(ClientMsg<A>),
+    ClientToServer(ClientMsg<A>),
 }
 
 /// The root actor type.
@@ -43,7 +43,7 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
                     .map(|o| match o {
                         Command::CancelTimer => Command::CancelTimer,
                         Command::SetTimer(t) => Command::SetTimer(t),
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::ClientToServer(msg)),
                     })
                     .collect();
                 o.append(&mut new_out);
@@ -70,7 +70,7 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
         use GlobalActorState as S;
 
         match (self, &**state, msg) {
-            (A::Trigger(trigger_actor), S::Trigger(client_state), GlobalMsg::External(tmsg)) => {
+            (A::Trigger(trigger_actor), S::Trigger(client_state), GlobalMsg::ClientToServer(tmsg)) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
                 trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);
@@ -83,7 +83,7 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
                     .map(|o| match o {
                         Command::CancelTimer => Command::CancelTimer,
                         Command::SetTimer(t) => Command::SetTimer(t),
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::External(msg)),
+                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::ClientToServer(msg)),
                     })
                     .collect();
 
@@ -98,7 +98,7 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Trigger(_), S::Trigger(_), GlobalMsg::Internal(_)) => {}
+            (A::Trigger(_), S::Trigger(_), GlobalMsg::ServerToServer(_)) => {}
             (A::Server(_), S::Trigger(_), _) => {}
             (A::Trigger(_), S::Server(_), _) => {}
         }

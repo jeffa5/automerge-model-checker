@@ -78,16 +78,16 @@ where
 {
     for envelope in state.network.iter_deliverable() {
         match envelope.msg {
-            GlobalMsg::Internal(ServerMsg::SyncMessageRaw { .. }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Internal(ServerMsg::SyncChangeRaw { .. }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::Internal(ServerMsg::SyncSaveLoadRaw { .. }) => {
+            GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { .. }) => {
                 return false;
             }
-            GlobalMsg::External(_) => {}
+            GlobalMsg::ClientToServer(_) => {}
         }
     }
     true

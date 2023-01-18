@@ -111,11 +111,11 @@ impl amc_cli::Cli for Opts {
 
                 for m in &state.history {
                     match m {
-                        (GlobalMsg::Internal(_), _) => unreachable!(),
-                        (GlobalMsg::External(_), GlobalMsg::Internal(_)) => unreachable!(),
+                        (GlobalMsg::ServerToServer(_), _) => unreachable!(),
+                        (GlobalMsg::ClientToServer(_), GlobalMsg::ServerToServer(_)) => unreachable!(),
                         (
-                            GlobalMsg::External(ClientMsg::Request(req)),
-                            GlobalMsg::External(ClientMsg::Response(res)),
+                            GlobalMsg::ClientToServer(ClientMsg::Request(req)),
+                            GlobalMsg::ClientToServer(ClientMsg::Response(res)),
                         ) => match (req, res) {
                             (TriggerMsg::CreateTodo(_), TriggerResponse::CreateTodo(_)) => {
                                 cf.execute(&mut single_app, req.clone());
@@ -141,10 +141,10 @@ impl amc_cli::Cli for Opts {
                                 unreachable!("{:?}, {:?}", a, b)
                             }
                         },
-                        (GlobalMsg::External(ClientMsg::Response(_)), _) => {}
+                        (GlobalMsg::ClientToServer(ClientMsg::Response(_)), _) => {}
                         (
-                            GlobalMsg::External(ClientMsg::Request(_)),
-                            GlobalMsg::External(ClientMsg::Request(_)),
+                            GlobalMsg::ClientToServer(ClientMsg::Request(_)),
+                            GlobalMsg::ClientToServer(ClientMsg::Request(_)),
                         ) => {}
                     }
                 }
@@ -165,7 +165,7 @@ impl amc_cli::Cli for Opts {
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::External(ClientMsg::Request(_))) {
+            if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Request(_))) {
                 let mut nh = h.clone();
                 nh.push((m.msg.clone(), m.msg.clone()));
                 Some(nh)
@@ -180,7 +180,7 @@ impl amc_cli::Cli for Opts {
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::External(ClientMsg::Response(_))) {
+            if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Response(_))) {
                 let mut nh = h.clone();
                 nh.last_mut().unwrap().1 = m.msg.clone();
                 Some(nh)
