@@ -294,6 +294,7 @@ dependencies = [
 name = "amc"
 version = "0.1.0"
 dependencies = [
+ "amc-cli",
  "amc-core",
  "automerge",
  "clap",

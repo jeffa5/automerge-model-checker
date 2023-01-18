@@ -1,41 +1,15 @@
 use amc_core::{model, Application, GlobalActor, Reporter, Server, Trigger};
-use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Network},
-    Checker, Model,
+    Checker, Model, Property,
 };
+use std::{fmt::Debug, marker::Send};
 
-#[derive(clap::Subcommand, Debug)]
-enum SubCmd {
+#[derive(clap::Subcommand, Copy, Clone, Debug)]
+pub enum SubCmd {
     Serve,
     CheckDfs,
     CheckBfs,
-}
-
-/// Methods for syncing.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
-pub enum SyncMethod {
-    Changes,
-    Messages,
-    SaveLoad,
-}
-
-#[derive(Parser, Debug)]
-struct Opts<O: clap::Args> {
-    #[clap(subcommand)]
-    command: SubCmd,
-
-    #[clap(long, short, global = true, default_value = "2")]
-    servers: usize,
-
-    #[clap(long, arg_enum, global = true, default_value = "changes")]
-    sync_method: SyncMethod,
-
-    #[clap(long, default_value = "8080")]
-    port: u16,
-
-    #[clap(flatten)]
-    custom_opts: O,
 }
 
 pub struct Builder<A, C, T> {
@@ -46,74 +20,83 @@ pub struct Builder<A, C, T> {
     pub trigger: T,
 }
 
-impl<A: Application, C, T: Trigger<A>> Builder<A, C, T> {
-    pub fn into_actor_model(self) -> ActorModel<GlobalActor<T, A>, C, ()> {
-        let mut model = ActorModel::new(self.config, ());
+pub trait Cli: Debug {
+    type App: Application + 'static;
+    type Client: Trigger<Self::App> + 'static;
+    type Config: 'static;
+
+    fn application(&mut self, server: usize) -> Self::App;
+    fn clients(&mut self, server: usize) -> Vec<Self::Client>;
+
+    fn config(&self) -> Self::Config;
+    fn servers(&self) -> usize;
+    fn sync_method(&self) -> amc_core::SyncMethod;
+
+    fn properties(
+        &self,
+    ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config>>>;
+
+    fn actor_model(
+        &mut self,
+    ) -> ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, ()> {
+        let mut model = ActorModel::new(self.config(), ());
 
         // add servers
-        for i in 0..self.servers {
+        for i in 0..self.servers() {
             model = model.actor(GlobalActor::Server(Server {
-                peers: model_peers(i, self.servers),
-                sync_method: self.sync_method,
-                app: self.app.clone(),
+                peers: model_peers(i, self.servers()),
+                sync_method: self.sync_method(),
+                app: self.application(i),
             }))
         }
 
         // add triggers
-        for _ in 0..self.servers {
-            // let i = stateright::actor::Id::from(i);
-            model = model.actor(GlobalActor::Trigger(self.trigger.clone()));
+        for i in 0..self.servers() {
+            for client in self.clients(i) {
+                model = model.actor(GlobalActor::Trigger(client));
+            }
         }
 
         model = model::with_default_properties(model);
+        for property in self.properties() {
+            model = model.property(property.expectation, property.name, property.condition);
+        }
         model.init_network(Network::new_ordered(vec![]))
     }
-}
 
-pub fn clap<A, C, T, O>(app: A, config: C, trigger: T)
-where
-    A: Application + 'static,
-    C: Send + Sync + 'static,
-    T: Trigger<A> + Actor + 'static,
-    <T as Actor>::State: Send + Sync,
-    O: clap::Args + std::fmt::Debug,
-{
-    let opts = Opts::<O>::parse();
-    println!("Running with config {:?}", opts);
+    fn command(&self) -> SubCmd;
+    fn port(&self) -> u16;
 
-    let model = Builder {
-        servers: opts.servers,
-        sync_method: match opts.sync_method {
-            SyncMethod::SaveLoad => amc_core::SyncMethod::SaveLoad,
-            SyncMethod::Changes => amc_core::SyncMethod::Changes,
-            SyncMethod::Messages => amc_core::SyncMethod::Messages,
-        },
-        config,
-        trigger,
-        app,
-    }
-    .into_actor_model()
-    .checker()
-    .threads(num_cpus::get());
+    fn run(&mut self)
+    where
+        <Self as Cli>::Config: Send,
+        <Self as Cli>::Config: Sync,
+        <<Self as Cli>::Client as Actor>::State: Sync,
+        <<Self as Cli>::Client as Actor>::State: Send,
+    {
+        println!("{:?}", self);
+        let model = self.actor_model().checker().threads(num_cpus::get());
+        println!("Running");
 
-    match opts.command {
-        SubCmd::Serve => {
-            println!("Serving web ui on http://127.0.0.1:{}", opts.port);
-            model.serve(("127.0.0.1", opts.port));
-        }
-        SubCmd::CheckDfs => {
-            model
-                .spawn_dfs()
-                .report(&mut Reporter::default())
-                .join()
-                .assert_properties();
-        }
-        SubCmd::CheckBfs => {
-            model
-                .spawn_bfs()
-                .report(&mut Reporter::default())
-                .join()
-                .assert_properties();
+        match self.command() {
+            SubCmd::Serve => {
+                println!("Serving web ui on http://127.0.0.1:{}", self.port());
+                model.serve(("127.0.0.1", self.port()));
+            }
+            SubCmd::CheckDfs => {
+                model
+                    .spawn_dfs()
+                    .report(&mut Reporter::default())
+                    .join()
+                    .assert_properties();
+            }
+            SubCmd::CheckBfs => {
+                model
+                    .spawn_bfs()
+                    .report(&mut Reporter::default())
+                    .join()
+                    .assert_properties();
+            }
         }
     }
 }

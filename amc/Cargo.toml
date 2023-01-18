@@ -9,3 +9,4 @@ clap = { version = "3.1.18", features = ["derive"] }
 num_cpus = "1.13.1"
 stateright = "0.29.0"
 amc-core = { path = "../amc-core" }
+amc-cli = { path = "../amc-cli" }
