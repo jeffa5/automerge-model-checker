@@ -4,6 +4,7 @@ use automerge::transaction::Transactable;
 use automerge::ObjType;
 use automerge::Value;
 use automerge::ROOT;
+use automerge::transaction::UnObserved;
 
 pub const LIST_KEY: &str = "list";
 pub const MAP_KEY: &str = "map";
@@ -47,7 +48,7 @@ impl App {
             .map(|(v, _)| v.into_string().unwrap())
     }
 
-    fn get_map_obj(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+    fn get_map_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
         if let Some((_, id)) = tx.get(ROOT, MAP_KEY).ok().flatten() {
             id
         } else {
@@ -55,7 +56,7 @@ impl App {
         }
     }
 
-    fn get_list_obj(tx: &mut automerge::transaction::Transaction) -> automerge::ObjId {
+    fn get_list_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
         if let Some((_, id)) = tx.get(ROOT, LIST_KEY).ok().flatten() {
             id
         } else {

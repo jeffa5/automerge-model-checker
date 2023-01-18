@@ -20,11 +20,11 @@ struct Opts {
     #[clap(long, short, global = true, default_value = "2")]
     servers: usize,
 
-    #[clap(long, arg_enum, global = true, default_value = "changes")]
+    #[clap(long, global = true, default_value = "changes")]
     sync_method: amc_core::SyncMethod,
 
     // What object type to check.
-    #[clap(long, arg_enum, global = true, default_value = "map")]
+    #[clap(long, global = true, default_value = "map")]
     object_type: amc::ObjectType,
 
     #[clap(long, default_value = "8080")]

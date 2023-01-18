@@ -22,7 +22,7 @@ struct Opts {
     #[clap(long, short, global = true, default_value = "2")]
     servers: usize,
 
-    #[clap(long, arg_enum, global = true, default_value = "changes")]
+    #[clap(long, global = true, default_value = "changes")]
     sync_method: SyncMethod,
 
     #[clap(long, default_value = "8080")]
@@ -34,7 +34,7 @@ struct Opts {
 }
 
 /// Methods for syncing.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
 pub enum SyncMethod {
     Changes,
     Messages,

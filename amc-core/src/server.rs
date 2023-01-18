@@ -26,7 +26,7 @@ pub struct Server<A> {
 }
 
 /// Methods for syncing.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ArgEnum)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
 pub enum SyncMethod {
     Changes,
     Messages,

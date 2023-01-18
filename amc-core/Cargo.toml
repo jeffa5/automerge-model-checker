@@ -3,12 +3,7 @@ name = "amc-core"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 stateright = "0.29.0"
-automerge = "0.1.0"
-clap = { version = "3.1.18", features = ["derive"] }
-
-[dev-dependencies]
-clap = { version = "3.1.18", features = ["derive"] }
+automerge = "0.2.0"
+clap = { version = "4.1.1", features = ["derive"] }

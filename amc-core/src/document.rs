@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::{collections::BTreeMap, ops::Deref};
 
-use automerge::transaction::Transaction;
+use automerge::transaction::{Transaction, UnObserved};
 use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ROOT};
 use stateright::actor::Id;
 
@@ -109,7 +109,7 @@ impl Document {
         self.am.merge(other).unwrap();
     }
 
-    pub fn transaction(&mut self) -> Transaction {
+    pub fn transaction(&mut self) -> Transaction<UnObserved> {
         self.am.transaction()
     }
 }
