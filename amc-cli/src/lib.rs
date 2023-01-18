@@ -1,7 +1,7 @@
-use amc_core::{model, Application, GlobalActor, Reporter, Server, Trigger};
+use amc_core::{model, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
 use clap::Parser;
 use stateright::{
-    actor::{model_peers, Actor, ActorModel, Network},
+    actor::{model_peers, Actor, ActorModel, Envelope, Network},
     Checker, Model, Property,
 };
 use std::fmt::Debug;
@@ -57,6 +57,25 @@ pub trait Cli: Debug {
         &self,
     ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>>>;
 
+    fn record_request(
+        &self,
+    ) -> fn(
+        cfg: &Self::Config,
+        history: &Self::History,
+        message: Envelope<&GlobalMsg<Self::App>>,
+    ) -> Option<Self::History> {
+        |_, _, _| None
+    }
+    fn record_response(
+        &self,
+    ) -> fn(
+        cfg: &Self::Config,
+        history: &Self::History,
+        message: Envelope<&GlobalMsg<Self::App>>,
+    ) -> Option<Self::History> {
+        |_, _, _| None
+    }
+
     fn servers(&self) -> usize;
     fn sync_method(&self) -> amc_core::SyncMethod;
 
@@ -85,7 +104,12 @@ pub trait Cli: Debug {
         for property in self.properties() {
             model = model.property(property.expectation, property.name, property.condition);
         }
-        model.init_network(Network::new_ordered(vec![]))
+        let record_request = self.record_request();
+        let record_response = self.record_response();
+        model
+            .record_msg_in(record_request)
+            .record_msg_out(record_response)
+            .init_network(Network::new_ordered(vec![]))
     }
 
     fn command(&self) -> SubCmd;

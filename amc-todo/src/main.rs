@@ -13,6 +13,7 @@ use amc_core::GlobalActorState;
 use amc_core::GlobalMsg;
 use clap::Parser;
 use stateright::actor::ActorModel;
+use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
 use trigger::Trigger;
@@ -83,14 +84,6 @@ impl amc_cli::Cli for Opts {
 
     fn history(&self) -> Self::History {
         Vec::new()
-    }
-
-    fn servers(&self) -> usize {
-        self.lib_opts.servers
-    }
-
-    fn sync_method(&self) -> amc_core::SyncMethod {
-        self.lib_opts.sync_method
     }
 
     fn properties(
@@ -165,6 +158,44 @@ impl amc_cli::Cli for Opts {
                 })
             },
         )]
+    }
+
+    fn record_request(
+        &self,
+    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
+    {
+        |_, h, m| {
+            if matches!(m.msg, GlobalMsg::External(ClientMsg::Request(_))) {
+                let mut nh = h.clone();
+                nh.push((m.msg.clone(), m.msg.clone()));
+                Some(nh)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn record_response(
+        &self,
+    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
+    {
+        |_, h, m| {
+            if matches!(m.msg, GlobalMsg::External(ClientMsg::Response(_))) {
+                let mut nh = h.clone();
+                nh.last_mut().unwrap().1 = m.msg.clone();
+                Some(nh)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn servers(&self) -> usize {
+        self.lib_opts.servers
+    }
+
+    fn sync_method(&self) -> amc_core::SyncMethod {
+        self.lib_opts.sync_method
     }
 
     fn command(&self) -> amc_cli::SubCmd {
