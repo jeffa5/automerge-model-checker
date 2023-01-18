@@ -14,21 +14,12 @@ use stateright::Property;
 
 #[derive(Parser, Debug)]
 struct Opts {
-    #[clap(subcommand)]
-    command: amc_cli::SubCmd,
-
-    #[clap(long, short, global = true, default_value = "2")]
-    servers: usize,
-
-    #[clap(long, global = true, default_value = "changes")]
-    sync_method: amc_core::SyncMethod,
-
     // What object type to check.
     #[clap(long, global = true, default_value = "map")]
     object_type: amc::ObjectType,
 
-    #[clap(long, default_value = "8080")]
-    port: u16,
+    #[clap(flatten)]
+    lib_opts : amc_cli::Opts,
 }
 
 type ActorState = GlobalActorState<Trigger, Client>;
@@ -111,7 +102,7 @@ impl amc_cli::Cli for Opts {
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                self.servers * INSERT_REQUEST_COUNT
+                self.lib_opts.servers * INSERT_REQUEST_COUNT
             },
         };
         println!("Built config {:?}", c);
@@ -159,19 +150,19 @@ impl amc_cli::Cli for Opts {
     }
 
     fn servers(&self) -> usize {
-        self.servers
+        self.lib_opts.servers
     }
 
     fn sync_method(&self) -> amc_core::SyncMethod {
-        self.sync_method
+        self.lib_opts.sync_method
     }
 
     fn command(&self) -> amc_cli::SubCmd {
-        self.command
+        self.lib_opts.command
     }
 
     fn port(&self) -> u16 {
-        self.port
+        self.lib_opts.port
     }
 }
 

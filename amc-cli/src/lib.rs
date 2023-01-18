@@ -4,6 +4,26 @@ use stateright::{
     Checker, Model, Property,
 };
 use std::{fmt::Debug, marker::Send};
+use clap::Parser;
+
+/// Options for the main running.
+#[derive(Parser, Debug)]
+pub struct Opts {
+    #[clap(subcommand)]
+    pub command: SubCmd,
+
+    /// Number of servers to run.
+    #[clap(long, short, global = true, default_value = "2")]
+    pub servers: usize,
+
+    /// Method to sync changes between servers.
+    #[clap(long, global = true, default_value = "changes")]
+    pub sync_method: amc_core::SyncMethod,
+
+    /// Port to serve UI on.
+    #[clap(long, default_value = "8080")]
+    pub port: u16,
+}
 
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
 pub enum SubCmd {
