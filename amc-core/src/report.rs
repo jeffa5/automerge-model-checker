@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use num_format::SystemLocale;
 use num_format::ToFormattedString;
 use stateright::Model;
@@ -46,6 +48,7 @@ where
         <M as Model>::Action: std::fmt::Debug,
         <M as Model>::State: std::fmt::Debug,
     {
+        let discoveries: BTreeMap<_, _> = discoveries.into_iter().collect();
         for (name, discovery) in discoveries {
             print!(
                 "Discovered \"{}\" {} {}",
