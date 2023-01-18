@@ -37,20 +37,12 @@
       formatter = pkgs.alejandra;
 
       devShell = pkgs.mkShell {
-        buildInputs = with pkgs; [
+        packages = with pkgs; [
           (rust.override {
             extensions = ["rust-src"];
           })
-          cargo-edit
           cargo-watch
-          cargo-criterion
-          cargo-fuzz
           cargo-flamegraph
-          cargo-deny
-          crate2nix
-
-          rnix-lsp
-          nixpkgs-fmt
         ];
       };
     });
