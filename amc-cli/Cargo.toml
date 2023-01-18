@@ -1,0 +1,11 @@
+[package]
+name = "amc-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stateright = "0.29.0"
+automerge = "0.1.0"
+amc-core = { path = "../amc-core" }
+clap = { version = "3.1.18", features = ["derive"] }
+num_cpus = "1.13.1"

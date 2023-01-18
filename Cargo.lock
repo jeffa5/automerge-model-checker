@@ -302,6 +302,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "amc-cli"
+version = "0.1.0"
+dependencies = [
+ "amc-core",
+ "automerge",
+ "clap",
+ "num_cpus",
+ "stateright",
+]
+
+[[package]]
 name = "amc-core"
 version = "0.1.0"
 dependencies = [

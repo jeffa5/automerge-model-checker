@@ -6,10 +6,10 @@ use crate::Document;
 
 /// An Application is coupled with a server and implements an atomic action against the document.
 /// This ensures that no sync messages are applied within the body of execution.
-pub trait Application: Clone + Hash + Eq + Debug {
-    type Input: Clone + Hash + Eq + Debug;
-    type Output: Clone + Hash + Eq + Debug;
-    type State: DerefDocument;
+pub trait Application: Clone + Hash + Eq + Debug + Send + Sync {
+    type Input: Clone + Hash + Eq + Debug + Send + Sync;
+    type Output: Clone + Hash + Eq + Debug + Send + Sync;
+    type State: DerefDocument + Send + Sync;
 
     fn init(&self, id: Id) -> Self::State;
 
