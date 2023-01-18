@@ -10,4 +10,4 @@ members = [
 debug = true
 
 [patch.crates-io]
-stateright = { git = "https://github.com/jeffa5/stateright", branch = "dev" }
+stateright = { git = "https://github.com/stateright/stateright", branch = "master" }
