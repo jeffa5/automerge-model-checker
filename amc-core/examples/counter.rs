@@ -93,10 +93,14 @@ struct Trigger {
     func: TriggerFunc,
     server: Id,
 }
+
+/// Action for the application to perform.
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 enum TriggerFunc {
-    Inc,
-    Dec,
+    /// Number of times to send an increment.
+    Inc(u8),
+    /// Number of times to send a decrement.
+    Dec(u8),
 }
 
 impl amc_core::Trigger<Counter> for Trigger {}
@@ -105,8 +109,16 @@ impl Actor for Trigger {
     type State = ();
     fn on_start(&self, _id: Id, o: &mut Out<Self>) -> Self::State {
         match self.func {
-            TriggerFunc::Inc => o.send(self.server, ClientMsg::Request(CounterMsg::Increment)),
-            TriggerFunc::Dec => o.send(self.server, ClientMsg::Request(CounterMsg::Decrement)),
+            TriggerFunc::Inc(n) => {
+                for _ in 0..n {
+                    o.send(self.server, ClientMsg::Request(CounterMsg::Increment))
+                }
+            }
+            TriggerFunc::Dec(n) => {
+                for _ in 0..n {
+                    o.send(self.server, ClientMsg::Request(CounterMsg::Decrement))
+                }
+            }
         }
     }
 }
@@ -135,10 +147,10 @@ struct Opts {
     servers: usize,
 
     #[clap(long, global = true, default_value = "1")]
-    increments: usize,
+    increments: u8,
 
     #[clap(long, global = true, default_value = "1")]
-    decrements: usize,
+    decrements: u8,
 
     #[clap(long, global = true, default_value = "changes")]
     sync_method: SyncMethod,
@@ -159,7 +171,7 @@ fn main() {
     use clap::Parser;
     let opts = Opts::parse();
 
-    let max_value = (opts.servers * opts.increments) - (opts.servers * opts.decrements);
+    let max_value = (opts.servers * opts.increments as usize) - (opts.servers * opts.decrements as usize);
     let mut model = ActorModel::new(Config { max_value }, Vec::new());
     let app = Counter { initial_value: 1 };
     for i in 0..opts.servers {
@@ -172,18 +184,14 @@ fn main() {
 
     for i in 0..opts.servers {
         let i = Id::from(i);
-        for _ in 0..opts.increments {
-            model = model.actor(GlobalActor::Trigger(Trigger {
-                func: TriggerFunc::Inc,
-                server: i,
-            }));
-        }
-        for _ in 0..opts.decrements {
-            model = model.actor(GlobalActor::Trigger(Trigger {
-                func: TriggerFunc::Dec,
-                server: i,
-            }));
-        }
+        model = model.actor(GlobalActor::Trigger(Trigger {
+            func: TriggerFunc::Inc(opts.increments),
+            server: i,
+        }));
+        model = model.actor(GlobalActor::Trigger(Trigger {
+            func: TriggerFunc::Dec(opts.decrements),
+            server: i,
+        }));
     }
     model = model.property(Expectation::Eventually, "max value", |model, state| {
         for actor in &state.actor_states {
@@ -212,7 +220,7 @@ fn main() {
     });
     model =
         amc_core::model::with_default_properties(model).init_network(Network::new_ordered(vec![]));
-    let model = model.checker().threads(1);
+    let model = model.checker().threads(num_cpus::get());
 
     match opts.command {
         SubCmd::Serve => {

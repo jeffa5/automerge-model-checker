@@ -320,6 +320,7 @@ dependencies = [
  "automerge",
  "clap",
  "num-format",
+ "num_cpus",
  "stateright",
 ]
 
