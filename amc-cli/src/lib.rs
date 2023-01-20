@@ -24,6 +24,22 @@ pub struct Opts {
     /// Port to serve UI on.
     #[clap(long, default_value = "8080")]
     pub port: u16,
+
+    /// Enable checking documents are in the same state during checking of the document.
+    #[clap(long)]
+    pub same_state_check:bool,
+
+    /// Enable checking documents are in sync and don't have any other messages.
+    #[clap(long)]
+    pub in_sync_check:bool,
+
+    /// Enable checking documents can be saved and loaded and they remain the same.
+    #[clap(long)]
+    pub save_load_check:bool,
+
+    /// Enable checking documents don't panic.
+    #[clap(long)]
+    pub error_free_check:bool,
 }
 
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
@@ -56,7 +72,19 @@ impl Opts {
             }
         }
 
-        model = model::with_default_properties(model);
+        if self.same_state_check {
+            model = model::with_same_state_check(model);
+        }
+        if self.in_sync_check {
+            model = model::with_in_sync_check(model);
+        }
+        if self.save_load_check {
+            model = model::with_save_load_check(model);
+        }
+        if self.error_free_check {
+            model = model::with_error_free_check(model);
+        }
+
         for property in c.properties() {
             model = model.property(property.expectation, property.name, property.condition);
         }
