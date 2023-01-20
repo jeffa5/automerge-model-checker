@@ -35,7 +35,8 @@ pub enum SubCmd {
 
 impl Opts {
     fn actor_model<C: Cli>(
-        &self, c: &C,
+        &self,
+        c: &C,
     ) -> ActorModel<GlobalActor<C::Client, C::App>, C::Config, C::History> {
         let mut model = ActorModel::new(c.config(self), c.history());
 
@@ -67,15 +68,14 @@ impl Opts {
             .init_network(Network::new_ordered(vec![]))
     }
 
-    pub fn run<C:Cli>(self, c:C)
-        where
-            C::Config: Send,
-            C::Config: Sync,
-            <C::Client as Actor>::State: Sync,
-            <C::Client as Actor>::State: Send,
-            C::History: Send + Sync + 'static,
+    pub fn run<C: Cli>(self, c: C)
+    where
+        C::Config: Send,
+        C::Config: Sync,
+        <C::Client as Actor>::State: Sync,
+        <C::Client as Actor>::State: Send,
+        C::History: Send + Sync + 'static,
     {
-
         println!("{:?}", self);
         let model = self.actor_model(&c).checker().threads(num_cpus::get());
         println!("Running");

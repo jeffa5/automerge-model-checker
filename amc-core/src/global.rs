@@ -70,7 +70,11 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
         use GlobalActorState as S;
 
         match (self, &**state, msg) {
-            (A::Trigger(trigger_actor), S::Trigger(client_state), GlobalMsg::ClientToServer(tmsg)) => {
+            (
+                A::Trigger(trigger_actor),
+                S::Trigger(client_state),
+                GlobalMsg::ClientToServer(tmsg),
+            ) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
                 trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);

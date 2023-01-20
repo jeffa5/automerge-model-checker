@@ -199,6 +199,9 @@ impl amc_cli::Cli for C {
 }
 
 fn main() {
-    let Opts { c: c_opts, lib_opts } = Opts::parse();
+    let Opts {
+        c: c_opts,
+        lib_opts,
+    } = Opts::parse();
     lib_opts.run(c_opts);
 }
