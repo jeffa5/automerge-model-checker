@@ -5,7 +5,6 @@ use std::borrow::Cow;
 use crate::apphandle::AppHandle;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
-use amc_cli::Cli;
 use amc_core::model::syncing_done;
 use amc_core::Application;
 use amc_core::ClientMsg;
@@ -24,10 +23,16 @@ mod apphandle;
 mod trigger;
 
 #[derive(Parser, Debug)]
-struct Opts {
+struct C {
     /// Whether to use random ids for todo creation.
     #[clap(long, global = true)]
     random_ids: bool,
+}
+
+#[derive(Parser, Debug)]
+struct Opts {
+    #[clap(flatten)]
+    c: C,
 
     #[clap(flatten)]
     lib_opts: amc_cli::Opts,
@@ -39,7 +44,7 @@ pub struct Config {
     pub app: AppHandle,
 }
 
-impl amc_cli::Cli for Opts {
+impl amc_cli::Cli for C {
     type App = AppHandle;
 
     type Client = Trigger;
@@ -76,7 +81,7 @@ impl amc_cli::Cli for Opts {
         ]
     }
 
-    fn config(&self) -> Self::Config {
+    fn config(&self, _cli_opts: &amc_cli::Opts) -> Self::Config {
         Config {
             app: self.application(0),
         }
@@ -112,7 +117,9 @@ impl amc_cli::Cli for Opts {
                 for m in &state.history {
                     match m {
                         (GlobalMsg::ServerToServer(_), _) => unreachable!(),
-                        (GlobalMsg::ClientToServer(_), GlobalMsg::ServerToServer(_)) => unreachable!(),
+                        (GlobalMsg::ClientToServer(_), GlobalMsg::ServerToServer(_)) => {
+                            unreachable!()
+                        }
                         (
                             GlobalMsg::ClientToServer(ClientMsg::Request(req)),
                             GlobalMsg::ClientToServer(ClientMsg::Response(res)),
@@ -189,24 +196,9 @@ impl amc_cli::Cli for Opts {
             }
         }
     }
-
-    fn servers(&self) -> usize {
-        self.lib_opts.servers
-    }
-
-    fn sync_method(&self) -> amc_core::SyncMethod {
-        self.lib_opts.sync_method
-    }
-
-    fn command(&self) -> amc_cli::SubCmd {
-        self.lib_opts.command
-    }
-
-    fn port(&self) -> u16 {
-        self.lib_opts.port
-    }
 }
 
 fn main() {
-    Opts::parse().run();
+    let Opts { c: c_opts, lib_opts } = Opts::parse();
+    lib_opts.run(c_opts);
 }

@@ -33,12 +33,74 @@ pub enum SubCmd {
     CheckBfs,
 }
 
-pub struct Builder<A, C, T> {
-    pub servers: usize,
-    pub sync_method: amc_core::SyncMethod,
-    pub app: A,
-    pub config: C,
-    pub trigger: T,
+impl Opts {
+    fn actor_model<C: Cli>(
+        &self, c: &C,
+    ) -> ActorModel<GlobalActor<C::Client, C::App>, C::Config, C::History> {
+        let mut model = ActorModel::new(c.config(self), c.history());
+
+        // add servers
+        for i in 0..self.servers {
+            model = model.actor(GlobalActor::Server(Server {
+                peers: model_peers(i, self.servers),
+                sync_method: self.sync_method,
+                app: c.application(i),
+            }))
+        }
+
+        // add triggers
+        for i in 0..self.servers {
+            for client in c.clients(i) {
+                model = model.actor(GlobalActor::Trigger(client));
+            }
+        }
+
+        model = model::with_default_properties(model);
+        for property in c.properties() {
+            model = model.property(property.expectation, property.name, property.condition);
+        }
+        let record_request = c.record_request();
+        let record_response = c.record_response();
+        model
+            .record_msg_in(record_request)
+            .record_msg_out(record_response)
+            .init_network(Network::new_ordered(vec![]))
+    }
+
+    pub fn run<C:Cli>(self, c:C)
+        where
+            C::Config: Send,
+            C::Config: Sync,
+            <C::Client as Actor>::State: Sync,
+            <C::Client as Actor>::State: Send,
+            C::History: Send + Sync + 'static,
+    {
+
+        println!("{:?}", self);
+        let model = self.actor_model(&c).checker().threads(num_cpus::get());
+        println!("Running");
+
+        match self.command {
+            SubCmd::Serve => {
+                println!("Serving web ui on http://127.0.0.1:{}", self.port);
+                model.serve(("127.0.0.1", self.port));
+            }
+            SubCmd::CheckDfs => {
+                model
+                    .spawn_dfs()
+                    .report(&mut Reporter::default())
+                    .join()
+                    .assert_properties();
+            }
+            SubCmd::CheckBfs => {
+                model
+                    .spawn_bfs()
+                    .report(&mut Reporter::default())
+                    .join()
+                    .assert_properties();
+            }
+        }
+    }
 }
 
 pub trait Cli: Debug {
@@ -50,7 +112,7 @@ pub trait Cli: Debug {
     fn application(&self, server: usize) -> Self::App;
     fn clients(&self, server: usize) -> Vec<Self::Client>;
 
-    fn config(&self) -> Self::Config;
+    fn config(&self, cli_opts: &Opts) -> Self::Config;
     fn history(&self) -> Self::History;
 
     fn properties(
@@ -74,78 +136,5 @@ pub trait Cli: Debug {
         message: Envelope<&GlobalMsg<Self::App>>,
     ) -> Option<Self::History> {
         |_, _, _| None
-    }
-
-    fn servers(&self) -> usize;
-    fn sync_method(&self) -> amc_core::SyncMethod;
-
-    fn actor_model(
-        &mut self,
-    ) -> ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History> {
-        let mut model = ActorModel::new(self.config(), self.history());
-
-        // add servers
-        for i in 0..self.servers() {
-            model = model.actor(GlobalActor::Server(Server {
-                peers: model_peers(i, self.servers()),
-                sync_method: self.sync_method(),
-                app: self.application(i),
-            }))
-        }
-
-        // add triggers
-        for i in 0..self.servers() {
-            for client in self.clients(i) {
-                model = model.actor(GlobalActor::Trigger(client));
-            }
-        }
-
-        model = model::with_default_properties(model);
-        for property in self.properties() {
-            model = model.property(property.expectation, property.name, property.condition);
-        }
-        let record_request = self.record_request();
-        let record_response = self.record_response();
-        model
-            .record_msg_in(record_request)
-            .record_msg_out(record_response)
-            .init_network(Network::new_ordered(vec![]))
-    }
-
-    fn command(&self) -> SubCmd;
-    fn port(&self) -> u16;
-
-    fn run(&mut self)
-    where
-        <Self as Cli>::Config: Send,
-        <Self as Cli>::Config: Sync,
-        <<Self as Cli>::Client as Actor>::State: Sync,
-        <<Self as Cli>::Client as Actor>::State: Send,
-        <Self as Cli>::History: Send + Sync + 'static,
-    {
-        println!("{:?}", self);
-        let model = self.actor_model().checker().threads(num_cpus::get());
-        println!("Running");
-
-        match self.command() {
-            SubCmd::Serve => {
-                println!("Serving web ui on http://127.0.0.1:{}", self.port());
-                model.serve(("127.0.0.1", self.port()));
-            }
-            SubCmd::CheckDfs => {
-                model
-                    .spawn_dfs()
-                    .report(&mut Reporter::default())
-                    .join()
-                    .assert_properties();
-            }
-            SubCmd::CheckBfs => {
-                model
-                    .spawn_bfs()
-                    .report(&mut Reporter::default())
-                    .join()
-                    .assert_properties();
-            }
-        }
     }
 }

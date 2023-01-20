@@ -6,17 +6,22 @@ use amc::client::Client;
 
 use amc::trigger::Trigger;
 use amc::ObjectType;
-use amc_cli::Cli;
 use amc_core::GlobalActorState;
 use clap::Parser;
 use stateright::actor::Id;
 use stateright::Property;
 
 #[derive(Parser, Debug)]
-struct Opts {
+struct C {
     // What object type to check.
     #[clap(long, global = true, default_value = "map")]
     object_type: amc::ObjectType,
+}
+
+#[derive(Parser, Debug)]
+struct Opts {
+    #[clap(flatten)]
+    c: C,
 
     #[clap(flatten)]
     lib_opts: amc_cli::Opts,
@@ -26,7 +31,7 @@ type ActorState = GlobalActorState<Trigger, Client>;
 
 const INSERT_REQUEST_COUNT: usize = 2;
 
-impl amc_cli::Cli for Opts {
+impl amc_cli::Cli for C {
     type App = Client;
 
     type Client = Trigger;
@@ -98,13 +103,13 @@ impl amc_cli::Cli for Opts {
         triggers
     }
 
-    fn config(&self) -> Self::Config {
+    fn config(&self, cli_opts: &amc_cli::Opts) -> Self::Config {
         let c = Config {
             max_map_size: 1,
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                self.lib_opts.servers * INSERT_REQUEST_COUNT
+                cli_opts.servers * INSERT_REQUEST_COUNT
             },
         };
         println!("Built config {:?}", c);
@@ -154,22 +159,6 @@ impl amc_cli::Cli for Opts {
             }),
         ]
     }
-
-    fn servers(&self) -> usize {
-        self.lib_opts.servers
-    }
-
-    fn sync_method(&self) -> amc_core::SyncMethod {
-        self.lib_opts.sync_method
-    }
-
-    fn command(&self) -> amc_cli::SubCmd {
-        self.lib_opts.command
-    }
-
-    fn port(&self) -> u16 {
-        self.lib_opts.port
-    }
 }
 
 fn state_has_max_map_size(state: &Arc<ActorState>, cfg: &Config) -> bool {
@@ -215,5 +204,6 @@ struct Config {
 }
 
 fn main() {
-    Opts::parse().run();
+    let Opts { c: c_opts, lib_opts } = Opts::parse();
+    lib_opts.run(c_opts);
 }
