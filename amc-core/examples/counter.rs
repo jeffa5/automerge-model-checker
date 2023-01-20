@@ -171,7 +171,8 @@ fn main() {
     use clap::Parser;
     let opts = Opts::parse();
 
-    let max_value = (opts.servers * opts.increments as usize) - (opts.servers * opts.decrements as usize);
+    let max_value =
+        (opts.servers * opts.increments as usize) - (opts.servers * opts.decrements as usize);
     let mut model = ActorModel::new(Config { max_value }, Vec::new());
     let app = Counter { initial_value: 1 };
     for i in 0..opts.servers {
@@ -218,8 +219,7 @@ fn main() {
             None
         }
     });
-    model =
-        amc_core::model::with_default_properties(model).init_network(Network::new_ordered(vec![]));
+    model = model.init_network(Network::new_ordered(vec![]));
     let model = model.checker().threads(num_cpus::get());
 
     match opts.command {
