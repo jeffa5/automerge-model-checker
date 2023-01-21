@@ -1,4 +1,4 @@
-# Automerge Model Checking
+# Automerge Model Checker
 
 An attempt to model check the [Rust implementation](https://github.com/automerge/automerge-rs) of [Automerge](https://automerge.org/) directly, making some simplifying assumptions along the way.
 
