@@ -291,7 +291,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "amc"
+name = "amc-automerge"
 version = "0.1.0"
 dependencies = [
  "amc-cli",

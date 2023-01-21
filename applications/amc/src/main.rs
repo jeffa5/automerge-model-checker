@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use amc::app::{LIST_KEY, MAP_KEY};
-use amc::client;
-use amc::client::Client;
+use amc_automerge::app::{LIST_KEY, MAP_KEY};
+use amc_automerge::client;
+use amc_automerge::client::Client;
 
-use amc::trigger::Trigger;
-use amc::ObjectType;
+use amc_automerge::trigger::Trigger;
+use amc_automerge::ObjectType;
 use amc_core::GlobalActorState;
 use clap::Parser;
 use stateright::actor::Id;
@@ -15,7 +15,7 @@ use stateright::Property;
 struct C {
     // What object type to check.
     #[clap(long, global = true, default_value = "map")]
-    object_type: amc::ObjectType,
+    object_type: amc_automerge::ObjectType,
 }
 
 #[derive(Parser, Debug)]
@@ -58,14 +58,14 @@ impl amc_cli::Cli for C {
             ObjectType::Map => {
                 vec![
                     Trigger {
-                        func: amc::trigger::TriggerState::MapSinglePut {
+                        func: amc_automerge::trigger::TriggerState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
                         server,
                     },
                     Trigger {
-                        func: amc::trigger::TriggerState::MapSingleDelete {
+                        func: amc_automerge::trigger::TriggerState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
@@ -76,21 +76,21 @@ impl amc_cli::Cli for C {
             ObjectType::List => {
                 vec![
                     Trigger {
-                        func: amc::trigger::TriggerState::ListStartPut {
+                        func: amc_automerge::trigger::TriggerState::ListStartPut {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
                     Trigger {
-                        func: amc::trigger::TriggerState::ListDelete {
+                        func: amc_automerge::trigger::TriggerState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
                     Trigger {
-                        func: amc::trigger::TriggerState::ListInsert {
+                        func: amc_automerge::trigger::TriggerState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
                         },
