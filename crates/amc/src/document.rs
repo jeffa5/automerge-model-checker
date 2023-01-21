@@ -64,6 +64,7 @@ impl Hash for Document {
 }
 
 impl Document {
+    /// Create a new document.
     pub fn new(actor_id: Id) -> Self {
         let mut doc = Automerge::new();
         let id: usize = actor_id.into();
@@ -77,18 +78,22 @@ impl Document {
         }
     }
 
+    /// Check whether this document has errored.
     pub fn has_error(&self) -> bool {
         self.error
     }
 
+    /// Mark this document as having encountered an error.
     pub fn set_error(&mut self) {
         self.error = true;
     }
 
+    /// Apply a change to the document.
     pub fn apply_change(&mut self, change: Change) {
         self.am.apply_changes(std::iter::once(change)).unwrap()
     }
 
+    /// Receive a sync message for this document, automatically handling sync states.
     pub fn receive_sync_message(&mut self, peer: usize, message: sync::Message) {
         let state = self.sync_states.entry(peer).or_default();
         let res = self.am.receive_sync_message(state, message);
@@ -98,6 +103,7 @@ impl Document {
         }
     }
 
+    /// Generate a sync message for a peer.
     pub fn generate_sync_message(&mut self, peer: usize) -> Option<sync::Message> {
         let state = self.sync_states.entry(peer).or_default();
         let msg = self.am.generate_sync_message(state);
@@ -112,6 +118,8 @@ impl Document {
         self.get_heads() == self.last_sent_heads
     }
 
+    /// Update the last sent heads to the current ones of the document, returning the previous set
+    /// of heads.
     pub fn update_last_sent_heads(&mut self) -> Vec<ChangeHash> {
         // get the new heads that we're syncing
         let mut heads = self.am.get_heads();
@@ -120,6 +128,7 @@ impl Document {
         heads
     }
 
+    /// Get the last local changes since syncing.
     pub fn get_last_local_changes_for_sync(&self) -> impl Iterator<Item = &Change> {
         // get the changes since the heads
         let changes = self.am.get_changes(&self.last_sent_heads).unwrap();
@@ -128,14 +137,17 @@ impl Document {
         changes.into_iter().filter(move |c| c.actor_id() == actor)
     }
 
+    /// Save the document.
     pub fn save(&mut self) -> Vec<u8> {
         self.am.save()
     }
 
+    /// Merge another document with this one.
     pub fn merge(&mut self, other: &mut Automerge) {
         self.am.merge(other).unwrap();
     }
 
+    /// Create a transaction.
     pub fn transaction(&mut self) -> Transaction<UnObserved> {
         self.am.transaction()
     }

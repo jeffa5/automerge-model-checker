@@ -9,6 +9,30 @@ use crate::Application;
 use crate::Trigger;
 use crate::{GlobalActor, GlobalActorState};
 
+/// Add default properties to a model.
+///
+/// These include checking for consistent states when syncing is completed, save and load
+/// consistency and others.
+///
+/// **Warning**: This may add significant performance overhead, just for the checking of internal automerge
+/// properties, you could probably do without these if you're assuming automerge is correct.
+pub fn with_default_properties<T, A, C, H>(
+    mut model: ActorModel<GlobalActor<T, A>, C, H>,
+) -> ActorModel<GlobalActor<T, A>, C, H>
+where
+    T: Trigger<A>,
+    A: Application,
+    H: Hash + Debug + Clone,
+{
+    model = with_same_state_check(model);
+    model = with_in_sync_check(model);
+    model = with_save_load_check(model);
+    model = with_error_free_check(model);
+    model
+}
+
+
+/// Ensure that all applications eventually end up with the same state.
 pub fn with_same_state_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
@@ -24,6 +48,8 @@ where
     )
 }
 
+/// Ensure that all applications have the same state when there is no syncing to be done.
+// TODO: is this more general than the with_same_state_check? This should also check at the end.
 pub fn with_in_sync_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
@@ -39,6 +65,11 @@ where
     )
 }
 
+/// Ensure that after each application step, saving and loading the document gives the same
+/// document.
+///
+/// **Warning**: Saving and loading are comparatively expensive to be run in model checking so it
+/// might be best not to include this unless you really want it.
 pub fn with_save_load_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
@@ -54,6 +85,10 @@ where
     )
 }
 
+/// Ensure that the application logic doesn't panic.
+///
+/// This might get removed if panics get better handling in our underlying model checker
+/// (Stateright).
 pub fn with_error_free_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
@@ -75,25 +110,6 @@ where
             })
         },
     )
-}
-
-/// Add default properties to a model.
-///
-/// These include checking for consistent states when syncing is completed, save and load
-/// consistency and others.
-pub fn with_default_properties<T, A, C, H>(
-    mut model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
-where
-    T: Trigger<A>,
-    A: Application,
-    H: Hash + Debug + Clone,
-{
-    model = with_same_state_check(model);
-    model = with_in_sync_check(model);
-    model = with_save_load_check(model);
-    model = with_error_free_check(model);
-    model
 }
 
 fn all_same_state<T, A>(actors: &[Arc<GlobalActorState<T, A>>]) -> bool

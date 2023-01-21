@@ -22,25 +22,43 @@ use stateright::actor::Out;
 /// other peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Server<A> {
+    /// Ids of peers of this server.
     pub peers: Vec<Id>,
+    /// Method to synchronise with peers.
     pub sync_method: SyncMethod,
+    /// Application logic.
     pub app: A,
 }
 
 /// Methods for syncing.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
 pub enum SyncMethod {
+    /// Broadcast changes produced locally in this document to peers.
     Changes,
+    /// Use the Automerge sync protocol to send changes to peers.
     Messages,
+    /// Save the current document and send its entirety to peers for merging.
     SaveLoad,
 }
 
 /// Messages that servers send to each other.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ServerMsg {
-    SyncMessageRaw { message_bytes: Bytes },
-    SyncChangeRaw { missing_changes_bytes: Vec<Bytes> },
-    SyncSaveLoadRaw { doc_bytes: Bytes },
+    /// A message containing multiple changes.
+    SyncChangeRaw {
+        /// Bytes of the changes.
+        missing_changes_bytes: Vec<Bytes>,
+    },
+    /// A regular sync message.
+    SyncMessageRaw {
+        /// The encoded message.
+        message_bytes: Bytes,
+    },
+    /// A saved document.
+    SyncSaveLoadRaw {
+        /// Bytes of the saved document.
+        doc_bytes: Bytes,
+    },
 }
 
 impl<A: Application> Actor for Server<A> {

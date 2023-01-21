@@ -3,7 +3,7 @@ use crate::app::MAP_KEY;
 use crate::client::Client;
 use crate::trigger::Trigger;
 use crate::ObjectType;
-use amc::model;
+use amc::properties;
 use amc::GlobalActor;
 use amc::GlobalActorState;
 use amc::Server;
@@ -92,7 +92,7 @@ impl Builder {
             }
         }
 
-        model = model::with_default_properties(model);
+        model = properties::with_default_properties(model);
         model
             .property(
                 stateright::Expectation::Sometimes,

@@ -17,14 +17,18 @@ pub enum GlobalMsg<A: Application> {
 /// The root actor type.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GlobalActor<T, A> {
+    /// Actor to trigger behaviour in the application.
     Trigger(T),
+    /// Server that hosts the application.
     Server(Server<A>),
 }
 
 /// The root actor state.
 #[derive(Clone, Debug, PartialEq, Hash)]
 pub enum GlobalActorState<T: Trigger<A>, A: Application> {
+    /// State for the trigger.
     Trigger(<T as Actor>::State),
+    /// State for the application.
     Server(<Server<A> as Actor>::State),
 }
 

@@ -1,4 +1,4 @@
-use amc::{model, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
+use amc::{properties, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
 use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Envelope, Network},
@@ -73,16 +73,16 @@ impl Opts {
         }
 
         if self.same_state_check {
-            model = model::with_same_state_check(model);
+            model = properties::with_same_state_check(model);
         }
         if self.in_sync_check {
-            model = model::with_in_sync_check(model);
+            model = properties::with_in_sync_check(model);
         }
         if self.save_load_check {
-            model = model::with_save_load_check(model);
+            model = properties::with_save_load_check(model);
         }
         if self.error_free_check {
-            model = model::with_error_free_check(model);
+            model = properties::with_error_free_check(model);
         }
 
         for property in c.properties() {

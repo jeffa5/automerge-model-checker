@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 //! AMC is a collection of utilities to aid in model-checking automerge based CRDTs.
 //!
 //! The main parts of this library are the [`Application`], [`DerefDocument`] and [`Trigger`]
@@ -146,11 +148,15 @@
 //!     model.checker().threads(1).spawn_dfs().join().assert_properties();
 //! ```
 
+
 mod bytes;
 mod client;
 mod document;
 mod global;
-pub mod model;
+
+/// Utilities for built-in properties.
+pub mod properties;
+
 mod report;
 mod server;
 mod trigger;

@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use crate::apphandle::AppHandle;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
-use amc::model::syncing_done;
+use amc::properties::syncing_done;
 use amc::Application;
 use amc::ClientMsg;
 use amc::GlobalActorState;
