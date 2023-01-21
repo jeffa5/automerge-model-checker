@@ -31,7 +31,7 @@ jobs:
     - run: |
         set -x
 
-        git pull origin gh-pages --ff-only
+        git pull origin gh-pages --ff
         git checkout gh-pages
 
         rm -rf *
