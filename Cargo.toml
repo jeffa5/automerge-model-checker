@@ -1,9 +1,9 @@
 [workspace]
 members = [
     "amc-core",
-    "amc",
     "amc-cli",
-    "amc-todo",
+    "applications/amc",
+    "applications/amc-todo",
 ]
 
 [profile.release]
