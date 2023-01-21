@@ -1,25 +1,3 @@
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-
-    - run: |
-        set -x
-
-        git pull origin HEAD
-        git pull origin gh-pages
-        git checkout gh-pages
-
-        rm -rf *
-
-        cp -r result/target/doc doc/
-
-        git add .
-        git commit -m "Updating docs"
-        git push origin gh-pages
-
 name: Deploy static content to Pages
 
 on:
