@@ -3,9 +3,9 @@ use std::borrow::Cow;
 use stateright::actor::{Actor, Command, Id, Out};
 
 use crate::{
-    client::{Application, ClientMsg},
+    client::{Application, ApplicationMsg},
     server::{Server, ServerMsg},
-    trigger::Trigger,
+    drive::Drive,
 };
 
 /// The root message type.
@@ -15,37 +15,37 @@ pub enum GlobalMsg<A: Application> {
     ServerToServer(ServerMsg),
 
     /// A message between clients and servers.
-    ClientToServer(ClientMsg<A>),
+    ClientToServer(ApplicationMsg<A>),
 }
 
 /// The root actor type.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GlobalActor<T, A> {
     /// Actor to trigger behaviour in the application.
-    Trigger(T),
+    Driver(T),
     /// Server that hosts the application.
     Server(Server<A>),
 }
 
 /// The root actor state.
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub enum GlobalActorState<T: Trigger<A>, A: Application> {
+pub enum GlobalActorState<T: Drive<A>, A: Application> {
     /// State for the trigger.
-    Trigger(<T as Actor>::State),
+    Driver(<T as Actor>::State),
     /// State for the application.
     Server(<Server<A> as Actor>::State),
 }
 
-impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
+impl<T: Drive<A>, A: Application> Actor for GlobalActor<T, A> {
     type Msg = GlobalMsg<A>;
 
     type State = GlobalActorState<T, A>;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
-            GlobalActor::Trigger(trigger_actor) => {
+            GlobalActor::Driver(trigger_actor) => {
                 let mut trigger_out = Out::new();
-                let state = GlobalActorState::Trigger(trigger_actor.on_start(id, &mut trigger_out));
+                let state = GlobalActorState::Driver(trigger_actor.on_start(id, &mut trigger_out));
                 let mut new_out: Out<Self> = trigger_out
                     .into_iter()
                     .map(|o| match o {
@@ -79,15 +79,15 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
 
         match (self, &**state, msg) {
             (
-                A::Trigger(trigger_actor),
-                S::Trigger(client_state),
+                A::Driver(trigger_actor),
+                S::Driver(client_state),
                 GlobalMsg::ClientToServer(tmsg),
             ) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
                 trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);
                 if let Cow::Owned(client_state) = client_state {
-                    *state = Cow::Owned(GlobalActorState::Trigger(client_state))
+                    *state = Cow::Owned(GlobalActorState::Driver(client_state))
                 }
 
                 let mut new_out: Out<Self> = client_out
@@ -110,9 +110,9 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Trigger(_), S::Trigger(_), GlobalMsg::ServerToServer(_)) => {}
-            (A::Server(_), S::Trigger(_), _) => {}
-            (A::Trigger(_), S::Server(_), _) => {}
+            (A::Driver(_), S::Driver(_), GlobalMsg::ServerToServer(_)) => {}
+            (A::Server(_), S::Driver(_), _) => {}
+            (A::Driver(_), S::Server(_), _) => {}
         }
     }
 
@@ -120,8 +120,8 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
         use GlobalActor as A;
         use GlobalActorState as S;
         match (self, &**state) {
-            (A::Trigger(_), S::Trigger(_)) => {}
-            (A::Trigger(_), S::Server(_)) => {}
+            (A::Driver(_), S::Driver(_)) => {}
+            (A::Driver(_), S::Server(_)) => {}
             (A::Server(server_actor), S::Server(server_state)) => {
                 let mut server_state = Cow::Borrowed(server_state);
                 let mut server_out = Out::new();
@@ -131,7 +131,7 @@ impl<T: Trigger<A>, A: Application> Actor for GlobalActor<T, A> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Server(_), S::Trigger(_)) => {}
+            (A::Server(_), S::Driver(_)) => {}
         }
     }
 }

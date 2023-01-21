@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use crate::bytes::Bytes;
 use crate::client::Application;
-use crate::client::ClientMsg;
+use crate::client::ApplicationMsg;
 use crate::client::DerefDocument;
 use crate::global::GlobalMsg;
 use automerge::sync;
@@ -83,9 +83,9 @@ impl<A: Application> Actor for Server<A> {
         o: &mut Out<Self>,
     ) {
         match msg {
-            GlobalMsg::ClientToServer(ClientMsg::Request(request)) => {
+            GlobalMsg::ClientToServer(ApplicationMsg::Input(request)) => {
                 let output = self.app.execute(state, request);
-                o.send(src, GlobalMsg::ClientToServer(ClientMsg::Response(output)));
+                o.send(src, GlobalMsg::ClientToServer(ApplicationMsg::Output(output)));
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes.0).unwrap();
@@ -114,7 +114,7 @@ impl<A: Application> Actor for Server<A> {
                 let mut other_doc = Automerge::load(&doc_bytes.0).unwrap();
                 state.to_mut().document_mut().merge(&mut other_doc);
             }
-            GlobalMsg::ClientToServer(ClientMsg::Response(_)) => {
+            GlobalMsg::ClientToServer(ApplicationMsg::Output(_)) => {
                 // we shouldn't be receiving responses
             }
         }

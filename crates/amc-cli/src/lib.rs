@@ -2,7 +2,7 @@
 
 //! Utilities for building models and appropriate CLIs for Automerge Model Checker applications.
 
-use amc::{properties, application::{server::{SyncMethod, Server}, Application}, global::{GlobalActor, GlobalMsg}, triggers::Trigger };
+use amc::{properties, application::{server::{SyncMethod, Server}, Application}, global::{GlobalActor, GlobalMsg}, driver::Drive };
 use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Envelope, Network},
@@ -66,7 +66,7 @@ impl Opts {
     fn actor_model<M: ModelBuilder>(
         &self,
         model_builder: &M,
-    ) -> ActorModel<GlobalActor<M::Client, M::App>, M::Config, M::History> {
+    ) -> ActorModel<GlobalActor<M::Driver, M::App>, M::Config, M::History> {
         let mut model = ActorModel::new(model_builder.config(self), model_builder.history());
 
         // add servers
@@ -78,10 +78,10 @@ impl Opts {
             }))
         }
 
-        // add triggers
+        // add drivers
         for i in 0..self.servers {
-            for client in model_builder.clients(i) {
-                model = model.actor(GlobalActor::Trigger(client));
+            for client in model_builder.drivers(i) {
+                model = model.actor(GlobalActor::Driver(client));
             }
         }
 
@@ -114,8 +114,8 @@ impl Opts {
     where
         C::Config: Send,
         C::Config: Sync,
-        <C::Client as Actor>::State: Sync,
-        <C::Client as Actor>::State: Send,
+        <C::Driver as Actor>::State: Sync,
+        <C::Driver as Actor>::State: Send,
         C::History: Send + Sync + 'static,
     {
         println!("{:?}", self);
@@ -150,7 +150,7 @@ pub trait ModelBuilder: Debug {
     type App: Application + 'static;
 
     /// The type of the client in the application.
-    type Client: Trigger<Self::App> + 'static;
+    type Driver: Drive<Self::App> + 'static;
 
     /// The type of config for the model.
     type Config: 'static;
@@ -159,10 +159,10 @@ pub trait ModelBuilder: Debug {
     type History: Clone + Debug + Hash;
 
     /// Generate an application instance.
-    fn application(&self, server: usize) -> Self::App;
+    fn application(&self, application: usize) -> Self::App;
 
-    /// Generate some clients for the given server.
-    fn clients(&self, server: usize) -> Vec<Self::Client>;
+    /// Generate some drivers for the given application.
+    fn drivers(&self, application: usize) -> Vec<Self::Driver>;
 
     /// Generate the config for the model.
     fn config(&self, cli_opts: &Opts) -> Self::Config;
@@ -173,7 +173,7 @@ pub trait ModelBuilder: Debug {
     /// Generate the properties to be added to the model.
     fn properties(
         &self,
-    ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>>>;
+    ) -> Vec<Property<ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config, Self::History>>>;
 
     /// Record a request to the application.
     fn record_request(

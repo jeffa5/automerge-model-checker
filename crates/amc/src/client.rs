@@ -33,11 +33,11 @@ pub trait DerefDocument: Clone + Hash + Eq + Debug {
     fn document_mut(&mut self) -> &mut Document;
 }
 
-/// A ClientMsg contains the request or response to or from a client's execution.
+/// Contains the input to or output from the application.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ClientMsg<C: Application> {
-    /// Message originating from clients to servers.
-    Request(C::Input),
-    /// Message originating from server to client.
-    Response(C::Output),
+pub enum ApplicationMsg<A: Application> {
+    /// Message to feed to the application.
+    Input(A::Input),
+    /// Message resulting from the application.
+    Output(A::Output),
 }

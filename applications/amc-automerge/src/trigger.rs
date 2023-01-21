@@ -1,16 +1,16 @@
-use amc::triggers::ClientMsg;
+use amc::driver::{ApplicationMsg, Drive};
 use stateright::actor::{Actor, Id};
 
 use crate::client::App;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Trigger {
-    pub func: TriggerState,
+pub struct Driver {
+    pub func: DriverState,
     pub server: Id,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TriggerState {
+pub enum DriverState {
     MapSinglePut { request_count: usize, key: String },
     MapSingleDelete { request_count: usize, key: String },
     ListStartPut { request_count: usize, index: usize },
@@ -19,7 +19,7 @@ pub enum TriggerState {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TriggerMsg {
+pub enum DriverMsg {
     MapSinglePut { key: String },
     MapSingleDelete { key: String },
     ListPut { index: usize },
@@ -27,10 +27,10 @@ pub enum TriggerMsg {
     ListInsert { index: usize },
 }
 
-impl amc::triggers::Trigger<App> for Trigger {}
+impl Drive<App> for Driver {}
 
-impl Actor for Trigger {
-    type Msg = ClientMsg<App>;
+impl Actor for Driver {
+    type Msg = ApplicationMsg<App>;
 
     type State = ();
 
@@ -40,52 +40,52 @@ impl Actor for Trigger {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         match &self.func {
-            TriggerState::MapSinglePut { request_count, key } => {
+            DriverState::MapSinglePut { request_count, key } => {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        ClientMsg::Request(TriggerMsg::MapSinglePut { key: key.clone() }),
+                        ApplicationMsg::Input(DriverMsg::MapSinglePut { key: key.clone() }),
                     );
                 }
             }
-            TriggerState::MapSingleDelete { request_count, key } => {
+            DriverState::MapSingleDelete { request_count, key } => {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        ClientMsg::Request(TriggerMsg::MapSingleDelete { key: key.clone() }),
+                        ApplicationMsg::Input(DriverMsg::MapSingleDelete { key: key.clone() }),
                     );
                 }
             }
-            TriggerState::ListStartPut {
+            DriverState::ListStartPut {
                 request_count,
                 index,
             } => {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        ClientMsg::Request(TriggerMsg::ListPut { index: *index }),
+                        ApplicationMsg::Input(DriverMsg::ListPut { index: *index }),
                     );
                 }
             }
-            TriggerState::ListDelete {
+            DriverState::ListDelete {
                 request_count,
                 index,
             } => {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        ClientMsg::Request(TriggerMsg::ListDelete { index: *index }),
+                        ApplicationMsg::Input(DriverMsg::ListDelete { index: *index }),
                     );
                 }
             }
-            TriggerState::ListInsert {
+            DriverState::ListInsert {
                 request_count,
                 index,
             } => {
                 for _ in 0..*request_count {
                     o.send(
                         self.server,
-                        ClientMsg::Request(TriggerMsg::ListInsert { index: *index }),
+                        ApplicationMsg::Input(DriverMsg::ListInsert { index: *index }),
                     );
                 }
             }

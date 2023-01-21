@@ -12,8 +12,8 @@ use amc::application::server::SyncMethod;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
-use amc::triggers::ClientMsg;
-use amc::triggers::Trigger;
+use amc::driver::ApplicationMsg;
+use amc::driver::Drive;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::model_peers;
@@ -96,34 +96,34 @@ impl DerefDocument for CounterState {
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-struct Triggerer {
-    func: TriggerFunc,
+struct Driver {
+    func: DriverFunc,
     server: Id,
 }
 
 /// Action for the application to perform.
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-enum TriggerFunc {
+enum DriverFunc {
     /// Number of times to send an increment.
     Inc(u8),
     /// Number of times to send a decrement.
     Dec(u8),
 }
 
-impl Trigger<Counter> for Triggerer {}
-impl Actor for Triggerer {
-    type Msg = ClientMsg<Counter>;
+impl Drive<Counter> for Driver {}
+impl Actor for Driver {
+    type Msg = ApplicationMsg<Counter>;
     type State = ();
     fn on_start(&self, _id: Id, o: &mut Out<Self>) -> Self::State {
         match self.func {
-            TriggerFunc::Inc(n) => {
+            DriverFunc::Inc(n) => {
                 for _ in 0..n {
-                    o.send(self.server, ClientMsg::Request(CounterMsg::Increment))
+                    o.send(self.server, ApplicationMsg::Input(CounterMsg::Increment))
                 }
             }
-            TriggerFunc::Dec(n) => {
+            DriverFunc::Dec(n) => {
                 for _ in 0..n {
-                    o.send(self.server, ClientMsg::Request(CounterMsg::Decrement))
+                    o.send(self.server, ApplicationMsg::Input(CounterMsg::Decrement))
                 }
             }
         }
@@ -184,12 +184,12 @@ fn main() {
 
     for i in 0..opts.servers {
         let i = Id::from(i);
-        model = model.actor(GlobalActor::Trigger(Triggerer {
-            func: TriggerFunc::Inc(opts.increments),
+        model = model.actor(GlobalActor::Driver(Driver {
+            func: DriverFunc::Inc(opts.increments),
             server: i,
         }));
-        model = model.actor(GlobalActor::Trigger(Triggerer {
-            func: TriggerFunc::Dec(opts.decrements),
+        model = model.actor(GlobalActor::Driver(Driver {
+            func: DriverFunc::Dec(opts.decrements),
             server: i,
         }));
     }
@@ -210,7 +210,7 @@ fn main() {
         false
     });
     model = model.record_msg_in(|_, h, m| {
-        if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Request(_))) {
+        if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
             let mut nh = h.clone();
             nh.push(m.msg.clone());
             Some(nh)

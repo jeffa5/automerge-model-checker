@@ -2,22 +2,22 @@ use std::borrow::Cow;
 
 /// amc-todo shows how to implement the application side and client side with a concrete example
 ///
-use crate::apphandle::AppHandle;
-use crate::trigger::TriggerMsg;
-use crate::trigger::TriggerResponse;
+use crate::apphandle::App;
+use crate::trigger::AppInput;
+use crate::trigger::AppOutput;
 use amc::application::Application;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
 use amc::properties::syncing_done;
-use amc::triggers::ClientMsg;
+use amc::driver::ApplicationMsg;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
-use trigger::TriggerState;
-use trigger::Triggerer;
+use trigger::DriverState;
+use trigger::Driver;
 
 mod app;
 mod apphandle;
@@ -39,44 +39,44 @@ struct Opts {
     lib_opts: amc_cli::Opts,
 }
 
-type AppHistory = Vec<(GlobalMsg<AppHandle>, GlobalMsg<AppHandle>)>;
+type AppHistory = Vec<(GlobalMsg<App>, GlobalMsg<App>)>;
 
 pub struct Config {
-    pub app: AppHandle,
+    pub app: App,
 }
 
 impl amc_cli::ModelBuilder for C {
-    type App = AppHandle;
+    type App = App;
 
-    type Client = Triggerer;
+    type Driver = Driver;
 
     type Config = Config;
 
     type History = AppHistory;
 
     fn application(&self, _server: usize) -> Self::App {
-        AppHandle {
+        App {
             random_ids: self.random_ids,
         }
     }
 
-    fn clients(&self, server: usize) -> Vec<Self::Client> {
+    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
         let i = stateright::actor::Id::from(server);
         vec![
-            Triggerer {
-                func: TriggerState::Creater,
+            Driver {
+                func: DriverState::Creater,
                 server: i,
             },
-            Triggerer {
-                func: TriggerState::Updater,
+            Driver {
+                func: DriverState::Updater,
                 server: i,
             },
-            Triggerer {
-                func: TriggerState::Toggler,
+            Driver {
+                func: DriverState::Toggler,
                 server: i,
             },
-            Triggerer {
-                func: TriggerState::Deleter,
+            Driver {
+                func: DriverState::Deleter,
                 server: i,
             },
         ]
@@ -96,11 +96,11 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
+            ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config, Self::History>,
         >,
     > {
         type Model =
-            stateright::actor::ActorModel<GlobalActor<Triggerer, AppHandle>, Config, AppHistory>;
+            stateright::actor::ActorModel<GlobalActor<Driver, App>, Config, AppHistory>;
         type Prop = Property<Model>;
         vec![Prop::always(
             "all apps have the right number of tasks",
@@ -119,37 +119,37 @@ impl amc_cli::ModelBuilder for C {
                             unreachable!()
                         }
                         (
-                            GlobalMsg::ClientToServer(ClientMsg::Request(req)),
-                            GlobalMsg::ClientToServer(ClientMsg::Response(res)),
+                            GlobalMsg::ClientToServer(ApplicationMsg::Input(req)),
+                            GlobalMsg::ClientToServer(ApplicationMsg::Output(res)),
                         ) => match (req, res) {
-                            (TriggerMsg::CreateTodo(_), TriggerResponse::CreateTodo(_)) => {
+                            (AppInput::CreateTodo(_), AppOutput::CreateTodo(_)) => {
                                 cf.execute(&mut single_app, req.clone());
                             }
-                            (TriggerMsg::ToggleActive(_), TriggerResponse::ToggleActive(_)) => {
+                            (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {
                                 cf.execute(&mut single_app, req.clone());
                             }
                             (
-                                TriggerMsg::DeleteTodo(_),
-                                TriggerResponse::DeleteTodo(was_present),
+                                AppInput::DeleteTodo(_),
+                                AppOutput::DeleteTodo(was_present),
                             ) => {
                                 if *was_present {
                                     cf.execute(&mut single_app, req.clone());
                                 }
                             }
-                            (TriggerMsg::Update(_id, _text), TriggerResponse::Update(success)) => {
+                            (AppInput::Update(_id, _text), AppOutput::Update(success)) => {
                                 if *success {
                                     cf.execute(&mut single_app, req.clone());
                                 }
                             }
-                            (TriggerMsg::ListTodos, trigger::TriggerResponse::ListTodos(_ids)) => {}
+                            (AppInput::ListTodos, trigger::AppOutput::ListTodos(_ids)) => {}
                             (a, b) => {
                                 unreachable!("{:?}, {:?}", a, b)
                             }
                         },
-                        (GlobalMsg::ClientToServer(ClientMsg::Response(_)), _) => {}
+                        (GlobalMsg::ClientToServer(ApplicationMsg::Output(_)), _) => {}
                         (
-                            GlobalMsg::ClientToServer(ClientMsg::Request(_)),
-                            GlobalMsg::ClientToServer(ClientMsg::Request(_)),
+                            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)),
+                            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)),
                         ) => {}
                     }
                 }
@@ -167,10 +167,10 @@ impl amc_cli::ModelBuilder for C {
 
     fn record_request(
         &self,
-    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
+    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Request(_))) {
+            if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
                 let mut nh = h.clone();
                 nh.push((m.msg.clone(), m.msg.clone()));
                 Some(nh)
@@ -182,10 +182,10 @@ impl amc_cli::ModelBuilder for C {
 
     fn record_response(
         &self,
-    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<AppHandle>>) -> Option<AppHistory>
+    ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Response(_))) {
+            if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Output(_))) {
                 let mut nh = h.clone();
                 nh.last_mut().unwrap().1 = m.msg.clone();
                 Some(nh)

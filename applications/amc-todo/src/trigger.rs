@@ -1,16 +1,16 @@
-use amc::triggers::{ClientMsg, Trigger};
+use amc::driver::{ApplicationMsg, Drive};
 use stateright::actor::{Actor, Id};
 
-use crate::apphandle::AppHandle;
+use crate::apphandle::App;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Triggerer {
-    pub func: TriggerState,
+pub struct Driver {
+    pub func: DriverState,
     pub server: Id,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TriggerState {
+pub enum DriverState {
     Creater,
     Updater,
     Toggler,
@@ -18,7 +18,7 @@ pub enum TriggerState {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TriggerMsg {
+pub enum AppInput {
     CreateTodo(String),
     Update(u32, String),
     ToggleActive(u32),
@@ -27,7 +27,7 @@ pub enum TriggerMsg {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TriggerResponse {
+pub enum AppOutput {
     /// The id of the created task.
     CreateTodo(u32),
     Update(bool),
@@ -36,10 +36,10 @@ pub enum TriggerResponse {
     ListTodos(Vec<u32>),
 }
 
-impl Trigger<AppHandle> for Triggerer {}
+impl Drive<App> for Driver {}
 
-impl Actor for Triggerer {
-    type Msg = ClientMsg<AppHandle>;
+impl Actor for Driver {
+    type Msg = ApplicationMsg<App>;
 
     type State = ();
 
@@ -49,20 +49,20 @@ impl Actor for Triggerer {
         o: &mut stateright::actor::Out<Self>,
     ) -> Self::State {
         match self.func {
-            TriggerState::Creater => {
+            DriverState::Creater => {
                 o.send(
                     self.server,
-                    ClientMsg::Request(TriggerMsg::CreateTodo("todo 1".to_owned())),
+                    ApplicationMsg::Input(AppInput::CreateTodo("todo 1".to_owned())),
                 );
             }
-            TriggerState::Updater => {
-                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
+            DriverState::Updater => {
+                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
             }
-            TriggerState::Toggler => {
-                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
+            DriverState::Toggler => {
+                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
             }
-            TriggerState::Deleter => {
-                o.send(self.server, ClientMsg::Request(TriggerMsg::ListTodos));
+            DriverState::Deleter => {
+                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
             }
         }
     }
@@ -76,27 +76,27 @@ impl Actor for Triggerer {
         o: &mut stateright::actor::Out<Self>,
     ) {
         match msg {
-            ClientMsg::Request(_) => unreachable!("clients don't handle requests"),
-            ClientMsg::Response(r) => match (&self.func, r) {
-                (TriggerState::Updater, TriggerResponse::ListTodos(ids)) => {
+            ApplicationMsg::Input(_) => unreachable!("clients don't handle requests"),
+            ApplicationMsg::Output(r) => match (&self.func, r) {
+                (DriverState::Updater, AppOutput::ListTodos(ids)) => {
                     for id in ids {
                         o.send(
                             self.server,
-                            ClientMsg::Request(TriggerMsg::Update(id, "updated todo".to_owned())),
+                            ApplicationMsg::Input(AppInput::Update(id, "updated todo".to_owned())),
                         )
                     }
                 }
-                (TriggerState::Toggler, TriggerResponse::ListTodos(ids)) => {
+                (DriverState::Toggler, AppOutput::ListTodos(ids)) => {
                     for id in ids {
                         o.send(
                             self.server,
-                            ClientMsg::Request(TriggerMsg::ToggleActive(id)),
+                            ApplicationMsg::Input(AppInput::ToggleActive(id)),
                         );
                     }
                 }
-                (TriggerState::Deleter, TriggerResponse::ListTodos(ids)) => {
+                (DriverState::Deleter, AppOutput::ListTodos(ids)) => {
                     for id in ids {
-                        o.send(self.server, ClientMsg::Request(TriggerMsg::DeleteTodo(id)));
+                        o.send(self.server, ApplicationMsg::Input(AppInput::DeleteTodo(id)));
                     }
                 }
                 _ => {}

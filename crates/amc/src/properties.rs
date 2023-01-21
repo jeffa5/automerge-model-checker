@@ -9,7 +9,7 @@ use crate::client::DerefDocument;
 use crate::global::GlobalMsg;
 use crate::global::{GlobalActor, GlobalActorState};
 use crate::server::ServerMsg;
-use crate::trigger::Trigger;
+use crate::drive::Drive;
 
 /// Add default properties to a model.
 ///
@@ -22,7 +22,7 @@ pub fn with_default_properties<T, A, C, H>(
     mut model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
     H: Hash + Debug + Clone,
 {
@@ -38,7 +38,7 @@ pub fn with_same_state_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
     H: Hash + Debug + Clone,
 {
@@ -55,7 +55,7 @@ pub fn with_in_sync_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
     H: Hash + Debug + Clone,
 {
@@ -75,7 +75,7 @@ pub fn with_save_load_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
     H: Hash + Debug + Clone,
 {
@@ -94,7 +94,7 @@ pub fn with_error_free_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
 ) -> ActorModel<GlobalActor<T, A>, C, H>
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
     H: Hash + Debug + Clone,
 {
@@ -115,13 +115,13 @@ where
 
 fn all_same_state<T, A>(actors: &[Arc<GlobalActorState<T, A>>]) -> bool
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
 {
     actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
-        (GlobalActorState::Trigger(_), GlobalActorState::Trigger(_)) => true,
-        (GlobalActorState::Trigger(_), GlobalActorState::Server(_)) => true,
-        (GlobalActorState::Server(_), GlobalActorState::Trigger(_)) => true,
+        (GlobalActorState::Driver(_), GlobalActorState::Driver(_)) => true,
+        (GlobalActorState::Driver(_), GlobalActorState::Server(_)) => true,
+        (GlobalActorState::Server(_), GlobalActorState::Driver(_)) => true,
         (GlobalActorState::Server(a), GlobalActorState::Server(b)) => {
             let a_vals = a.document().values(ROOT).collect::<Vec<_>>();
             let b_vals = b.document().values(ROOT).collect::<Vec<_>>();
@@ -134,12 +134,12 @@ where
 /// delivery.
 pub fn syncing_done<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
 {
     let all_actors_changes_sent = state.actor_states.iter().all(|state| match &**state {
         GlobalActorState::Server(server) => server.document().finished_sending_changes(),
-        GlobalActorState::Trigger(_) => true,
+        GlobalActorState::Driver(_) => true,
     });
 
     let network_contains_sync_messages = state.network.iter_deliverable().any(|e| match e.msg {
@@ -158,7 +158,7 @@ where
 
 fn syncing_done_and_in_sync<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
 {
     // first check that the network has no sync messages in-flight.
@@ -168,12 +168,12 @@ where
 
 fn save_load_same<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
 where
-    T: Trigger<A>,
+    T: Drive<A>,
     A: Application,
 {
     for actor in &state.actor_states {
         match &**actor {
-            GlobalActorState::Trigger(_) => {
+            GlobalActorState::Driver(_) => {
                 // clients don't have state to save and load
             }
             GlobalActorState::Server(s) => {

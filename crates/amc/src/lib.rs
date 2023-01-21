@@ -2,10 +2,10 @@
 
 //! AMC is a collection of utilities to aid in model-checking automerge based CRDTs.
 //!
-//! The main parts of this library are the [`Application`], [`DerefDocument`] and [`Trigger`]
+//! The main parts of this library are the [`Application`](application::Application), [`DerefDocument`](application::DerefDocument) and [`Drive`](driver::Drive)
 //! traits.
 //! These are used to define your application logic, a way to obtain the automerge document and
-//! triggers for actions in your application respectively.
+//! drivers for actions in your application respectively.
 //!
 //! The following code is from the [counter example](../examples/counter.rs).
 //!
@@ -13,13 +13,13 @@
 //! # use std::borrow::Cow;
 //! # use automerge::ROOT;
 //! # use automerge::transaction::Transactable;
-//! # use amc::Application;
-//! # use amc::Document;
-//! # use amc::ClientMsg;
-//! # use amc::DerefDocument;
-//! # use amc::GlobalActor;
-//! # use amc::GlobalMsg;
-//! # use amc::Server;
+//! # use amc::application::Application;
+//! # use amc::application::Document;
+//! # use amc::driver::ApplicationMsg;
+//! # use amc::application::DerefDocument;
+//! # use amc::global::GlobalActor;
+//! # use amc::global::GlobalMsg;
+//! # use amc::application::server::Server;
 //! # use stateright::Model;
 //! # use stateright::Checker;
 //! # use stateright::actor::Network;
@@ -29,7 +29,7 @@
 //! # use stateright::Expectation;
 //! # use stateright::actor::Out;
 //! # use stateright::actor::Actor;
-//! # use amc::SyncMethod;
+//! # use amc::application::server::SyncMethod;
 //! #
 //! #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 //! struct Counter {
@@ -87,7 +87,7 @@
 //! }
 //!
 //! #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-//! struct Trigger {
+//! struct Driver {
 //!     func: TriggerFunc,
 //!     server: Id,
 //! }
@@ -97,14 +97,14 @@
 //!     Dec,
 //! }
 //!
-//! impl amc::Trigger<Counter> for Trigger {}
-//! impl Actor for Trigger {
-//!     type Msg = ClientMsg<Counter>;
+//! impl amc::driver::Drive<Counter> for Driver {}
+//! impl Actor for Driver {
+//!     type Msg = ApplicationMsg<Counter>;
 //!     type State = ();
 //!     fn on_start(&self, _id:Id, o: &mut Out<Self>) -> Self::State {
 //!     match self.func {
-//!         TriggerFunc::Inc => o.send(self.server, ClientMsg::Request(CounterMsg::Increment)),
-//!         TriggerFunc::Dec => o.send(self.server, ClientMsg::Request(CounterMsg::Decrement)),
+//!         TriggerFunc::Inc => o.send(self.server, ApplicationMsg::Input(CounterMsg::Increment)),
+//!         TriggerFunc::Dec => o.send(self.server, ApplicationMsg::Input(CounterMsg::Decrement)),
 //!     }
 //!     }
 //! }
@@ -122,11 +122,11 @@
 //!
 //!     for i in 0..num_servers {
 //!         let i = Id::from(i);
-//!         model = model.actor(GlobalActor::Trigger(Trigger {
+//!         model = model.actor(GlobalActor::Driver(Driver {
 //!             func: TriggerFunc::Inc,
 //!             server: i,
 //!         }));
-//!         model = model.actor(GlobalActor::Trigger(Trigger {
+//!         model = model.actor(GlobalActor::Driver(Driver {
 //!             func: TriggerFunc::Dec,
 //!             server: i,
 //!         }));
@@ -136,7 +136,7 @@
 //!         true
 //!     });
 //!     model = model.record_msg_in(|_, h, m| {
-//!         if matches!(m.msg, GlobalMsg::ClientToServer(ClientMsg::Request(_))) {
+//!         if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
 //!             let mut nh = h.clone();
 //!             nh.push(m.msg.clone());
 //!             Some(nh)
@@ -152,7 +152,7 @@ mod bytes;
 mod client;
 mod document;
 mod server;
-mod trigger;
+mod drive;
 
 /// All global utilities.
 pub mod global;
@@ -172,8 +172,8 @@ pub mod application {
     }
 }
 
-/// Triggers of application functionality.
-pub mod triggers {
-    pub use crate::client::ClientMsg;
-    pub use crate::trigger::Trigger;
+/// Drivers of application functionality.
+pub mod driver {
+    pub use crate::client::ApplicationMsg;
+    pub use crate::drive::Drive;
 }

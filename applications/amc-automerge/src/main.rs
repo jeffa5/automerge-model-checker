@@ -5,7 +5,7 @@ use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
 use amc_automerge::client::App;
 
-use amc_automerge::trigger::Trigger;
+use amc_automerge::trigger::Driver;
 use amc_automerge::ObjectType;
 use clap::Parser;
 use stateright::actor::Id;
@@ -27,14 +27,14 @@ struct Opts {
     lib_opts: amc_cli::Opts,
 }
 
-type ActorState = GlobalActorState<Trigger, App>;
+type ActorState = GlobalActorState<Driver, App>;
 
 const INSERT_REQUEST_COUNT: usize = 2;
 
 impl amc_cli::ModelBuilder for C {
     type App = App;
 
-    type Client = Trigger;
+    type Driver = Driver;
 
     type Config = Config;
 
@@ -52,20 +52,20 @@ impl amc_cli::ModelBuilder for C {
         c
     }
 
-    fn clients(&self, server: usize) -> Vec<Self::Client> {
+    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
         let server = Id::from(server);
         let triggers = match self.object_type {
             ObjectType::Map => {
                 vec![
-                    Trigger {
-                        func: amc_automerge::trigger::TriggerState::MapSinglePut {
+                    Driver {
+                        func: amc_automerge::trigger::DriverState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
                         server,
                     },
-                    Trigger {
-                        func: amc_automerge::trigger::TriggerState::MapSingleDelete {
+                    Driver {
+                        func: amc_automerge::trigger::DriverState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
@@ -75,22 +75,22 @@ impl amc_cli::ModelBuilder for C {
             }
             ObjectType::List => {
                 vec![
-                    Trigger {
-                        func: amc_automerge::trigger::TriggerState::ListStartPut {
+                    Driver {
+                        func: amc_automerge::trigger::DriverState::ListStartPut {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
-                    Trigger {
-                        func: amc_automerge::trigger::TriggerState::ListDelete {
+                    Driver {
+                        func: amc_automerge::trigger::DriverState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
-                    Trigger {
-                        func: amc_automerge::trigger::TriggerState::ListInsert {
+                    Driver {
+                        func: amc_automerge::trigger::DriverState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
                         },
@@ -122,10 +122,10 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            stateright::actor::ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config>,
+            stateright::actor::ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<GlobalActor<Trigger, App>, Config>;
+        type Model = stateright::actor::ActorModel<GlobalActor<Driver, App>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {

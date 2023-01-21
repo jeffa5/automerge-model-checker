@@ -10,27 +10,27 @@ use std::hash::Hash;
 
 /// The app that clients work with.
 #[derive(Clone, Debug, Eq)]
-pub struct App {
+pub struct AppState {
     doc: Box<Document>,
     random_ids: bool,
     seed: u64,
     rng: StdRng,
 }
 
-impl Hash for App {
+impl Hash for AppState {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.doc.hash(state);
         self.seed.hash(state);
     }
 }
 
-impl PartialEq for App {
+impl PartialEq for AppState {
     fn eq(&self, other: &Self) -> bool {
         self.doc == other.doc && self.seed == other.seed
     }
 }
 
-impl DerefDocument for App {
+impl DerefDocument for AppState {
     fn document(&self) -> &Document {
         &self.doc
     }
@@ -40,7 +40,7 @@ impl DerefDocument for App {
     }
 }
 
-impl App {
+impl AppState {
     pub fn new(id: stateright::actor::Id, random_ids: bool) -> Self {
         let seed = usize::from(id) as u64;
         Self {

@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 use crate::app::AppState;
-use crate::trigger::TriggerMsg;
+use crate::trigger::DriverMsg;
 
 mod delete;
 mod insert;
@@ -26,7 +26,7 @@ pub struct App {
 }
 
 impl Application for App {
-    type Input = TriggerMsg;
+    type Input = DriverMsg;
 
     type Output = ();
 
@@ -38,11 +38,11 @@ impl Application for App {
 
     fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
-            TriggerMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
-            TriggerMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),
-            TriggerMsg::ListPut { index } => self.list_start_putter.execute(document, index),
-            TriggerMsg::ListDelete { index } => self.list_deleter.execute(document, index),
-            TriggerMsg::ListInsert { index } => self.list_inserter.execute(document, index),
+            DriverMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
+            DriverMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),
+            DriverMsg::ListPut { index } => self.list_start_putter.execute(document, index),
+            DriverMsg::ListDelete { index } => self.list_deleter.execute(document, index),
+            DriverMsg::ListInsert { index } => self.list_inserter.execute(document, index),
         }
     }
 }

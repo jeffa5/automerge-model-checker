@@ -57,6 +57,7 @@
         (rust.override {
           extensions = ["rust-src"];
         })
+        cargo-watch
         cargo-flamegraph
       ];
     };
