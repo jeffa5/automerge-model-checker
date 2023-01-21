@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use amc::global::{GlobalActor, GlobalActorState};
+use amc::global::{GlobalActorState, GlobalActor};
 use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
 use amc_automerge::client::App;
 
-use amc_automerge::trigger::Driver;
+use amc_automerge::driver::Driver;
 use amc_automerge::ObjectType;
 use clap::Parser;
 use stateright::actor::Id;
@@ -54,18 +54,18 @@ impl amc_cli::ModelBuilder for C {
 
     fn drivers(&self, server: usize) -> Vec<Self::Driver> {
         let server = Id::from(server);
-        let triggers = match self.object_type {
+        let drivers = match self.object_type {
             ObjectType::Map => {
                 vec![
                     Driver {
-                        func: amc_automerge::trigger::DriverState::MapSinglePut {
+                        func: amc_automerge::driver::DriverState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
                         server,
                     },
                     Driver {
-                        func: amc_automerge::trigger::DriverState::MapSingleDelete {
+                        func: amc_automerge::driver::DriverState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
@@ -76,21 +76,21 @@ impl amc_cli::ModelBuilder for C {
             ObjectType::List => {
                 vec![
                     Driver {
-                        func: amc_automerge::trigger::DriverState::ListStartPut {
+                        func: amc_automerge::driver::DriverState::ListStartPut {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
                     Driver {
-                        func: amc_automerge::trigger::DriverState::ListDelete {
+                        func: amc_automerge::driver::DriverState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
                         server,
                     },
                     Driver {
-                        func: amc_automerge::trigger::DriverState::ListInsert {
+                        func: amc_automerge::driver::DriverState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
                         },
@@ -99,8 +99,8 @@ impl amc_cli::ModelBuilder for C {
                 ]
             }
         };
-        println!("Adding clients {:?}", triggers);
-        triggers
+        println!("Adding clients {:?}", drivers);
+        drivers
     }
 
     fn config(&self, cli_opts: &amc_cli::Opts) -> Self::Config {
@@ -122,7 +122,7 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            stateright::actor::ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config>,
+            stateright::actor::ActorModel<GlobalActor< Self::App, Self::Driver>, Self::Config>,
         >,
     > {
         type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config>;

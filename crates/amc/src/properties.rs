@@ -119,9 +119,9 @@ where
     A: Application,
 {
     actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
-        (GlobalActorState::Driver(_), GlobalActorState::Driver(_)) => true,
-        (GlobalActorState::Driver(_), GlobalActorState::Server(_)) => true,
-        (GlobalActorState::Server(_), GlobalActorState::Driver(_)) => true,
+        (GlobalActorState::Client(_), GlobalActorState::Client(_)) => true,
+        (GlobalActorState::Client(_), GlobalActorState::Server(_)) => true,
+        (GlobalActorState::Server(_), GlobalActorState::Client(_)) => true,
         (GlobalActorState::Server(a), GlobalActorState::Server(b)) => {
             let a_vals = a.document().values(ROOT).collect::<Vec<_>>();
             let b_vals = b.document().values(ROOT).collect::<Vec<_>>();
@@ -139,7 +139,7 @@ where
 {
     let all_actors_changes_sent = state.actor_states.iter().all(|state| match &**state {
         GlobalActorState::Server(server) => server.document().finished_sending_changes(),
-        GlobalActorState::Driver(_) => true,
+        GlobalActorState::Client(_) => true,
     });
 
     let network_contains_sync_messages = state.network.iter_deliverable().any(|e| match e.msg {
@@ -156,7 +156,7 @@ where
     all_actors_changes_sent && !network_contains_sync_messages
 }
 
-fn syncing_done_and_in_sync<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
+fn syncing_done_and_in_sync< A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
     A: Application,
     D: Drive<A>,
@@ -166,14 +166,14 @@ where
     !syncing_done(state) || all_same_state(&state.actor_states)
 }
 
-fn save_load_same<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
+fn save_load_same<A,D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
     A: Application,
     D: Drive<A>,
 {
     for actor in &state.actor_states {
         match &**actor {
-            GlobalActorState::Driver(_) => {
+            GlobalActorState::Client(_) => {
                 // clients don't have state to save and load
             }
             GlobalActorState::Server(s) => {

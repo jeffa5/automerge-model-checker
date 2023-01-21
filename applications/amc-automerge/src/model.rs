@@ -1,7 +1,7 @@
 use crate::app::LIST_KEY;
 use crate::app::MAP_KEY;
 use crate::client::App;
-use crate::trigger::Driver;
+use crate::driver::Driver;
 use crate::ObjectType;
 use amc::application::server::Server;
 use amc::application::server::SyncMethod;
@@ -56,7 +56,7 @@ impl Builder {
                     model = model.actor(GlobalActor::Client(Client {
                         server: i,
                         driver: Driver {
-                            func: crate::trigger::DriverState::MapSinglePut {
+                            func: crate::driver::DriverState::MapSinglePut {
                                 request_count: 2,
                                 key: "key".to_owned(),
                             },
@@ -67,7 +67,7 @@ impl Builder {
                     model = model.actor(GlobalActor::Client(Client {
                         server: i,
                         driver: Driver {
-                            func: crate::trigger::DriverState::MapSingleDelete {
+                            func: crate::driver::DriverState::MapSingleDelete {
                                 request_count: 2,
                                 key: "key".to_owned(),
                             },
@@ -80,7 +80,7 @@ impl Builder {
                     model = model.actor(GlobalActor::Client(Client {
                         server: i,
                         driver: Driver {
-                            func: crate::trigger::DriverState::ListStartPut {
+                            func: crate::driver::DriverState::ListStartPut {
                                 request_count: 2,
                                 index: 0,
                             },
@@ -92,7 +92,7 @@ impl Builder {
                         server: i,
 
                         driver: Driver {
-                            func: crate::trigger::DriverState::ListDelete {
+                            func: crate::driver::DriverState::ListDelete {
                                 request_count: 2,
                                 index: 0,
                             },
@@ -103,7 +103,7 @@ impl Builder {
                     model = model.actor(GlobalActor::Client(Client {
                         server: i,
                         driver: Driver {
-                            func: crate::trigger::DriverState::ListInsert {
+                            func: crate::driver::DriverState::ListInsert {
                                 request_count: insert_request_count,
                                 index: 0,
                             },

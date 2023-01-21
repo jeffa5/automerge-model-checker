@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 use crate::app::AppState;
-use crate::trigger::DriverMsg;
+use crate::driver::DriverMsg;
 
 mod delete;
 mod insert;

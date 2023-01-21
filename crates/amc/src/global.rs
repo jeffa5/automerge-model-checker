@@ -30,8 +30,8 @@ pub enum GlobalActor<A, D> {
 /// The root actor state.
 #[derive(Clone, Debug, PartialEq, Hash)]
 pub enum GlobalActorState<D: Drive<A>, A: Application> {
-    /// State for the trigger.
-    Driver(<Client<A, D> as Actor>::State),
+    /// State for the driver.
+    Client(<Client<A, D> as Actor>::State),
     /// State for the application.
     Server(<Server<A> as Actor>::State),
 }
@@ -43,10 +43,10 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
-            GlobalActor::Client(driver_actor) => {
-                let mut driver_out = Out::new();
-                let state = GlobalActorState::Driver(driver_actor.on_start(id, &mut driver_out));
-                o.append(&mut driver_out);
+            GlobalActor::Client(client_actor) => {
+                let mut client_out = Out::new();
+                let state = GlobalActorState::Client(client_actor.on_start(id, &mut client_out));
+                o.append(&mut client_out);
                 state
             }
             GlobalActor::Server(server_actor) => {
@@ -70,12 +70,12 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
         use GlobalActorState as S;
 
         match (self, &**state, msg) {
-            (A::Client(client_actor), S::Driver(client_state), msg) => {
+            (A::Client(client_actor), S::Client(client_state), msg) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
                 client_actor.on_msg(id, &mut client_state, src, msg, &mut client_out);
                 if let Cow::Owned(client_state) = client_state {
-                    *state = Cow::Owned(GlobalActorState::Driver(client_state))
+                    *state = Cow::Owned(GlobalActorState::Client(client_state))
                 }
 
                 o.append(&mut client_out);
@@ -89,7 +89,7 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Server(_), S::Driver(_), _) => {}
+            (A::Server(_), S::Client(_), _) => {}
             (A::Client(_), S::Server(_), _) => {}
         }
     }
@@ -98,7 +98,7 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
         use GlobalActor as A;
         use GlobalActorState as S;
         match (self, &**state) {
-            (A::Client(_), S::Driver(_)) => {}
+            (A::Client(_), S::Client(_)) => {}
             (A::Client(_), S::Server(_)) => {}
             (A::Server(server_actor), S::Server(server_state)) => {
                 let mut server_state = Cow::Borrowed(server_state);
@@ -109,7 +109,7 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Server(_), S::Driver(_)) => {}
+            (A::Server(_), S::Client(_)) => {}
         }
     }
 }

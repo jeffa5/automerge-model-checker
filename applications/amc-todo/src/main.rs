@@ -3,8 +3,8 @@ use std::borrow::Cow;
 /// amc-todo shows how to implement the application side and client side with a concrete example
 ///
 use crate::apphandle::App;
-use crate::trigger::AppInput;
-use crate::trigger::AppOutput;
+use crate::driver::AppInput;
+use crate::driver::AppOutput;
 use amc::application::Application;
 use amc::driver::ApplicationMsg;
 use amc::global::GlobalActor;
@@ -16,12 +16,12 @@ use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
-use trigger::Driver;
-use trigger::DriverState;
+use driver::Driver;
+use driver::DriverState;
 
 mod app;
 mod apphandle;
-mod trigger;
+mod driver;
 
 #[derive(Parser, Debug)]
 struct C {
@@ -137,7 +137,7 @@ impl amc_cli::ModelBuilder for C {
                                     cf.execute(&mut single_app, req.clone());
                                 }
                             }
-                            (AppInput::ListTodos, trigger::AppOutput::ListTodos(_ids)) => {}
+                            (AppInput::ListTodos, driver::AppOutput::ListTodos(_ids)) => {}
                             (a, b) => {
                                 unreachable!("{:?}, {:?}", a, b)
                             }
