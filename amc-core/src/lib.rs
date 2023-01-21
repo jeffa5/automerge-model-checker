@@ -146,6 +146,7 @@
 //!     model.checker().threads(1).spawn_dfs().join().assert_properties();
 //! ```
 
+mod bytes;
 mod client;
 mod document;
 mod global;
