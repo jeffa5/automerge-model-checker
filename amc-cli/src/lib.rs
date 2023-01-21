@@ -44,7 +44,7 @@ pub struct Opts {
 
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
 pub enum SubCmd {
-    Serve,
+    Explore,
     CheckDfs,
     CheckBfs,
 }
@@ -109,7 +109,7 @@ impl Opts {
         println!("Running");
 
         match self.command {
-            SubCmd::Serve => {
+            SubCmd::Explore => {
                 println!("Serving web ui on http://127.0.0.1:{}", self.port);
                 model.serve(("127.0.0.1", self.port));
             }
