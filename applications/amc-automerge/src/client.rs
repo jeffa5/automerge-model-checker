@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
 
-use crate::app::App;
+use crate::app::AppState;
 use crate::trigger::TriggerMsg;
 
 mod delete;
@@ -17,7 +17,7 @@ pub use put::ListPutter;
 pub use put::MapSinglePutter;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Client {
+pub struct App {
     pub map_single_putter: put::MapSinglePutter,
     pub list_start_putter: put::ListPutter,
     pub map_single_deleter: delete::MapSingleDeleter,
@@ -25,15 +25,15 @@ pub struct Client {
     pub list_inserter: insert::ListInserter,
 }
 
-impl Application for Client {
+impl Application for App {
     type Input = TriggerMsg;
 
     type Output = ();
 
-    type State = App;
+    type State = AppState;
 
     fn init(&self, id: stateright::actor::Id) -> Self::State {
-        App::new(id)
+        AppState::new(id)
     }
 
     fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {

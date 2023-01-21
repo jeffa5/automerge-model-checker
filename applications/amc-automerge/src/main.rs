@@ -3,7 +3,7 @@ use std::sync::Arc;
 use amc::global::{GlobalActorState, GlobalActor};
 use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
-use amc_automerge::client::Client;
+use amc_automerge::client::App;
 
 use amc_automerge::trigger::Trigger;
 use amc_automerge::ObjectType;
@@ -27,12 +27,12 @@ struct Opts {
     lib_opts: amc_cli::Opts,
 }
 
-type ActorState = GlobalActorState<Trigger, Client>;
+type ActorState = GlobalActorState<Trigger, App>;
 
 const INSERT_REQUEST_COUNT: usize = 2;
 
 impl amc_cli::ModelBuilder for C {
-    type App = Client;
+    type App = App;
 
     type Client = Trigger;
 
@@ -41,7 +41,7 @@ impl amc_cli::ModelBuilder for C {
     type History = ();
 
     fn application(&self, _i: usize) -> Self::App {
-        let c = Client {
+        let c = App {
             map_single_putter: client::MapSinglePutter,
             list_start_putter: client::ListPutter,
             map_single_deleter: client::MapSingleDeleter,
@@ -125,7 +125,7 @@ impl amc_cli::ModelBuilder for C {
             stateright::actor::ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<GlobalActor<Trigger, Client>, Config>;
+        type Model = stateright::actor::ActorModel<GlobalActor<Trigger, App>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {

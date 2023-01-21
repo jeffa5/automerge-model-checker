@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::app::AppState;
 
 use super::Application;
 
@@ -11,10 +11,10 @@ impl Application for ListInserter {
 
     type Output = ();
 
-    type State = App;
+    type State = AppState;
 
     fn init(&self, id: stateright::actor::Id) -> Self::State {
-        App::new(id)
+        AppState::new(id)
     }
 
     fn execute(

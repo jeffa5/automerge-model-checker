@@ -1,6 +1,6 @@
 use crate::app::LIST_KEY;
 use crate::app::MAP_KEY;
-use crate::client::Client;
+use crate::client::App;
 use crate::trigger::Trigger;
 use crate::ObjectType;
 use amc::application::server::Server;
@@ -12,8 +12,8 @@ use stateright::actor::Network;
 use stateright::actor::{model_peers, ActorModel};
 use std::sync::Arc;
 
-pub type State = GlobalActorState<Trigger, Client>;
-pub type Actor = GlobalActor<Trigger, Client>;
+pub type State = GlobalActorState<Trigger, App>;
+pub type Actor = GlobalActor<Trigger, App>;
 
 pub struct Config {
     pub max_map_size: usize,
@@ -24,11 +24,11 @@ pub struct Builder {
     pub object_type: ObjectType,
     pub servers: usize,
     pub sync_method: SyncMethod,
-    pub app: Client,
+    pub app: App,
 }
 
 impl Builder {
-    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, Client>, Config, ()> {
+    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Trigger, App>, Config, ()> {
         let insert_request_count = 2;
         let config = Config {
             max_map_size: 1,

@@ -1,7 +1,7 @@
 use amc::triggers::ClientMsg;
 use stateright::actor::{Actor, Id};
 
-use crate::client::Client;
+use crate::client::App;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Trigger {
@@ -27,10 +27,10 @@ pub enum TriggerMsg {
     ListInsert { index: usize },
 }
 
-impl amc::triggers::Trigger<Client> for Trigger {}
+impl amc::triggers::Trigger<App> for Trigger {}
 
 impl Actor for Trigger {
-    type Msg = ClientMsg<Client>;
+    type Msg = ClientMsg<App>;
 
     type State = ();
 

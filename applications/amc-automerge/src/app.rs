@@ -11,11 +11,11 @@ pub const MAP_KEY: &str = "map";
 
 /// The app that clients work with.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct App {
+pub struct AppState {
     doc: Box<Document>,
 }
 
-impl DerefDocument for App {
+impl DerefDocument for AppState {
     fn document(&self) -> &Document {
         &self.doc
     }
@@ -25,7 +25,7 @@ impl DerefDocument for App {
     }
 }
 
-impl App {
+impl AppState {
     pub fn new(id: stateright::actor::Id) -> Self {
         Self {
             doc: Box::new(Document::new(id)),
