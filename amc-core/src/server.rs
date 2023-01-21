@@ -125,21 +125,19 @@ impl<A: Application> Server<A> {
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match &self.sync_method {
             SyncMethod::Changes => {
-                if state.document().has_new_local_changes() {
-                    let state = state.to_mut();
-                    let new_changes_from_us = state
-                        .document_mut()
-                        .get_last_local_changes_for_sync()
-                        .map(|c| Bytes(c.raw_bytes().to_vec()))
-                        .collect::<Vec<_>>();
-                    if !new_changes_from_us.is_empty() {
-                        o.broadcast(
-                            &self.peers,
-                            &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
-                                missing_changes_bytes: new_changes_from_us,
-                            }),
-                        )
-                    }
+                let new_changes_from_us = state
+                    .document()
+                    .get_last_local_changes_for_sync()
+                    .map(|c| Bytes(c.raw_bytes().to_vec()))
+                    .collect::<Vec<_>>();
+                if !new_changes_from_us.is_empty() {
+                    o.broadcast(
+                        &self.peers,
+                        &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
+                            missing_changes_bytes: new_changes_from_us,
+                        }),
+                    );
+                    state.to_mut().document_mut().update_last_sent_heads();
                 }
             }
             SyncMethod::Messages => {
@@ -160,7 +158,9 @@ impl<A: Application> Server<A> {
                 }
             }
             SyncMethod::SaveLoad => {
-                let bytes = state.to_mut().document_mut().save();
+                let state = state.to_mut();
+                let bytes = state.document_mut().save();
+                state.document_mut().update_last_sent_heads();
                 o.broadcast(
                     &self.peers,
                     &GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw {

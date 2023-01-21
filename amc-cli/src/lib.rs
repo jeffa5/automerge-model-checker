@@ -22,23 +22,23 @@ pub struct Opts {
     pub sync_method: amc_core::SyncMethod,
 
     /// Port to serve UI on.
-    #[clap(long, default_value = "8080")]
+    #[clap(long, global = true, default_value = "8080")]
     pub port: u16,
 
     /// Enable checking documents are in the same state during checking of the document.
-    #[clap(long)]
+    #[clap(long, global = true)]
     pub same_state_check: bool,
 
     /// Enable checking documents are in sync and don't have any other messages.
-    #[clap(long)]
+    #[clap(long, global = true)]
     pub in_sync_check: bool,
 
     /// Enable checking documents can be saved and loaded and they remain the same.
-    #[clap(long)]
+    #[clap(long, global = true)]
     pub save_load_check: bool,
 
     /// Enable checking documents don't panic.
-    #[clap(long)]
+    #[clap(long, global = true)]
     pub error_free_check: bool,
 }
 

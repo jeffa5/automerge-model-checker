@@ -7,7 +7,7 @@ use stateright::actor::{ActorModel, ActorModelState};
 
 use crate::Application;
 use crate::Trigger;
-use crate::{GlobalActor, GlobalActorState, GlobalMsg, ServerMsg};
+use crate::{GlobalActor, GlobalActorState};
 
 pub fn with_same_state_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,
@@ -120,21 +120,23 @@ where
     T: Trigger<A>,
     A: Application,
 {
-    for envelope in state.network.iter_deliverable() {
-        match envelope.msg {
-            GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { .. }) => {
-                return false;
-            }
-            GlobalMsg::ClientToServer(_) => {}
-        }
-    }
-    true
+    let all_actors_changes_sent = state.actor_states.iter().all(|state| match &**state {
+        GlobalActorState::Server(server) => server.document().finished_sending_changes(),
+        GlobalActorState::Trigger(_) => true,
+    });
+
+    let network_contains_sync_messages = state.network.iter_deliverable().any(|e| match e.msg {
+        crate::GlobalMsg::ServerToServer(s2s) => match s2s {
+            crate::ServerMsg::SyncMessageRaw { message_bytes: _ } => true,
+            crate::ServerMsg::SyncChangeRaw {
+                missing_changes_bytes: _,
+            } => true,
+            crate::ServerMsg::SyncSaveLoadRaw { doc_bytes: _ } => true,
+        },
+        crate::GlobalMsg::ClientToServer(_) => false,
+    });
+
+    all_actors_changes_sent && !network_contains_sync_messages
 }
 
 fn syncing_done_and_in_sync<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
