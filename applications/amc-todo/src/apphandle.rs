@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use amc::application::Application;
 use stateright::actor::Id;
 
 use crate::{app::App, trigger::TriggerResponse};
@@ -9,7 +10,7 @@ pub struct AppHandle {
     pub random_ids: bool,
 }
 
-impl amc::Application for AppHandle {
+impl Application for AppHandle {
     type Input = crate::trigger::TriggerMsg;
 
     type Output = crate::trigger::TriggerResponse;

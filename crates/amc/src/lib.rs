@@ -151,19 +151,29 @@
 mod bytes;
 mod client;
 mod document;
-mod global;
+mod server;
+mod trigger;
+
+/// All global utilities.
+pub mod global;
 
 /// Utilities for built-in properties.
 pub mod properties;
 
-mod report;
-mod server;
-mod trigger;
+/// User application implementations.
+pub mod application {
+    pub use crate::client::Application;
+    pub use crate::client::DerefDocument;
+    pub use crate::document::Document;
 
-pub use client::DerefDocument;
-pub use client::{Application, ClientMsg};
-pub use document::Document;
-pub use global::{GlobalActor, GlobalActorState, GlobalMsg};
-pub use report::Reporter;
-pub use server::{Server, ServerMsg, SyncMethod};
-pub use trigger::Trigger;
+    /// Wrappers around applications to handle syncing.
+    pub mod server {
+        pub use crate::server::{Server, ServerMsg, SyncMethod};
+    }
+}
+
+/// Triggers of application functionality.
+pub mod triggers {
+    pub use crate::client::ClientMsg;
+    pub use crate::trigger::Trigger;
+}

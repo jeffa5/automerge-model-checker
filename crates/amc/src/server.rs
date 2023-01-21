@@ -4,10 +4,10 @@ use std::hash::Hash;
 use std::time::Duration;
 
 use crate::bytes::Bytes;
-use crate::Application;
-use crate::ClientMsg;
-use crate::DerefDocument;
-use crate::GlobalMsg;
+use crate::client::Application;
+use crate::client::ClientMsg;
+use crate::client::DerefDocument;
+use crate::global::GlobalMsg;
 use automerge::sync;
 use automerge::Automerge;
 use automerge::Change;

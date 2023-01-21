@@ -2,7 +2,7 @@ use std::{borrow::Cow, fmt::Debug, hash::Hash};
 
 use stateright::actor::Id;
 
-use crate::Document;
+use crate::document::Document;
 
 /// An Application is coupled with a server and implements an atomic action against the document.
 /// This ensures that no sync messages are applied within the body of execution.

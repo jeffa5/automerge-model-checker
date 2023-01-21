@@ -1,13 +1,15 @@
-use crate::DerefDocument;
 use std::{fmt::Debug, hash::Hash, sync::Arc};
 
 use automerge::Automerge;
 use automerge::ROOT;
 use stateright::actor::{ActorModel, ActorModelState};
 
-use crate::Application;
-use crate::Trigger;
-use crate::{GlobalActor, GlobalActorState};
+use crate::client::Application;
+use crate::client::DerefDocument;
+use crate::global::GlobalMsg;
+use crate::global::{GlobalActor, GlobalActorState};
+use crate::server::ServerMsg;
+use crate::trigger::Trigger;
 
 /// Add default properties to a model.
 ///
@@ -141,14 +143,14 @@ where
     });
 
     let network_contains_sync_messages = state.network.iter_deliverable().any(|e| match e.msg {
-        crate::GlobalMsg::ServerToServer(s2s) => match s2s {
-            crate::ServerMsg::SyncMessageRaw { message_bytes: _ } => true,
-            crate::ServerMsg::SyncChangeRaw {
+        GlobalMsg::ServerToServer(s2s) => match s2s {
+            ServerMsg::SyncMessageRaw { message_bytes: _ } => true,
+            ServerMsg::SyncChangeRaw {
                 missing_changes_bytes: _,
             } => true,
-            crate::ServerMsg::SyncSaveLoadRaw { doc_bytes: _ } => true,
+            ServerMsg::SyncSaveLoadRaw { doc_bytes: _ } => true,
         },
-        crate::GlobalMsg::ClientToServer(_) => false,
+        GlobalMsg::ClientToServer(_) => false,
     });
 
     all_actors_changes_sent && !network_contains_sync_messages

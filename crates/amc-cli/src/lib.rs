@@ -2,7 +2,7 @@
 
 //! Utilities for building models and appropriate CLIs for Automerge Model Checker applications.
 
-use amc::{properties, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
+use amc::{properties, application::{server::{SyncMethod, Server}, Application}, global::{GlobalActor, GlobalMsg}, triggers::Trigger };
 use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Envelope, Network},
@@ -11,12 +11,16 @@ use stateright::{
 use std::fmt::Debug;
 use std::hash::Hash;
 
+mod report;
+
+pub use report::Reporter;
+
 /// Options for the main running.
 #[derive(Parser, Debug)]
 pub struct Opts {
-    /// Subcommand for action to run.
+    /// How to run the model.
     #[clap(subcommand)]
-    pub command: SubCmd,
+    pub command: Runner,
 
     /// Number of servers to run.
     #[clap(long, short, global = true, default_value = "2")]
@@ -24,7 +28,7 @@ pub struct Opts {
 
     /// Method to sync changes between servers.
     #[clap(long, global = true, default_value = "changes")]
-    pub sync_method: amc::SyncMethod,
+    pub sync_method: SyncMethod,
 
     /// Port to serve UI on.
     #[clap(long, global = true, default_value = "8080")]
@@ -47,9 +51,9 @@ pub struct Opts {
     pub error_free_check: bool,
 }
 
-/// Subcommand to execute.
+/// How to run the model.
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
-pub enum SubCmd {
+pub enum Runner {
     /// Launch an interactive explorer in the browser.
     Explore,
     /// Launch a checker using depth-first search.
@@ -59,24 +63,24 @@ pub enum SubCmd {
 }
 
 impl Opts {
-    fn actor_model<C: Cli>(
+    fn actor_model<M: ModelBuilder>(
         &self,
-        c: &C,
-    ) -> ActorModel<GlobalActor<C::Client, C::App>, C::Config, C::History> {
-        let mut model = ActorModel::new(c.config(self), c.history());
+        model_builder: &M,
+    ) -> ActorModel<GlobalActor<M::Client, M::App>, M::Config, M::History> {
+        let mut model = ActorModel::new(model_builder.config(self), model_builder.history());
 
         // add servers
         for i in 0..self.servers {
             model = model.actor(GlobalActor::Server(Server {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
-                app: c.application(i),
+                app: model_builder.application(i),
             }))
         }
 
         // add triggers
         for i in 0..self.servers {
-            for client in c.clients(i) {
+            for client in model_builder.clients(i) {
                 model = model.actor(GlobalActor::Trigger(client));
             }
         }
@@ -94,11 +98,11 @@ impl Opts {
             model = properties::with_error_free_check(model);
         }
 
-        for property in c.properties() {
+        for property in model_builder.properties() {
             model = model.property(property.expectation, property.name, property.condition);
         }
-        let record_request = c.record_request();
-        let record_response = c.record_response();
+        let record_request = model_builder.record_request();
+        let record_response = model_builder.record_response();
         model
             .record_msg_in(record_request)
             .record_msg_out(record_response)
@@ -106,7 +110,7 @@ impl Opts {
     }
 
     /// Run an application.
-    pub fn run<C: Cli>(self, c: C)
+    pub fn run<C: ModelBuilder>(self, c: C)
     where
         C::Config: Send,
         C::Config: Sync,
@@ -118,18 +122,18 @@ impl Opts {
         let model = self.actor_model(&c).checker().threads(num_cpus::get());
 
         match self.command {
-            SubCmd::Explore => {
+            Runner::Explore => {
                 println!("Serving web ui on http://127.0.0.1:{}", self.port);
                 model.serve(("127.0.0.1", self.port));
             }
-            SubCmd::CheckDfs => {
+            Runner::CheckDfs => {
                 model
                     .spawn_dfs()
                     .report(&mut Reporter::default())
                     .join()
                     .assert_properties();
             }
-            SubCmd::CheckBfs => {
+            Runner::CheckBfs => {
                 model
                     .spawn_bfs()
                     .report(&mut Reporter::default())
@@ -141,7 +145,7 @@ impl Opts {
 }
 
 /// Trait to manage an application, building the model before running it.
-pub trait Cli: Debug {
+pub trait ModelBuilder: Debug {
     /// The application being modeled.
     type App: Application + 'static;
 

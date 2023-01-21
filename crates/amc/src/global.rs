@@ -1,8 +1,12 @@
 use std::borrow::Cow;
 
-use crate::{Application, ClientMsg, ServerMsg};
-use crate::{Server, Trigger};
 use stateright::actor::{Actor, Command, Id, Out};
+
+use crate::{
+    client::{Application, ClientMsg},
+    server::{Server, ServerMsg},
+    trigger::Trigger,
+};
 
 /// The root message type.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]

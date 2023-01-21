@@ -4,15 +4,16 @@
 //!
 //! The counter that this models is very simple, having an increment and decrement action.
 
-use amc::Application;
-use amc::ClientMsg;
-use amc::DerefDocument;
-use amc::Document;
-use amc::GlobalActor;
-use amc::GlobalActorState;
-use amc::GlobalMsg;
-use amc::Reporter;
-use amc::Server;
+use amc::application::Application;
+use amc::application::DerefDocument;
+use amc::application::Document;
+use amc::application::server::Server;
+use amc::application::server::SyncMethod;
+use amc::global::GlobalActor;
+use amc::global::GlobalActorState;
+use amc::global::GlobalMsg;
+use amc::triggers::ClientMsg;
+use amc::triggers::Trigger;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::model_peers;
@@ -95,7 +96,7 @@ impl DerefDocument for CounterState {
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-struct Trigger {
+struct Triggerer {
     func: TriggerFunc,
     server: Id,
 }
@@ -109,8 +110,8 @@ enum TriggerFunc {
     Dec(u8),
 }
 
-impl amc::Trigger<Counter> for Trigger {}
-impl Actor for Trigger {
+impl Trigger<Counter> for Triggerer {}
+impl Actor for Triggerer {
     type Msg = ClientMsg<Counter>;
     type State = ();
     fn on_start(&self, _id: Id, o: &mut Out<Self>) -> Self::State {
@@ -134,14 +135,6 @@ enum SubCmd {
     Serve,
     CheckDfs,
     CheckBfs,
-}
-
-/// Methods for syncing.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
-pub enum SyncMethod {
-    Changes,
-    Messages,
-    SaveLoad,
 }
 
 #[derive(clap::Parser, Debug)]
@@ -184,18 +177,18 @@ fn main() {
     for i in 0..opts.servers {
         model = model.actor(GlobalActor::Server(Server {
             peers: model_peers(i, opts.servers),
-            sync_method: amc::SyncMethod::Changes,
+            sync_method: SyncMethod::Changes,
             app: app.clone(),
         }))
     }
 
     for i in 0..opts.servers {
         let i = Id::from(i);
-        model = model.actor(GlobalActor::Trigger(Trigger {
+        model = model.actor(GlobalActor::Trigger(Triggerer {
             func: TriggerFunc::Inc(opts.increments),
             server: i,
         }));
-        model = model.actor(GlobalActor::Trigger(Trigger {
+        model = model.actor(GlobalActor::Trigger(Triggerer {
             func: TriggerFunc::Dec(opts.decrements),
             server: i,
         }));
@@ -236,14 +229,12 @@ fn main() {
         SubCmd::CheckDfs => {
             model
                 .spawn_dfs()
-                .report(&mut Reporter::default())
                 .join()
                 .assert_properties();
         }
         SubCmd::CheckBfs => {
             model
                 .spawn_bfs()
-                .report(&mut Reporter::default())
                 .join()
                 .assert_properties();
         }

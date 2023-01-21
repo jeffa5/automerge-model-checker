@@ -1,10 +1,10 @@
+use amc::triggers::{ClientMsg, Trigger};
 use stateright::actor::{Actor, Id};
 
 use crate::apphandle::AppHandle;
-use amc::ClientMsg;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Trigger {
+pub struct Triggerer {
     pub func: TriggerState,
     pub server: Id,
 }
@@ -36,9 +36,9 @@ pub enum TriggerResponse {
     ListTodos(Vec<u32>),
 }
 
-impl amc::Trigger<AppHandle> for Trigger {}
+impl Trigger<AppHandle> for Triggerer {}
 
-impl Actor for Trigger {
+impl Actor for Triggerer {
     type Msg = ClientMsg<AppHandle>;
 
     type State = ();

@@ -5,18 +5,19 @@ use std::borrow::Cow;
 use crate::apphandle::AppHandle;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
+use amc::application::Application;
+use amc::global::GlobalActor;
+use amc::global::GlobalActorState;
+use amc::global::GlobalMsg;
 use amc::properties::syncing_done;
-use amc::Application;
-use amc::ClientMsg;
-use amc::GlobalActorState;
-use amc::GlobalMsg;
+use amc::triggers::ClientMsg;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
-use trigger::Trigger;
 use trigger::TriggerState;
+use trigger::Triggerer;
 
 mod app;
 mod apphandle;
@@ -44,10 +45,10 @@ pub struct Config {
     pub app: AppHandle,
 }
 
-impl amc_cli::Cli for C {
+impl amc_cli::ModelBuilder for C {
     type App = AppHandle;
 
-    type Client = Trigger;
+    type Client = Triggerer;
 
     type Config = Config;
 
@@ -62,19 +63,19 @@ impl amc_cli::Cli for C {
     fn clients(&self, server: usize) -> Vec<Self::Client> {
         let i = stateright::actor::Id::from(server);
         vec![
-            Trigger {
+            Triggerer {
                 func: TriggerState::Creater,
                 server: i,
             },
-            Trigger {
+            Triggerer {
                 func: TriggerState::Updater,
                 server: i,
             },
-            Trigger {
+            Triggerer {
                 func: TriggerState::Toggler,
                 server: i,
             },
-            Trigger {
+            Triggerer {
                 func: TriggerState::Deleter,
                 server: i,
             },
@@ -95,11 +96,11 @@ impl amc_cli::Cli for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            ActorModel<amc::GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
+            ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
         >,
     > {
         type Model =
-            stateright::actor::ActorModel<amc::GlobalActor<Trigger, AppHandle>, Config, AppHistory>;
+            stateright::actor::ActorModel<GlobalActor<Triggerer, AppHandle>, Config, AppHistory>;
         type Prop = Property<Model>;
         vec![Prop::always(
             "all apps have the right number of tasks",
