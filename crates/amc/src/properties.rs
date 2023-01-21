@@ -31,7 +31,6 @@ where
     model
 }
 
-
 /// Ensure that all applications eventually end up with the same state.
 pub fn with_same_state_check<T, A, C, H>(
     model: ActorModel<GlobalActor<T, A>, C, H>,

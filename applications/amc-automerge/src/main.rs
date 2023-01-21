@@ -4,9 +4,9 @@ use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
 use amc_automerge::client::Client;
 
+use amc::GlobalActorState;
 use amc_automerge::trigger::Trigger;
 use amc_automerge::ObjectType;
-use amc::GlobalActorState;
 use clap::Parser;
 use stateright::actor::Id;
 use stateright::Property;
@@ -122,10 +122,7 @@ impl amc_cli::Cli for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            stateright::actor::ActorModel<
-                amc::GlobalActor<Self::Client, Self::App>,
-                Self::Config,
-            >,
+            stateright::actor::ActorModel<amc::GlobalActor<Self::Client, Self::App>, Self::Config>,
         >,
     > {
         type Model = stateright::actor::ActorModel<amc::GlobalActor<Trigger, Client>, Config>;

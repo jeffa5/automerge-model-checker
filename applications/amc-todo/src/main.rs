@@ -98,11 +98,8 @@ impl amc_cli::Cli for C {
             ActorModel<amc::GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<
-            amc::GlobalActor<Trigger, AppHandle>,
-            Config,
-            AppHistory,
-        >;
+        type Model =
+            stateright::actor::ActorModel<amc::GlobalActor<Trigger, AppHandle>, Config, AppHistory>;
         type Prop = Property<Model>;
         vec![Prop::always(
             "all apps have the right number of tasks",
