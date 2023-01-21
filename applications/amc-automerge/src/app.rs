@@ -1,5 +1,5 @@
-use amc_core::DerefDocument;
-use amc_core::Document;
+use amc::DerefDocument;
+use amc::Document;
 use automerge::transaction::Transactable;
 use automerge::transaction::UnObserved;
 use automerge::ObjType;

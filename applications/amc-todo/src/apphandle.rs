@@ -9,7 +9,7 @@ pub struct AppHandle {
     pub random_ids: bool,
 }
 
-impl amc_core::Application for AppHandle {
+impl amc::Application for AppHandle {
     type Input = crate::trigger::TriggerMsg;
 
     type Output = crate::trigger::TriggerResponse;

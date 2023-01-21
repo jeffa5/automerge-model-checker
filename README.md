@@ -8,7 +8,7 @@ The [`amc`](./amc) crate provides a binary for checking general automerge checki
 
 In the process of implementing this checking I think I've found some potential for value in checking custom datastructures built on-top of automerge.
 This might be able to help designers of datatypes check their merge behaviour too!
-For now there are [`todos`](./amc-todo) and a [counter example](./amc-core/examples/counter.rs).
+For now there are [`todos`](./applications/amc-todo) and a [counter example](./amc/examples/counter.rs).
 Both have broken implementations (on purpose!) so try running them to see the failing behaviour.
 
 ## Running

@@ -291,30 +291,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "amc-automerge"
-version = "0.1.0"
-dependencies = [
- "amc-cli",
- "amc-core",
- "automerge",
- "clap",
- "num_cpus",
- "stateright",
-]
-
-[[package]]
-name = "amc-cli"
-version = "0.1.0"
-dependencies = [
- "amc-core",
- "automerge",
- "clap",
- "num_cpus",
- "stateright",
-]
-
-[[package]]
-name = "amc-core"
+name = "amc"
 version = "0.1.0"
 dependencies = [
  "automerge",
@@ -326,11 +303,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "amc-automerge"
+version = "0.1.0"
+dependencies = [
+ "amc",
+ "amc-cli",
+ "automerge",
+ "clap",
+ "num_cpus",
+ "stateright",
+]
+
+[[package]]
+name = "amc-cli"
+version = "0.1.0"
+dependencies = [
+ "amc",
+ "automerge",
+ "clap",
+ "num_cpus",
+ "stateright",
+]
+
+[[package]]
 name = "amc-todo"
 version = "0.1.0"
 dependencies = [
+ "amc",
  "amc-cli",
- "amc-core",
  "automerge",
  "clap",
  "num_cpus",

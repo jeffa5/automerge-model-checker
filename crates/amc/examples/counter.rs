@@ -1,12 +1,12 @@
-use amc_core::Application;
-use amc_core::ClientMsg;
-use amc_core::DerefDocument;
-use amc_core::Document;
-use amc_core::GlobalActor;
-use amc_core::GlobalActorState;
-use amc_core::GlobalMsg;
-use amc_core::Reporter;
-use amc_core::Server;
+use amc::Application;
+use amc::ClientMsg;
+use amc::DerefDocument;
+use amc::Document;
+use amc::GlobalActor;
+use amc::GlobalActorState;
+use amc::GlobalMsg;
+use amc::Reporter;
+use amc::Server;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::model_peers;
@@ -103,7 +103,7 @@ enum TriggerFunc {
     Dec(u8),
 }
 
-impl amc_core::Trigger<Counter> for Trigger {}
+impl amc::Trigger<Counter> for Trigger {}
 impl Actor for Trigger {
     type Msg = ClientMsg<Counter>;
     type State = ();
@@ -178,7 +178,7 @@ fn main() {
     for i in 0..opts.servers {
         model = model.actor(GlobalActor::Server(Server {
             peers: model_peers(i, opts.servers),
-            sync_method: amc_core::SyncMethod::Changes,
+            sync_method: amc::SyncMethod::Changes,
             app: app.clone(),
         }))
     }

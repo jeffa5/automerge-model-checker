@@ -6,7 +6,7 @@ use amc_automerge::client::Client;
 
 use amc_automerge::trigger::Trigger;
 use amc_automerge::ObjectType;
-use amc_core::GlobalActorState;
+use amc::GlobalActorState;
 use clap::Parser;
 use stateright::actor::Id;
 use stateright::Property;
@@ -123,12 +123,12 @@ impl amc_cli::Cli for C {
     ) -> Vec<
         stateright::Property<
             stateright::actor::ActorModel<
-                amc_core::GlobalActor<Self::Client, Self::App>,
+                amc::GlobalActor<Self::Client, Self::App>,
                 Self::Config,
             >,
         >,
     > {
-        type Model = stateright::actor::ActorModel<amc_core::GlobalActor<Trigger, Client>, Config>;
+        type Model = stateright::actor::ActorModel<amc::GlobalActor<Trigger, Client>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {

@@ -9,7 +9,7 @@ mod delete;
 mod insert;
 mod put;
 
-use amc_core::Application;
+use amc::Application;
 pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
 pub use insert::ListInserter;

@@ -11,5 +11,5 @@ automerge = "0.2.0"
 num_cpus = "1.13.1"
 stateright = "0.29.0"
 rand = "0.8.5"
-amc-core = { path = "../../crates/amc-core" }
+amc = { path = "../../crates/amc" }
 amc-cli = { path = "../../crates/amc-cli" }

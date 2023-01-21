@@ -1,7 +1,7 @@
 use stateright::actor::{Actor, Id};
 
 use crate::apphandle::AppHandle;
-use amc_core::ClientMsg;
+use amc::ClientMsg;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Trigger {
@@ -36,7 +36,7 @@ pub enum TriggerResponse {
     ListTodos(Vec<u32>),
 }
 
-impl amc_core::Trigger<AppHandle> for Trigger {}
+impl amc::Trigger<AppHandle> for Trigger {}
 
 impl Actor for Trigger {
     type Msg = ClientMsg<AppHandle>;

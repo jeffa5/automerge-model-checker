@@ -1,5 +1,5 @@
 [package]
-name = "amc-core"
+name = "amc"
 version = "0.1.0"
 edition = "2021"
 

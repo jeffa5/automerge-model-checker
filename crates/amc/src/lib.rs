@@ -11,13 +11,13 @@
 //! # use std::borrow::Cow;
 //! # use automerge::ROOT;
 //! # use automerge::transaction::Transactable;
-//! # use amc_core::Application;
-//! # use amc_core::Document;
-//! # use amc_core::ClientMsg;
-//! # use amc_core::DerefDocument;
-//! # use amc_core::GlobalActor;
-//! # use amc_core::GlobalMsg;
-//! # use amc_core::Server;
+//! # use amc::Application;
+//! # use amc::Document;
+//! # use amc::ClientMsg;
+//! # use amc::DerefDocument;
+//! # use amc::GlobalActor;
+//! # use amc::GlobalMsg;
+//! # use amc::Server;
 //! # use stateright::Model;
 //! # use stateright::Checker;
 //! # use stateright::actor::Network;
@@ -27,7 +27,7 @@
 //! # use stateright::Expectation;
 //! # use stateright::actor::Out;
 //! # use stateright::actor::Actor;
-//! # use amc_core::SyncMethod;
+//! # use amc::SyncMethod;
 //! #
 //! #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 //! struct Counter {
@@ -95,7 +95,7 @@
 //!     Dec,
 //! }
 //!
-//! impl amc_core::Trigger<Counter> for Trigger {}
+//! impl amc::Trigger<Counter> for Trigger {}
 //! impl Actor for Trigger {
 //!     type Msg = ClientMsg<Counter>;
 //!     type State = ();
@@ -142,7 +142,7 @@
 //!             None
 //!         }
 //!     });
-//!     model = amc_core::model::with_default_properties(model).init_network(Network::new_ordered(vec![]));
+//!     model = amc::model::with_default_properties(model).init_network(Network::new_ordered(vec![]));
 //!     model.checker().threads(1).spawn_dfs().join().assert_properties();
 //! ```
 

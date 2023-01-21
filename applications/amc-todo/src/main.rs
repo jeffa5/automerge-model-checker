@@ -5,11 +5,11 @@ use std::borrow::Cow;
 use crate::apphandle::AppHandle;
 use crate::trigger::TriggerMsg;
 use crate::trigger::TriggerResponse;
-use amc_core::model::syncing_done;
-use amc_core::Application;
-use amc_core::ClientMsg;
-use amc_core::GlobalActorState;
-use amc_core::GlobalMsg;
+use amc::model::syncing_done;
+use amc::Application;
+use amc::ClientMsg;
+use amc::GlobalActorState;
+use amc::GlobalMsg;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
@@ -95,11 +95,11 @@ impl amc_cli::Cli for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            ActorModel<amc_core::GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
+            ActorModel<amc::GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>,
         >,
     > {
         type Model = stateright::actor::ActorModel<
-            amc_core::GlobalActor<Trigger, AppHandle>,
+            amc::GlobalActor<Trigger, AppHandle>,
             Config,
             AppHistory,
         >;

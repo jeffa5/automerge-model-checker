@@ -1,4 +1,4 @@
-use amc_core::{model, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
+use amc::{model, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
 use clap::Parser;
 use stateright::{
     actor::{model_peers, Actor, ActorModel, Envelope, Network},
@@ -19,7 +19,7 @@ pub struct Opts {
 
     /// Method to sync changes between servers.
     #[clap(long, global = true, default_value = "changes")]
-    pub sync_method: amc_core::SyncMethod,
+    pub sync_method: amc::SyncMethod,
 
     /// Port to serve UI on.
     #[clap(long, global = true, default_value = "8080")]
