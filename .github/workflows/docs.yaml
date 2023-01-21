@@ -5,8 +5,14 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # docs will get overwritten anyway so just don't bother
+  cancel-in-progress: true
+
+
 jobs:
-  tests:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -23,6 +29,8 @@ jobs:
     - run: nix build -L .#amc-docs
 
     - run: |
+        set -x
+
         git pull origin gh-pages
         git checkout gh-pages
 
