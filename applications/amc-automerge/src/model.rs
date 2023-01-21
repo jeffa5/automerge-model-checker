@@ -5,11 +5,13 @@ use crate::trigger::Driver;
 use crate::ObjectType;
 use amc::application::server::Server;
 use amc::application::server::SyncMethod;
+use amc::driver::client::Client;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::properties;
 use stateright::actor::Network;
 use stateright::actor::{model_peers, ActorModel};
+use std::marker::PhantomData;
 use std::sync::Arc;
 
 pub type State = GlobalActorState<Driver, App>;
@@ -28,7 +30,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    pub fn into_actor_model(self) -> ActorModel<GlobalActor<Driver, App>, Config, ()> {
+    pub fn into_actor_model(self) -> ActorModel<GlobalActor<App, Driver>, Config, ()> {
         let insert_request_count = 2;
         let config = Config {
             max_map_size: 1,
@@ -51,42 +53,63 @@ impl Builder {
             let i = stateright::actor::Id::from(i);
             match self.object_type {
                 ObjectType::Map => {
-                    model = model.actor(GlobalActor::Driver(Driver {
-                        func: crate::trigger::DriverState::MapSinglePut {
-                            request_count: 2,
-                            key: "key".to_owned(),
-                        },
+                    model = model.actor(GlobalActor::Client(Client {
                         server: i,
+                        driver: Driver {
+                            func: crate::trigger::DriverState::MapSinglePut {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                            },
+                            server: i,
+                        },
+                        _app: PhantomData,
                     }));
-                    model = model.actor(GlobalActor::Driver(Driver {
-                        func: crate::trigger::DriverState::MapSingleDelete {
-                            request_count: 2,
-                            key: "key".to_owned(),
-                        },
+                    model = model.actor(GlobalActor::Client(Client {
                         server: i,
+                        driver: Driver {
+                            func: crate::trigger::DriverState::MapSingleDelete {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                            },
+                            server: i,
+                        },
+                        _app: PhantomData,
                     }));
                 }
                 ObjectType::List => {
-                    model = model.actor(GlobalActor::Driver(Driver {
-                        func: crate::trigger::DriverState::ListStartPut {
-                            request_count: 2,
-                            index: 0,
-                        },
+                    model = model.actor(GlobalActor::Client(Client {
                         server: i,
+                        driver: Driver {
+                            func: crate::trigger::DriverState::ListStartPut {
+                                request_count: 2,
+                                index: 0,
+                            },
+                            server: i,
+                        },
+                        _app: PhantomData,
                     }));
-                    model = model.actor(GlobalActor::Driver(Driver {
-                        func: crate::trigger::DriverState::ListDelete {
-                            request_count: 2,
-                            index: 0,
-                        },
+                    model = model.actor(GlobalActor::Client(Client {
                         server: i,
+
+                        driver: Driver {
+                            func: crate::trigger::DriverState::ListDelete {
+                                request_count: 2,
+                                index: 0,
+                            },
+                            server: i,
+                        },
+                        _app: PhantomData,
                     }));
-                    model = model.actor(GlobalActor::Driver(Driver {
-                        func: crate::trigger::DriverState::ListInsert {
-                            request_count: insert_request_count,
-                            index: 0,
-                        },
+                    model = model.actor(GlobalActor::Client(Client {
                         server: i,
+                        driver: Driver {
+                            func: crate::trigger::DriverState::ListInsert {
+                                request_count: insert_request_count,
+                                index: 0,
+                            },
+                            server: i,
+                        },
+                        _app: PhantomData,
                     }));
                 }
             }

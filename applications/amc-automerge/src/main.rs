@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use amc::global::{GlobalActorState, GlobalActor};
+use amc::global::{GlobalActor, GlobalActorState};
 use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
 use amc_automerge::client::App;
@@ -122,10 +122,10 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            stateright::actor::ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config>,
+            stateright::actor::ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<GlobalActor<Driver, App>, Config>;
+        type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {

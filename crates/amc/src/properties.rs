@@ -6,10 +6,10 @@ use stateright::actor::{ActorModel, ActorModelState};
 
 use crate::client::Application;
 use crate::client::DerefDocument;
+use crate::drive::Drive;
 use crate::global::GlobalMsg;
 use crate::global::{GlobalActor, GlobalActorState};
 use crate::server::ServerMsg;
-use crate::drive::Drive;
 
 /// Add default properties to a model.
 ///
@@ -18,12 +18,12 @@ use crate::drive::Drive;
 ///
 /// **Warning**: This may add significant performance overhead, just for the checking of internal automerge
 /// properties, you could probably do without these if you're assuming automerge is correct.
-pub fn with_default_properties<T, A, C, H>(
-    mut model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
+pub fn with_default_properties<A, D, C, H>(
+    mut model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
     H: Hash + Debug + Clone,
 {
     model = with_same_state_check(model);
@@ -34,12 +34,12 @@ where
 }
 
 /// Ensure that all applications eventually end up with the same state.
-pub fn with_same_state_check<T, A, C, H>(
-    model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
+pub fn with_same_state_check<A, D, C, H>(
+    model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
     H: Hash + Debug + Clone,
 {
     model.property(
@@ -51,12 +51,12 @@ where
 
 /// Ensure that all applications have the same state when there is no syncing to be done.
 // TODO: is this more general than the with_same_state_check? This should also check at the end.
-pub fn with_in_sync_check<T, A, C, H>(
-    model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
+pub fn with_in_sync_check<A, D, C, H>(
+    model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
     H: Hash + Debug + Clone,
 {
     model.property(
@@ -71,12 +71,12 @@ where
 ///
 /// **Warning**: Saving and loading are comparatively expensive to be run in model checking so it
 /// might be best not to include this unless you really want it.
-pub fn with_save_load_check<T, A, C, H>(
-    model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
+pub fn with_save_load_check<A, D, C, H>(
+    model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
     H: Hash + Debug + Clone,
 {
     model.property(
@@ -90,12 +90,12 @@ where
 ///
 /// This might get removed if panics get better handling in our underlying model checker
 /// (Stateright).
-pub fn with_error_free_check<T, A, C, H>(
-    model: ActorModel<GlobalActor<T, A>, C, H>,
-) -> ActorModel<GlobalActor<T, A>, C, H>
+pub fn with_error_free_check<A, D, C, H>(
+    model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
     H: Hash + Debug + Clone,
 {
     model.property(
@@ -132,10 +132,10 @@ where
 
 /// Check whether syncing is complete at this time. That is, there are no sync messages pending
 /// delivery.
-pub fn syncing_done<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
+pub fn syncing_done<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
 {
     let all_actors_changes_sent = state.actor_states.iter().all(|state| match &**state {
         GlobalActorState::Server(server) => server.document().finished_sending_changes(),
@@ -156,20 +156,20 @@ where
     all_actors_changes_sent && !network_contains_sync_messages
 }
 
-fn syncing_done_and_in_sync<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
+fn syncing_done_and_in_sync<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
 {
     // first check that the network has no sync messages in-flight.
     // next, check that all actors are in the same states (using sub-property checker)
     !syncing_done(state) || all_same_state(&state.actor_states)
 }
 
-fn save_load_same<T, A, H>(state: &ActorModelState<GlobalActor<T, A>, H>) -> bool
+fn save_load_same<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
-    T: Drive<A>,
     A: Application,
+    D: Drive<A>,
 {
     for actor in &state.actor_states {
         match &**actor {

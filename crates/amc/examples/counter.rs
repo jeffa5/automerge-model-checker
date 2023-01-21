@@ -4,28 +4,28 @@
 //!
 //! The counter that this models is very simple, having an increment and decrement action.
 
+use amc::application::server::Server;
+use amc::application::server::SyncMethod;
 use amc::application::Application;
 use amc::application::DerefDocument;
 use amc::application::Document;
-use amc::application::server::Server;
-use amc::application::server::SyncMethod;
+use amc::driver::client::Client;
+use amc::driver::ApplicationMsg;
+use amc::driver::Drive;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
-use amc::driver::ApplicationMsg;
-use amc::driver::Drive;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::model_peers;
-use stateright::actor::Actor;
 use stateright::actor::ActorModel;
 use stateright::actor::Id;
 use stateright::actor::Network;
-use stateright::actor::Out;
 use stateright::Checker;
 use stateright::Expectation;
 use stateright::Model;
 use std::borrow::Cow;
+use std::marker::PhantomData;
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Counter {
@@ -110,23 +110,34 @@ enum DriverFunc {
     Dec(u8),
 }
 
-impl Drive<Counter> for Driver {}
-impl Actor for Driver {
-    type Msg = ApplicationMsg<Counter>;
+impl Drive<Counter> for Driver {
     type State = ();
-    fn on_start(&self, _id: Id, o: &mut Out<Self>) -> Self::State {
+
+    fn init(
+        &self,
+        _id: Id,
+    ) -> (
+        <Self as Drive<Counter>>::State,
+        Vec<<Counter as Application>::Input>,
+    ) {
         match self.func {
             DriverFunc::Inc(n) => {
-                for _ in 0..n {
-                    o.send(self.server, ApplicationMsg::Input(CounterMsg::Increment))
-                }
+                let msgs = (0..n).map(|_| CounterMsg::Increment).collect();
+                ((), msgs)
             }
             DriverFunc::Dec(n) => {
-                for _ in 0..n {
-                    o.send(self.server, ApplicationMsg::Input(CounterMsg::Decrement))
-                }
+                let msgs = (0..n).map(|_| CounterMsg::Decrement).collect();
+                ((), msgs)
             }
         }
+    }
+
+    fn handle_output(
+        &self,
+        _state: &mut Cow<Self::State>,
+        _output: <Counter as Application>::Output,
+    ) -> Vec<<Counter as Application>::Input> {
+        Vec::new()
     }
 }
 
@@ -184,13 +195,21 @@ fn main() {
 
     for i in 0..opts.servers {
         let i = Id::from(i);
-        model = model.actor(GlobalActor::Driver(Driver {
-            func: DriverFunc::Inc(opts.increments),
+        model = model.actor(GlobalActor::Client(Client {
             server: i,
+            driver: Driver {
+                func: DriverFunc::Inc(opts.increments),
+                server: i,
+            },
+            _app: PhantomData::default(),
         }));
-        model = model.actor(GlobalActor::Driver(Driver {
-            func: DriverFunc::Dec(opts.decrements),
+        model = model.actor(GlobalActor::Client(Client {
             server: i,
+            driver: Driver {
+                func: DriverFunc::Dec(opts.decrements),
+                server: i,
+            },
+            _app: PhantomData::default(),
         }));
     }
     model = model.property(Expectation::Eventually, "max value", |model, state| {
@@ -227,16 +246,10 @@ fn main() {
             model.serve(("127.0.0.1", opts.port));
         }
         SubCmd::CheckDfs => {
-            model
-                .spawn_dfs()
-                .join()
-                .assert_properties();
+            model.spawn_dfs().join().assert_properties();
         }
         SubCmd::CheckBfs => {
-            model
-                .spawn_bfs()
-                .join()
-                .assert_properties();
+            model.spawn_bfs().join().assert_properties();
         }
     }
 }

@@ -6,18 +6,18 @@ use crate::apphandle::App;
 use crate::trigger::AppInput;
 use crate::trigger::AppOutput;
 use amc::application::Application;
+use amc::driver::ApplicationMsg;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
 use amc::properties::syncing_done;
-use amc::driver::ApplicationMsg;
 use clap::Parser;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
-use trigger::DriverState;
 use trigger::Driver;
+use trigger::DriverState;
 
 mod app;
 mod apphandle;
@@ -96,11 +96,10 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config, Self::History>,
+            ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
         >,
     > {
-        type Model =
-            stateright::actor::ActorModel<GlobalActor<Driver, App>, Config, AppHistory>;
+        type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config, AppHistory>;
         type Prop = Property<Model>;
         vec![Prop::always(
             "all apps have the right number of tasks",
@@ -128,10 +127,7 @@ impl amc_cli::ModelBuilder for C {
                             (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {
                                 cf.execute(&mut single_app, req.clone());
                             }
-                            (
-                                AppInput::DeleteTodo(_),
-                                AppOutput::DeleteTodo(was_present),
-                            ) => {
+                            (AppInput::DeleteTodo(_), AppOutput::DeleteTodo(was_present)) => {
                                 if *was_present {
                                     cf.execute(&mut single_app, req.clone());
                                 }

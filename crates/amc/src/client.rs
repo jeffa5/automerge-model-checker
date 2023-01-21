@@ -1,8 +1,8 @@
-use std::{borrow::Cow, fmt::Debug, hash::Hash};
+use std::{borrow::Cow, fmt::Debug, hash::Hash, marker::PhantomData};
 
-use stateright::actor::Id;
+use stateright::actor::{Actor, Id};
 
-use crate::document::Document;
+use crate::{document::Document, driver::Drive, global::GlobalMsg};
 
 /// An Application is coupled with a server and implements an atomic action against the document.
 /// This ensures that no sync messages are applied within the body of execution.
@@ -40,4 +40,57 @@ pub enum ApplicationMsg<A: Application> {
     Input(A::Input),
     /// Message resulting from the application.
     Output(A::Output),
+}
+
+/// A wrapper for driver logic.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Client<A, D> {
+    /// The id of the server that messages will be sent to.
+    pub server: Id,
+    /// The driver.
+    pub driver: D,
+    /// The app we're working with.
+    pub _app: PhantomData<A>,
+}
+
+impl<A: Application, D: Drive<A>> Actor for Client<A, D> {
+    type Msg = GlobalMsg<A>;
+
+    type State = D::State;
+
+    fn on_start(&self, id: Id, o: &mut stateright::actor::Out<Self>) -> Self::State {
+        let (state, messages) = self.driver.init(id);
+        for message in messages {
+            o.send(
+                self.server,
+                GlobalMsg::ClientToServer(ApplicationMsg::Input(message)),
+            );
+        }
+        state
+    }
+
+    fn on_msg(
+        &self,
+        _id: Id,
+        state: &mut Cow<Self::State>,
+        _src: Id,
+        msg: Self::Msg,
+        o: &mut stateright::actor::Out<Self>,
+    ) {
+        match msg {
+            GlobalMsg::ServerToServer(_) => unreachable!(),
+            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)) => {
+                unreachable!()
+            }
+            GlobalMsg::ClientToServer(ApplicationMsg::Output(output)) => {
+                let messages = self.driver.handle_output(state, output);
+                for message in messages {
+                    o.send(
+                        self.server,
+                        GlobalMsg::ClientToServer(ApplicationMsg::Input(message)),
+                    );
+                }
+            }
+        }
+    }
 }

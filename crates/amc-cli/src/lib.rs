@@ -2,10 +2,18 @@
 
 //! Utilities for building models and appropriate CLIs for Automerge Model Checker applications.
 
-use amc::{properties, application::{server::{SyncMethod, Server}, Application}, global::{GlobalActor, GlobalMsg}, driver::Drive };
+use amc::{
+    application::{
+        server::{Server, SyncMethod},
+        Application,
+    },
+    driver::{client::Client, Drive},
+    global::{GlobalActor, GlobalMsg},
+    properties,
+};
 use clap::Parser;
 use stateright::{
-    actor::{model_peers, Actor, ActorModel, Envelope, Network},
+    actor::{model_peers, ActorModel, Envelope, Id, Network},
     Checker, Model, Property,
 };
 use std::fmt::Debug;
@@ -66,7 +74,7 @@ impl Opts {
     fn actor_model<M: ModelBuilder>(
         &self,
         model_builder: &M,
-    ) -> ActorModel<GlobalActor<M::Driver, M::App>, M::Config, M::History> {
+    ) -> ActorModel<GlobalActor<M::App, M::Driver>, M::Config, M::History> {
         let mut model = ActorModel::new(model_builder.config(self), model_builder.history());
 
         // add servers
@@ -80,8 +88,12 @@ impl Opts {
 
         // add drivers
         for i in 0..self.servers {
-            for client in model_builder.drivers(i) {
-                model = model.actor(GlobalActor::Driver(client));
+            for driver in model_builder.drivers(i) {
+                model = model.actor(GlobalActor::Client(Client {
+                    server: Id::from(i),
+                    driver,
+                    _app: std::marker::PhantomData,
+                }));
             }
         }
 
@@ -110,13 +122,11 @@ impl Opts {
     }
 
     /// Run an application.
-    pub fn run<C: ModelBuilder>(self, c: C)
+    pub fn run<M: ModelBuilder>(self, c: M)
     where
-        C::Config: Send,
-        C::Config: Sync,
-        <C::Driver as Actor>::State: Sync,
-        <C::Driver as Actor>::State: Send,
-        C::History: Send + Sync + 'static,
+        M::Config: Send,
+        M::Config: Sync,
+        M::History: Send + Sync + 'static,
     {
         println!("{:?}", self);
         let model = self.actor_model(&c).checker().threads(num_cpus::get());
@@ -173,7 +183,7 @@ pub trait ModelBuilder: Debug {
     /// Generate the properties to be added to the model.
     fn properties(
         &self,
-    ) -> Vec<Property<ActorModel<GlobalActor<Self::Driver, Self::App>, Self::Config, Self::History>>>;
+    ) -> Vec<Property<ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>>>;
 
     /// Record a request to the application.
     fn record_request(

@@ -1,5 +1,5 @@
-use amc::driver::{ApplicationMsg, Drive};
-use stateright::actor::{Actor, Id};
+use amc::driver::Drive;
+use stateright::actor::Id;
 
 use crate::apphandle::App;
 
@@ -36,71 +36,43 @@ pub enum AppOutput {
     ListTodos(Vec<u32>),
 }
 
-impl Drive<App> for Driver {}
-
-impl Actor for Driver {
-    type Msg = ApplicationMsg<App>;
-
+impl Drive<App> for Driver {
     type State = ();
 
-    fn on_start(
+    fn init(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
+        _id: Id,
+    ) -> (
+        <Self as Drive<App>>::State,
+        Vec<<App as amc::prelude::Application>::Input>,
+    ) {
         match self.func {
-            DriverState::Creater => {
-                o.send(
-                    self.server,
-                    ApplicationMsg::Input(AppInput::CreateTodo("todo 1".to_owned())),
-                );
-            }
-            DriverState::Updater => {
-                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
-            }
-            DriverState::Toggler => {
-                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
-            }
-            DriverState::Deleter => {
-                o.send(self.server, ApplicationMsg::Input(AppInput::ListTodos));
-            }
+            DriverState::Creater => ((), vec![AppInput::CreateTodo("todo 1".to_owned())]),
+            DriverState::Updater => ((), vec![AppInput::ListTodos]),
+            DriverState::Toggler => ((), vec![AppInput::ListTodos]),
+            DriverState::Deleter => ((), vec![AppInput::ListTodos]),
         }
     }
 
-    fn on_msg(
+    fn handle_output(
         &self,
-        _id: Id,
         _state: &mut std::borrow::Cow<Self::State>,
-        _src: Id,
-        msg: Self::Msg,
-        o: &mut stateright::actor::Out<Self>,
-    ) {
-        match msg {
-            ApplicationMsg::Input(_) => unreachable!("clients don't handle requests"),
-            ApplicationMsg::Output(r) => match (&self.func, r) {
-                (DriverState::Updater, AppOutput::ListTodos(ids)) => {
-                    for id in ids {
-                        o.send(
-                            self.server,
-                            ApplicationMsg::Input(AppInput::Update(id, "updated todo".to_owned())),
-                        )
-                    }
-                }
-                (DriverState::Toggler, AppOutput::ListTodos(ids)) => {
-                    for id in ids {
-                        o.send(
-                            self.server,
-                            ApplicationMsg::Input(AppInput::ToggleActive(id)),
-                        );
-                    }
-                }
-                (DriverState::Deleter, AppOutput::ListTodos(ids)) => {
-                    for id in ids {
-                        o.send(self.server, ApplicationMsg::Input(AppInput::DeleteTodo(id)));
-                    }
-                }
-                _ => {}
-            },
+        output: <App as amc::prelude::Application>::Output,
+    ) -> Vec<<App as amc::prelude::Application>::Input> {
+        match (&self.func, output) {
+            (DriverState::Updater, AppOutput::ListTodos(ids)) => ids
+                .iter()
+                .map(|id| AppInput::Update(*id, "updated todo".to_owned()))
+                .collect(),
+            (DriverState::Toggler, AppOutput::ListTodos(ids)) => {
+                ids.iter().map(|id| AppInput::ToggleActive(*id)).collect()
+            }
+            (DriverState::Deleter, AppOutput::ListTodos(ids)) => {
+                ids.iter().map(|id| AppInput::DeleteTodo(*id)).collect()
+            }
+            _ => {
+                vec![]
+            }
         }
     }
 }

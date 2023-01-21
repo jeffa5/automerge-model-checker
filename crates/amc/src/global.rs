@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
-use stateright::actor::{Actor, Command, Id, Out};
+use stateright::actor::{Actor, Id, Out};
 
 use crate::{
-    client::{Application, ApplicationMsg},
-    server::{Server, ServerMsg},
+    client::{Application, ApplicationMsg, Client},
     drive::Drive,
+    server::{Server, ServerMsg},
 };
 
 /// The root message type.
@@ -20,41 +20,33 @@ pub enum GlobalMsg<A: Application> {
 
 /// The root actor type.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum GlobalActor<T, A> {
+pub enum GlobalActor<A, D> {
     /// Actor to trigger behaviour in the application.
-    Driver(T),
+    Client(Client<A, D>),
     /// Server that hosts the application.
     Server(Server<A>),
 }
 
 /// The root actor state.
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub enum GlobalActorState<T: Drive<A>, A: Application> {
+pub enum GlobalActorState<D: Drive<A>, A: Application> {
     /// State for the trigger.
-    Driver(<T as Actor>::State),
+    Driver(<Client<A, D> as Actor>::State),
     /// State for the application.
     Server(<Server<A> as Actor>::State),
 }
 
-impl<T: Drive<A>, A: Application> Actor for GlobalActor<T, A> {
+impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
     type Msg = GlobalMsg<A>;
 
-    type State = GlobalActorState<T, A>;
+    type State = GlobalActorState<D, A>;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
-            GlobalActor::Driver(trigger_actor) => {
-                let mut trigger_out = Out::new();
-                let state = GlobalActorState::Driver(trigger_actor.on_start(id, &mut trigger_out));
-                let mut new_out: Out<Self> = trigger_out
-                    .into_iter()
-                    .map(|o| match o {
-                        Command::CancelTimer => Command::CancelTimer,
-                        Command::SetTimer(t) => Command::SetTimer(t),
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::ClientToServer(msg)),
-                    })
-                    .collect();
-                o.append(&mut new_out);
+            GlobalActor::Client(driver_actor) => {
+                let mut driver_out = Out::new();
+                let state = GlobalActorState::Driver(driver_actor.on_start(id, &mut driver_out));
+                o.append(&mut driver_out);
                 state
             }
             GlobalActor::Server(server_actor) => {
@@ -78,28 +70,15 @@ impl<T: Drive<A>, A: Application> Actor for GlobalActor<T, A> {
         use GlobalActorState as S;
 
         match (self, &**state, msg) {
-            (
-                A::Driver(trigger_actor),
-                S::Driver(client_state),
-                GlobalMsg::ClientToServer(tmsg),
-            ) => {
+            (A::Client(client_actor), S::Driver(client_state), msg) => {
                 let mut client_state = Cow::Borrowed(client_state);
                 let mut client_out = Out::new();
-                trigger_actor.on_msg(id, &mut client_state, src, tmsg, &mut client_out);
+                client_actor.on_msg(id, &mut client_state, src, msg, &mut client_out);
                 if let Cow::Owned(client_state) = client_state {
                     *state = Cow::Owned(GlobalActorState::Driver(client_state))
                 }
 
-                let mut new_out: Out<Self> = client_out
-                    .into_iter()
-                    .map(|o| match o {
-                        Command::CancelTimer => Command::CancelTimer,
-                        Command::SetTimer(t) => Command::SetTimer(t),
-                        Command::Send(id, msg) => Command::Send(id, GlobalMsg::ClientToServer(msg)),
-                    })
-                    .collect();
-
-                o.append(&mut new_out);
+                o.append(&mut client_out);
             }
             (A::Server(server_actor), S::Server(server_state), msg) => {
                 let mut server_state = Cow::Borrowed(server_state);
@@ -110,9 +89,8 @@ impl<T: Drive<A>, A: Application> Actor for GlobalActor<T, A> {
                 }
                 o.append(&mut server_out);
             }
-            (A::Driver(_), S::Driver(_), GlobalMsg::ServerToServer(_)) => {}
             (A::Server(_), S::Driver(_), _) => {}
-            (A::Driver(_), S::Server(_), _) => {}
+            (A::Client(_), S::Server(_), _) => {}
         }
     }
 
@@ -120,8 +98,8 @@ impl<T: Drive<A>, A: Application> Actor for GlobalActor<T, A> {
         use GlobalActor as A;
         use GlobalActorState as S;
         match (self, &**state) {
-            (A::Driver(_), S::Driver(_)) => {}
-            (A::Driver(_), S::Server(_)) => {}
+            (A::Client(_), S::Driver(_)) => {}
+            (A::Client(_), S::Server(_)) => {}
             (A::Server(server_actor), S::Server(server_state)) => {
                 let mut server_state = Cow::Borrowed(server_state);
                 let mut server_out = Out::new();

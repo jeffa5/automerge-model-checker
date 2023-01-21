@@ -85,7 +85,10 @@ impl<A: Application> Actor for Server<A> {
         match msg {
             GlobalMsg::ClientToServer(ApplicationMsg::Input(request)) => {
                 let output = self.app.execute(state, request);
-                o.send(src, GlobalMsg::ClientToServer(ApplicationMsg::Output(output)));
+                o.send(
+                    src,
+                    GlobalMsg::ClientToServer(ApplicationMsg::Output(output)),
+                );
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes.0).unwrap();
@@ -116,6 +119,7 @@ impl<A: Application> Actor for Server<A> {
             }
             GlobalMsg::ClientToServer(ApplicationMsg::Output(_)) => {
                 // we shouldn't be receiving responses
+                unreachable!()
             }
         }
     }

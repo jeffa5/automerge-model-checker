@@ -1,5 +1,5 @@
-use amc::driver::{ApplicationMsg, Drive};
-use stateright::actor::{Actor, Id};
+use amc::driver::Drive;
+use stateright::actor::Id;
 
 use crate::client::App;
 
@@ -27,68 +27,64 @@ pub enum DriverMsg {
     ListInsert { index: usize },
 }
 
-impl Drive<App> for Driver {}
-
-impl Actor for Driver {
-    type Msg = ApplicationMsg<App>;
-
+impl Drive<App> for Driver {
     type State = ();
 
-    fn on_start(
+    fn init(
         &self,
-        _id: stateright::actor::Id,
-        o: &mut stateright::actor::Out<Self>,
-    ) -> Self::State {
+        _id: Id,
+    ) -> (
+        <Self as Drive<App>>::State,
+        Vec<<App as amc::prelude::Application>::Input>,
+    ) {
         match &self.func {
             DriverState::MapSinglePut { request_count, key } => {
-                for _ in 0..*request_count {
-                    o.send(
-                        self.server,
-                        ApplicationMsg::Input(DriverMsg::MapSinglePut { key: key.clone() }),
-                    );
-                }
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::MapSinglePut { key: key.clone() })
+                    .collect();
+                ((), msgs)
             }
             DriverState::MapSingleDelete { request_count, key } => {
-                for _ in 0..*request_count {
-                    o.send(
-                        self.server,
-                        ApplicationMsg::Input(DriverMsg::MapSingleDelete { key: key.clone() }),
-                    );
-                }
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::MapSingleDelete { key: key.clone() })
+                    .collect();
+                ((), msgs)
             }
             DriverState::ListStartPut {
                 request_count,
                 index,
             } => {
-                for _ in 0..*request_count {
-                    o.send(
-                        self.server,
-                        ApplicationMsg::Input(DriverMsg::ListPut { index: *index }),
-                    );
-                }
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::ListPut { index: *index })
+                    .collect();
+                ((), msgs)
             }
             DriverState::ListDelete {
                 request_count,
                 index,
             } => {
-                for _ in 0..*request_count {
-                    o.send(
-                        self.server,
-                        ApplicationMsg::Input(DriverMsg::ListDelete { index: *index }),
-                    );
-                }
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::ListDelete { index: *index })
+                    .collect();
+                ((), msgs)
             }
             DriverState::ListInsert {
                 request_count,
                 index,
             } => {
-                for _ in 0..*request_count {
-                    o.send(
-                        self.server,
-                        ApplicationMsg::Input(DriverMsg::ListInsert { index: *index }),
-                    );
-                }
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::ListInsert { index: *index })
+                    .collect();
+                ((), msgs)
             }
         }
+    }
+
+    fn handle_output(
+        &self,
+        _state: &mut std::borrow::Cow<Self::State>,
+        _output: <App as amc::prelude::Application>::Output,
+    ) -> Vec<<App as amc::prelude::Application>::Input> {
+        vec![]
     }
 }
