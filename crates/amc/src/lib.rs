@@ -177,3 +177,14 @@ pub mod driver {
     pub use crate::client::ApplicationMsg;
     pub use crate::drive::Drive;
 }
+
+/// Combination of useful items.
+///
+/// Use with `use amc::prelude::*;`.
+pub mod prelude {
+    pub use crate::application::Application;
+    pub use crate::client::DerefDocument;
+    pub use crate::document::Document;
+    pub use crate::client::ApplicationMsg;
+    pub use crate::drive::Drive;
+}
