@@ -47,7 +47,7 @@ dependencies = [
  "actix-service",
  "actix-threadpool",
  "actix-utils",
- "base64",
+ "base64 0.10.1",
  "bitflags",
  "brotli2",
  "bytes",
@@ -318,6 +318,7 @@ name = "amc-core"
 version = "0.1.0"
 dependencies = [
  "automerge",
+ "base64 0.21.0",
  "clap",
  "num-format",
  "num_cpus",
@@ -396,7 +397,7 @@ dependencies = [
  "actix-codec",
  "actix-http",
  "actix-service",
- "base64",
+ "base64 0.10.1",
  "bytes",
  "derive_more",
  "futures",
@@ -433,6 +434,12 @@ checksum = "0b25d992356d2eb0ed82172f5248873db5560c4721f564b13cb5193bda5e668e"
 dependencies = [
  "byteorder",
 ]
+
+[[package]]
+name = "base64"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bindgen"

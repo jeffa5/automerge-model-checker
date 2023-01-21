@@ -102,12 +102,24 @@ impl Document {
         self.am.generate_sync_message(state)
     }
 
-    pub fn get_last_local_changes_for_sync(&mut self) -> impl Iterator<Item = &Change> {
-        let mut heads = self.am.get_heads();
-        std::mem::swap(&mut heads, &mut self.last_synced_heads);
+    /// Check whether there are any local changes since the last syncing.
+    pub fn has_new_local_changes(&self) -> bool {
+        !self
+            .am
+            .get_changes(&self.last_synced_heads)
+            .unwrap()
+            .is_empty()
+    }
 
+    pub fn get_last_local_changes_for_sync(&mut self) -> impl Iterator<Item = &Change> {
+        // get the new heads that we're syncing
+        let mut heads = self.am.get_heads();
+        // swap them with the other ones
+        std::mem::swap(&mut heads, &mut self.last_synced_heads);
+        // now get the changes since the heads
         let changes = self.am.get_changes(&heads).unwrap();
         let actor = self.am.get_actor();
+        // and filter them to those that were made by us
         changes.into_iter().filter(move |c| c.actor_id() == actor)
     }
 

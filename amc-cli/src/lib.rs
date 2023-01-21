@@ -27,19 +27,19 @@ pub struct Opts {
 
     /// Enable checking documents are in the same state during checking of the document.
     #[clap(long)]
-    pub same_state_check:bool,
+    pub same_state_check: bool,
 
     /// Enable checking documents are in sync and don't have any other messages.
     #[clap(long)]
-    pub in_sync_check:bool,
+    pub in_sync_check: bool,
 
     /// Enable checking documents can be saved and loaded and they remain the same.
     #[clap(long)]
-    pub save_load_check:bool,
+    pub save_load_check: bool,
 
     /// Enable checking documents don't panic.
     #[clap(long)]
-    pub error_free_check:bool,
+    pub error_free_check: bool,
 }
 
 #[derive(clap::Subcommand, Copy, Clone, Debug)]

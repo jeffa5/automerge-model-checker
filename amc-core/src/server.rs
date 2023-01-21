@@ -34,13 +34,24 @@ pub enum SyncMethod {
     SaveLoad,
 }
 
+/// A convenience wrapper around some bytes to show them in base64 form when debugging.
+#[derive(Clone, Hash, PartialEq, Eq)]
+pub struct Bytes(pub Vec<u8>);
+
+impl Debug for Bytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use base64::Engine;
+        let b64 = base64::engine::general_purpose::STANDARD_NO_PAD.encode(&self.0);
+        b64.fmt(f)
+    }
+}
+
 /// Messages that servers send to each other.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ServerMsg {
-    // TODO: make this use the raw struct to avoid serde overhead
-    SyncMessageRaw { message_bytes: Vec<u8> },
-    SyncChangeRaw { missing_changes_bytes: Vec<Vec<u8>> },
-    SyncSaveLoadRaw { doc_bytes: Vec<u8> },
+    SyncMessageRaw { message_bytes: Bytes },
+    SyncChangeRaw { missing_changes_bytes: Vec<Bytes> },
+    SyncSaveLoadRaw { doc_bytes: Bytes },
 }
 
 impl<A: Application> Actor for Server<A> {
@@ -70,7 +81,7 @@ impl<A: Application> Actor for Server<A> {
                 o.send(src, GlobalMsg::ClientToServer(ClientMsg::Response(output)));
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
-                let message = sync::Message::decode(&message_bytes).unwrap();
+                let message = sync::Message::decode(&message_bytes.0).unwrap();
                 let document = state.to_mut().document_mut();
                 // receive the sync message
                 document.receive_sync_message(src.into(), message);
@@ -79,7 +90,7 @@ impl<A: Application> Actor for Server<A> {
                     o.send(
                         src,
                         GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw {
-                            message_bytes: message.encode(),
+                            message_bytes: Bytes(message.encode()),
                         }),
                     )
                 }
@@ -88,12 +99,12 @@ impl<A: Application> Actor for Server<A> {
                 missing_changes_bytes,
             }) => {
                 for change_bytes in missing_changes_bytes {
-                    let change = Change::from_bytes(change_bytes).unwrap();
+                    let change = Change::from_bytes(change_bytes.0).unwrap();
                     state.to_mut().document_mut().apply_change(change)
                 }
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { doc_bytes }) => {
-                let mut other_doc = Automerge::load(&doc_bytes).unwrap();
+                let mut other_doc = Automerge::load(&doc_bytes.0).unwrap();
                 state.to_mut().document_mut().merge(&mut other_doc);
             }
             GlobalMsg::ClientToServer(ClientMsg::Response(_)) => {
@@ -114,19 +125,21 @@ impl<A: Application> Server<A> {
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
         match &self.sync_method {
             SyncMethod::Changes => {
-                let state = state.to_mut();
-                let new_changes_from_us = state
-                    .document_mut()
-                    .get_last_local_changes_for_sync()
-                    .map(|c| c.raw_bytes().to_vec())
-                    .collect::<Vec<_>>();
-                if !new_changes_from_us.is_empty() {
-                    o.broadcast(
-                        &self.peers,
-                        &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
-                            missing_changes_bytes: new_changes_from_us,
-                        }),
-                    )
+                if state.document().has_new_local_changes() {
+                    let state = state.to_mut();
+                    let new_changes_from_us = state
+                        .document_mut()
+                        .get_last_local_changes_for_sync()
+                        .map(|c| Bytes(c.raw_bytes().to_vec()))
+                        .collect::<Vec<_>>();
+                    if !new_changes_from_us.is_empty() {
+                        o.broadcast(
+                            &self.peers,
+                            &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
+                                missing_changes_bytes: new_changes_from_us,
+                            }),
+                        )
+                    }
                 }
             }
             SyncMethod::Messages => {
@@ -140,7 +153,7 @@ impl<A: Application> Server<A> {
                         o.send(
                             *peer,
                             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw {
-                                message_bytes: message.encode(),
+                                message_bytes: Bytes(message.encode()),
                             }),
                         )
                     }
@@ -150,7 +163,9 @@ impl<A: Application> Server<A> {
                 let bytes = state.to_mut().document_mut().save();
                 o.broadcast(
                     &self.peers,
-                    &GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { doc_bytes: bytes }),
+                    &GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw {
+                        doc_bytes: Bytes(bytes),
+                    }),
                 );
             }
         }
