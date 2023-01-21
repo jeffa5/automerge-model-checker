@@ -17,7 +17,7 @@ use stateright::actor::Out;
 
 /// A peer in the automerge network.
 ///
-/// Servers can be thought of user's applications.
+/// Servers can be thought of as user's applications.
 /// They keep state over restarts and can process operations from clients, as well as sync these to
 /// other peers.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
