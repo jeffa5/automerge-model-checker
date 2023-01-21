@@ -106,7 +106,6 @@ impl Opts {
     {
         println!("{:?}", self);
         let model = self.actor_model(&c).checker().threads(num_cpus::get());
-        println!("Running");
 
         match self.command {
             SubCmd::Explore => {
