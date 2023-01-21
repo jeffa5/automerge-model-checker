@@ -33,15 +33,20 @@
     craneLib = crane.lib.${system};
     rust = pkgs.rust-bin.stable.latest.default;
     src = craneLib.cleanCargoSource ./.;
+    pname = "amc";
     cargoArtifacts = craneLib.buildDepsOnly {
-      inherit src;
+      inherit src pname;
     };
   in {
     packages.${system} = {
       default = self.packages.${system}.amc;
 
       amc = craneLib.buildPackage {
-        inherit cargoArtifacts src;
+        inherit cargoArtifacts src pname;
+      };
+
+      amc-docs = craneLib.cargoDoc {
+        inherit cargoArtifacts src pname;
       };
     };
 
