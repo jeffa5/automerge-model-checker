@@ -11,6 +11,13 @@
     crane.inputs.nixpkgs.follows = "nixpkgs";
   };
 
+  nixConfig = {
+    extra-substituters = [
+      "https://automerge-model-checking.cachix.org"
+    ];
+    extra-trusted-public-keys = ["automerge-model-checking.cachix.org-1:le7f4sh93Kr0n1F8/5AjyEe883EXQxkrUKVVZDHmMiY="];
+  };
+
   outputs = {
     self,
     nixpkgs,
