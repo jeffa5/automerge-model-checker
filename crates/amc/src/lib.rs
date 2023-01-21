@@ -144,7 +144,7 @@
 //!             None
 //!         }
 //!     });
-//!     model = amc::model::with_default_properties(model).init_network(Network::new_ordered(vec![]));
+//!     model = amc::properties::with_default_properties(model).init_network(Network::new_ordered(vec![]));
 //!     model.checker().threads(1).spawn_dfs().join().assert_properties();
 //! ```
 
