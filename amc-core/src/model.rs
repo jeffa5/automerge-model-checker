@@ -160,7 +160,7 @@ where
             GlobalActorState::Server(s) => {
                 let bytes = s.clone().document_mut().save();
                 let doc = Automerge::load(&bytes).unwrap();
-                if doc.get_heads() != s.document().heads() {
+                if doc.get_heads() != s.document().get_heads() {
                     return false;
                 }
             }

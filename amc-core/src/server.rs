@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::hash::Hash;
+use std::time::Duration;
 
 use crate::Application;
 use crate::ClientMsg;
@@ -38,7 +39,7 @@ pub enum SyncMethod {
 pub enum ServerMsg {
     // TODO: make this use the raw struct to avoid serde overhead
     SyncMessageRaw { message_bytes: Vec<u8> },
-    SyncChangeRaw { change_bytes: Vec<u8> },
+    SyncChangeRaw { missing_changes_bytes: Vec<Vec<u8>> },
     SyncSaveLoadRaw { doc_bytes: Vec<u8> },
 }
 
@@ -48,7 +49,9 @@ impl<A: Application> Actor for Server<A> {
     type State = A::State;
 
     /// Servers don't do things on their own unless told to.
-    fn on_start(&self, id: Id, _o: &mut Out<Self>) -> Self::State {
+    fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
+        // Start a timer for periodic syncing.
+        o.set_timer(Duration::from_secs(1)..Duration::from_secs(2));
         self.app.init(id)
     }
 
@@ -65,8 +68,6 @@ impl<A: Application> Actor for Server<A> {
             GlobalMsg::ClientToServer(ClientMsg::Request(request)) => {
                 let output = self.app.execute(state, request);
                 o.send(src, GlobalMsg::ClientToServer(ClientMsg::Response(output)));
-
-                self.sync(state, o)
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
                 let message = sync::Message::decode(&message_bytes).unwrap();
@@ -83,9 +84,13 @@ impl<A: Application> Actor for Server<A> {
                     )
                 }
             }
-            GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw { change_bytes }) => {
-                let change = Change::from_bytes(change_bytes).unwrap();
-                state.to_mut().document_mut().apply_change(change)
+            GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
+                missing_changes_bytes,
+            }) => {
+                for change_bytes in missing_changes_bytes {
+                    let change = Change::from_bytes(change_bytes).unwrap();
+                    state.to_mut().document_mut().apply_change(change)
+                }
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncSaveLoadRaw { doc_bytes }) => {
                 let mut other_doc = Automerge::load(&doc_bytes).unwrap();
@@ -96,18 +101,30 @@ impl<A: Application> Actor for Server<A> {
             }
         }
     }
+
+    /// Handle a timeout, used to trigger syncing events as this gets interleaved when checking.
+    fn on_timeout(&self, _id: Id, state: &mut Cow<Self::State>, o: &mut Out<Self>) {
+        o.set_timer(Duration::from_secs(1)..Duration::from_secs(2));
+        self.sync(state, o)
+    }
 }
 
 impl<A: Application> Server<A> {
     /// Handle generating a sync message after some changes have been made.
     fn sync(&self, state: &mut Cow<<Self as Actor>::State>, o: &mut Out<Self>) {
-        match self.sync_method {
+        match &self.sync_method {
             SyncMethod::Changes => {
-                if let Some(change) = state.document().last_local_change() {
+                let state = state.to_mut();
+                let new_changes_from_us = state
+                    .document_mut()
+                    .get_last_local_changes_for_sync()
+                    .map(|c| c.raw_bytes().to_vec())
+                    .collect::<Vec<_>>();
+                if !new_changes_from_us.is_empty() {
                     o.broadcast(
                         &self.peers,
                         &GlobalMsg::ServerToServer(ServerMsg::SyncChangeRaw {
-                            change_bytes: change.raw_bytes().to_vec(),
+                            missing_changes_bytes: new_changes_from_us,
                         }),
                     )
                 }
