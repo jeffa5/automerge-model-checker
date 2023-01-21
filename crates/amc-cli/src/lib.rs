@@ -1,3 +1,7 @@
+#![deny(missing_docs)]
+
+//! Utilities for building models and appropriate CLIs for Automerge Model Checker applications.
+
 use amc::{properties, Application, GlobalActor, GlobalMsg, Reporter, Server, Trigger};
 use clap::Parser;
 use stateright::{
@@ -10,6 +14,7 @@ use std::hash::Hash;
 /// Options for the main running.
 #[derive(Parser, Debug)]
 pub struct Opts {
+    /// Subcommand for action to run.
     #[clap(subcommand)]
     pub command: SubCmd,
 
@@ -42,10 +47,14 @@ pub struct Opts {
     pub error_free_check: bool,
 }
 
+/// Subcommand to execute.
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
 pub enum SubCmd {
+    /// Launch an interactive explorer in the browser.
     Explore,
+    /// Launch a checker using depth-first search.
     CheckDfs,
+    /// Launch a checker using breadth-first search.
     CheckBfs,
 }
 
@@ -96,6 +105,7 @@ impl Opts {
             .init_network(Network::new_ordered(vec![]))
     }
 
+    /// Run an application.
     pub fn run<C: Cli>(self, c: C)
     where
         C::Config: Send,
@@ -130,22 +140,38 @@ impl Opts {
     }
 }
 
+/// Trait to manage an application, building the model before running it.
 pub trait Cli: Debug {
+    /// The application being modeled.
     type App: Application + 'static;
+
+    /// The type of the client in the application.
     type Client: Trigger<Self::App> + 'static;
+
+    /// The type of config for the model.
     type Config: 'static;
+
+    /// The type of history for the model.
     type History: Clone + Debug + Hash;
 
+    /// Generate an application instance.
     fn application(&self, server: usize) -> Self::App;
+
+    /// Generate some clients for the given server.
     fn clients(&self, server: usize) -> Vec<Self::Client>;
 
+    /// Generate the config for the model.
     fn config(&self, cli_opts: &Opts) -> Self::Config;
+
+    /// Generate the default history object.
     fn history(&self) -> Self::History;
 
+    /// Generate the properties to be added to the model.
     fn properties(
         &self,
     ) -> Vec<Property<ActorModel<GlobalActor<Self::Client, Self::App>, Self::Config, Self::History>>>;
 
+    /// Record a request to the application.
     fn record_request(
         &self,
     ) -> fn(
@@ -155,6 +181,8 @@ pub trait Cli: Debug {
     ) -> Option<Self::History> {
         |_, _, _| None
     }
+
+    /// Record a response from the application.
     fn record_response(
         &self,
     ) -> fn(
