@@ -1,3 +1,9 @@
+//! An example of implementing an application to be tested with AMC.
+//!
+//! Run with `cargo run --release --example counter -- --help`
+//!
+//! The counter that this models is very simple, having an increment and decrement action.
+
 use amc::Application;
 use amc::ClientMsg;
 use amc::DerefDocument;

@@ -1,36 +1,19 @@
-# Model checking automerge
+# Automerge Model Checking
 
-An attempt to model check the [Rust implementation](https://github.com/automerge/automerge-rs) of [Automerge](https://github.com/automerge/automerge) directly, making some simplifying assumptions along the way.
+An attempt to model check the [Rust implementation](https://github.com/automerge/automerge-rs) of [Automerge](https://automerge.org/) directly, making some simplifying assumptions along the way.
 
 ## Status
 
-The [`amc`](./amc) crate provides a binary for checking general automerge checking (exercising the public API a bit).
+The [`amc-automerge`](./applications/amc-automerge) crate provides a binary for checking general Automerge checking (exercising the public API a bit).
 
-In the process of implementing this checking I think I've found some potential for value in checking custom datastructures built on-top of automerge.
-This might be able to help designers of datatypes check their merge behaviour too!
-For now there are [`todos`](./applications/amc-todo) and a [counter example](./amc/examples/counter.rs).
-Both have broken implementations (on purpose!) so try running them to see the failing behaviour.
+In the process of implementing this checking I think I've found some potential for checking custom applications/data structures built on-top of Automerge.
+This might be able to help designers of data types check their merge behaviour too!
 
-## Running
+## Current applications
 
-### Running amc
-
-```sh
-cargo run --bin amc -- serve
-```
-
-### Running amc-todo
-
-```sh
-cargo run --bin amc-todo -- serve
-```
-
-### Running the counter example
-
-```sh
-cargo run --example counter -- serve --increments 1 --decrements 0
-```
-
-### Without serving the web UI
-
-If you don't want to see the web ui you can do the checking all in the terminal by changing the `serve` command to `check-dfs` or `check-bfs`.
+- [Automerge itself](./applications/amc-automerge)
+    - `cargo run --release --bin amc-automerge`
+- [Todos](./applications/amc-todo)
+    - `cargo run --release --bin amc-todo`
+- [Counter](./amc/examples/counter.rs)
+    - `cargo run --release --example counter`
