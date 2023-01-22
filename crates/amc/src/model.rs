@@ -32,7 +32,7 @@ pub trait ModelBuilder: Debug {
     fn drivers(&self, application: usize) -> Vec<Self::Driver>;
 
     /// Generate the config for the model.
-    fn config(&self, model_opts: &Opts) -> Self::Config;
+    fn config(&self, model_opts: &ModelOpts) -> Self::Config;
 
     /// Generate the default history object.
     fn history(&self) -> Self::History;
@@ -67,7 +67,7 @@ pub trait ModelBuilder: Debug {
 
 /// Options for running a model.
 #[derive(Args, Debug)]
-pub struct Opts {
+pub struct ModelOpts {
     /// Number of servers to run.
     #[clap(long, short, global = true, default_value = "2")]
     pub servers: usize,

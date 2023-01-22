@@ -134,7 +134,7 @@ impl Drive<Counter> for Driver {
 }
 
 #[derive(clap::Args, Debug)]
-struct Opts {
+struct CounterOpts {
     #[clap(long, global = true, default_value = "1")]
     increments: u8,
 
@@ -149,13 +149,13 @@ struct Opts {
 #[derive(clap::Parser, Debug)]
 struct Args {
     #[clap(flatten)]
-    app_opts: Opts,
+    counter_opts: CounterOpts,
 
     #[clap(flatten)]
-    amc_args: amc::cli::Args,
+    amc_args: amc::cli::RunArgs,
 }
 
-impl ModelBuilder for Opts {
+impl ModelBuilder for CounterOpts {
     type App = Counter;
 
     type Driver = Driver;
@@ -179,7 +179,7 @@ impl ModelBuilder for Opts {
         ]
     }
 
-    fn config(&self, model_opts: &amc::model::Opts) -> Self::Config {
+    fn config(&self, model_opts: &amc::model::ModelOpts) -> Self::Config {
         let max_value = (model_opts.servers * self.increments as usize)
             - (model_opts.servers * self.decrements as usize);
         Config { max_value }
@@ -241,6 +241,9 @@ struct Config {
 
 fn main() {
     use clap::Parser;
-    let Args { app_opts, amc_args } = Args::parse();
-    amc_args.run(app_opts);
+    let Args {
+        counter_opts,
+        amc_args,
+    } = Args::parse();
+    amc_args.run(counter_opts);
 }

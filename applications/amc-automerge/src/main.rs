@@ -12,26 +12,26 @@ use stateright::actor::Id;
 use stateright::Property;
 
 #[derive(Parser, Debug)]
-struct C {
+struct AutomergeOpts {
     // What object type to check.
     #[clap(long, global = true, default_value = "map")]
     object_type: amc_automerge::ObjectType,
 }
 
 #[derive(Parser, Debug)]
-struct Opts {
+struct Args {
     #[clap(flatten)]
-    c: C,
+    automerge_opts: AutomergeOpts,
 
     #[clap(flatten)]
-    lib_args: amc::cli::Args,
+    amc_args: amc::cli::RunArgs,
 }
 
 type ActorState = GlobalActorState<Driver, App>;
 
 const INSERT_REQUEST_COUNT: usize = 2;
 
-impl amc::model::ModelBuilder for C {
+impl amc::model::ModelBuilder for AutomergeOpts {
     type App = App;
 
     type Driver = Driver;
@@ -103,7 +103,7 @@ impl amc::model::ModelBuilder for C {
         drivers
     }
 
-    fn config(&self, model_opts: &amc::model::Opts) -> Self::Config {
+    fn config(&self, model_opts: &amc::model::ModelOpts) -> Self::Config {
         let c = Config {
             max_map_size: 1,
             max_list_size: if self.object_type == ObjectType::Map {
@@ -199,9 +199,9 @@ struct Config {
 }
 
 fn main() {
-    let Opts {
-        c: c_opts,
-        lib_args,
-    } = Opts::parse();
-    lib_args.run(c_opts);
+    let Args {
+        automerge_opts,
+        amc_args,
+    } = Args::parse();
+    amc_args.run(automerge_opts);
 }

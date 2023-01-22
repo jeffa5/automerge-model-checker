@@ -24,19 +24,19 @@ mod apphandle;
 mod driver;
 
 #[derive(Parser, Debug)]
-struct C {
+struct TodoOptions {
     /// Whether to use random ids for todo creation.
     #[clap(long, global = true)]
     random_ids: bool,
 }
 
 #[derive(Parser, Debug)]
-struct Opts {
+struct Args {
     #[clap(flatten)]
-    c: C,
+    todo_options: TodoOptions,
 
     #[clap(flatten)]
-    lib_args: amc::cli::Args,
+    amc_args: amc::cli::RunArgs,
 }
 
 type AppHistory = Vec<(GlobalMsg<App>, GlobalMsg<App>)>;
@@ -45,7 +45,7 @@ pub struct Config {
     pub app: App,
 }
 
-impl amc::model::ModelBuilder for C {
+impl amc::model::ModelBuilder for TodoOptions {
     type App = App;
 
     type Driver = Driver;
@@ -82,7 +82,7 @@ impl amc::model::ModelBuilder for C {
         ]
     }
 
-    fn config(&self, _model_opts: &amc::model::Opts) -> Self::Config {
+    fn config(&self, _model_opts: &amc::model::ModelOpts) -> Self::Config {
         Config {
             app: self.application(0),
         }
@@ -193,9 +193,9 @@ impl amc::model::ModelBuilder for C {
 }
 
 fn main() {
-    let Opts {
-        c: c_opts,
-        lib_args,
-    } = Opts::parse();
-    lib_args.run(c_opts);
+    let Args {
+        todo_options,
+        amc_args,
+    } = Args::parse();
+    amc_args.run(todo_options);
 }

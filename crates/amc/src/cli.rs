@@ -8,7 +8,7 @@ use crate::{
     application::server::Server,
     client::Client,
     global::GlobalActor,
-    model::{ModelBuilder, Opts},
+    model::{ModelBuilder, ModelOpts},
     properties,
     report::Reporter,
 };
@@ -26,7 +26,7 @@ pub enum Runner {
 
 /// Arguments for running a model check.
 #[derive(Parser, Debug)]
-pub struct Args {
+pub struct RunArgs {
     /// How to run the model.
     #[clap(subcommand)]
     pub command: Runner,
@@ -37,10 +37,10 @@ pub struct Args {
 
     /// Model opts
     #[clap(flatten)]
-    model_opts: Opts,
+    model_opts: ModelOpts,
 }
 
-impl Args {
+impl RunArgs {
     fn actor_model<M: ModelBuilder>(
         &self,
         model_builder: &M,
