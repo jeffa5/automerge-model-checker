@@ -8,7 +8,6 @@ use amc_automerge::client::App;
 use amc_automerge::driver::Driver;
 use amc_automerge::ObjectType;
 use clap::Parser;
-use stateright::actor::Id;
 use stateright::Property;
 
 #[derive(Parser, Debug)]
@@ -52,8 +51,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         c
     }
 
-    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
-        let server = Id::from(server);
+    fn drivers(&self, _server: usize) -> Vec<Self::Driver> {
         let drivers = match self.object_type {
             ObjectType::Map => {
                 vec![
@@ -62,14 +60,12 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
-                        server,
                     },
                     Driver {
                         func: amc_automerge::driver::DriverState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
-                        server,
                     },
                 ]
             }
@@ -80,21 +76,18 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             request_count: 2,
                             index: 0,
                         },
-                        server,
                     },
                     Driver {
                         func: amc_automerge::driver::DriverState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
-                        server,
                     },
                     Driver {
                         func: amc_automerge::driver::DriverState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
                         },
-                        server,
                     },
                 ]
             }

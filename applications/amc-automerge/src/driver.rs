@@ -6,7 +6,6 @@ use crate::client::App;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Driver {
     pub func: DriverState,
-    pub server: Id,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]

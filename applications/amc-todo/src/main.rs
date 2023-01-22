@@ -60,24 +60,19 @@ impl amc::model::ModelBuilder for TodoOptions {
         }
     }
 
-    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
-        let i = stateright::actor::Id::from(server);
+    fn drivers(&self, _server: usize) -> Vec<Self::Driver> {
         vec![
             Driver {
                 func: DriverState::Creater,
-                server: i,
             },
             Driver {
                 func: DriverState::Updater,
-                server: i,
             },
             Driver {
                 func: DriverState::Toggler,
-                server: i,
             },
             Driver {
                 func: DriverState::Deleter,
-                server: i,
             },
         ]
     }

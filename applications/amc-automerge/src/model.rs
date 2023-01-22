@@ -60,7 +60,6 @@ impl Builder {
                                 request_count: 2,
                                 key: "key".to_owned(),
                             },
-                            server: i,
                         },
                         _app: PhantomData,
                     }));
@@ -71,7 +70,6 @@ impl Builder {
                                 request_count: 2,
                                 key: "key".to_owned(),
                             },
-                            server: i,
                         },
                         _app: PhantomData,
                     }));
@@ -84,7 +82,6 @@ impl Builder {
                                 request_count: 2,
                                 index: 0,
                             },
-                            server: i,
                         },
                         _app: PhantomData,
                     }));
@@ -96,7 +93,6 @@ impl Builder {
                                 request_count: 2,
                                 index: 0,
                             },
-                            server: i,
                         },
                         _app: PhantomData,
                     }));
@@ -107,7 +103,6 @@ impl Builder {
                                 request_count: insert_request_count,
                                 index: 0,
                             },
-                            server: i,
                         },
                         _app: PhantomData,
                     }));
