@@ -1,20 +1,28 @@
 use std::sync::Arc;
 
 use amc::global::{GlobalActor, GlobalActorState};
-use amc_automerge::app::{LIST_KEY, MAP_KEY};
-use amc_automerge::client;
-use amc_automerge::client::App;
+use crate::app::{LIST_KEY, MAP_KEY};
+use crate::client::App;
 
-use amc_automerge::driver::Driver;
-use amc_automerge::ObjectType;
+use crate::driver::Driver;
 use clap::Parser;
 use stateright::Property;
+
+mod app;
+mod client;
+mod driver;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
+enum ObjectType {
+    Map,
+    List,
+}
 
 #[derive(Parser, Debug)]
 struct AutomergeOpts {
     // What object type to check.
     #[clap(long, global = true, default_value = "map")]
-    object_type: amc_automerge::ObjectType,
+    object_type: crate::ObjectType,
 }
 
 #[derive(Parser, Debug)]
@@ -56,13 +64,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             ObjectType::Map => {
                 vec![
                     Driver {
-                        func: amc_automerge::driver::DriverState::MapSinglePut {
+                        func: crate::driver::DriverState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
                     },
                     Driver {
-                        func: amc_automerge::driver::DriverState::MapSingleDelete {
+                        func: crate::driver::DriverState::MapSingleDelete {
                             request_count: 2,
                             key: "key".to_owned(),
                         },
@@ -72,19 +80,19 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             ObjectType::List => {
                 vec![
                     Driver {
-                        func: amc_automerge::driver::DriverState::ListStartPut {
+                        func: crate::driver::DriverState::ListStartPut {
                             request_count: 2,
                             index: 0,
                         },
                     },
                     Driver {
-                        func: amc_automerge::driver::DriverState::ListDelete {
+                        func: crate::driver::DriverState::ListDelete {
                             request_count: 2,
                             index: 0,
                         },
                     },
                     Driver {
-                        func: amc_automerge::driver::DriverState::ListInsert {
+                        func: crate::driver::DriverState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
                         },
