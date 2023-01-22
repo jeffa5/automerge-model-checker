@@ -17,7 +17,11 @@ use crate::{
 #[derive(clap::Subcommand, Copy, Clone, Debug)]
 pub enum Runner {
     /// Launch an interactive explorer in the browser.
-    Explore,
+    Explore {
+        /// Port to serve UI on.
+        #[clap(long, default_value = "8080")]
+        port: u16,
+    },
     /// Launch a checker using depth-first search.
     CheckDfs,
     /// Launch a checker using breadth-first search.
@@ -30,10 +34,6 @@ pub struct RunArgs {
     /// How to run the model.
     #[clap(subcommand)]
     pub command: Runner,
-
-    /// Port to serve UI on.
-    #[clap(long, global = true, default_value = "8080")]
-    pub port: u16,
 
     /// Model opts
     #[clap(flatten)]
@@ -105,9 +105,9 @@ impl RunArgs {
         let model = self.actor_model(&c).checker().threads(num_cpus::get());
 
         match self.command {
-            Runner::Explore => {
-                println!("Serving web ui on http://127.0.0.1:{}", self.port);
-                model.serve(("127.0.0.1", self.port));
+            Runner::Explore { port } => {
+                println!("Serving web ui on http://127.0.0.1:{}", port);
+                model.serve(("127.0.0.1", port));
             }
             Runner::CheckDfs => {
                 model
