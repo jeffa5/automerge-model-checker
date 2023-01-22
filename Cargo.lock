@@ -297,6 +297,7 @@ dependencies = [
  "automerge",
  "base64 0.21.0",
  "clap",
+ "num-format",
  "num_cpus",
  "stateright",
 ]
@@ -306,21 +307,8 @@ name = "amc-automerge"
 version = "0.1.0"
 dependencies = [
  "amc",
- "amc-cli",
  "automerge",
  "clap",
- "num_cpus",
- "stateright",
-]
-
-[[package]]
-name = "amc-cli"
-version = "0.1.0"
-dependencies = [
- "amc",
- "automerge",
- "clap",
- "num-format",
  "num_cpus",
  "stateright",
 ]
@@ -330,7 +318,6 @@ name = "amc-todo"
 version = "0.1.0"
 dependencies = [
  "amc",
- "amc-cli",
  "automerge",
  "clap",
  "num_cpus",

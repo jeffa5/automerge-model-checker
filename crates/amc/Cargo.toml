@@ -8,6 +8,5 @@ stateright = "0.29.0"
 automerge = "0.2.0"
 clap = { version = "4.1.1", features = ["derive"] }
 base64 = "0.21.0"
-
-[dev-dependencies]
-num_cpus = "1.15.0"
+num_cpus = "1.13.1"
+num-format = { version = "0.4.4", features = ["with-system-locale"] }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use amc::global::{GlobalActorState, GlobalActor};
+use amc::global::{GlobalActor, GlobalActorState};
 use amc_automerge::app::{LIST_KEY, MAP_KEY};
 use amc_automerge::client;
 use amc_automerge::client::App;
@@ -24,14 +24,14 @@ struct Opts {
     c: C,
 
     #[clap(flatten)]
-    lib_opts: amc_cli::Opts,
+    lib_args: amc::cli::Args,
 }
 
 type ActorState = GlobalActorState<Driver, App>;
 
 const INSERT_REQUEST_COUNT: usize = 2;
 
-impl amc_cli::ModelBuilder for C {
+impl amc::model::ModelBuilder for C {
     type App = App;
 
     type Driver = Driver;
@@ -103,13 +103,13 @@ impl amc_cli::ModelBuilder for C {
         drivers
     }
 
-    fn config(&self, cli_opts: &amc_cli::Opts) -> Self::Config {
+    fn config(&self, model_opts: &amc::model::Opts) -> Self::Config {
         let c = Config {
             max_map_size: 1,
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                cli_opts.servers * INSERT_REQUEST_COUNT
+                model_opts.servers * INSERT_REQUEST_COUNT
             },
         };
         println!("Built config {:?}", c);
@@ -122,7 +122,7 @@ impl amc_cli::ModelBuilder for C {
         &self,
     ) -> Vec<
         stateright::Property<
-            stateright::actor::ActorModel<GlobalActor< Self::App, Self::Driver>, Self::Config>,
+            stateright::actor::ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config>,
         >,
     > {
         type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config>;
@@ -201,7 +201,7 @@ struct Config {
 fn main() {
     let Opts {
         c: c_opts,
-        lib_opts,
+        lib_args,
     } = Opts::parse();
-    lib_opts.run(c_opts);
+    lib_args.run(c_opts);
 }

@@ -70,7 +70,9 @@ impl Drive<App> for Driver {
             (DriverState::Deleter, AppOutput::ListTodos(ids)) => {
                 ids.iter().map(|id| AppInput::DeleteTodo(*id)).collect()
             }
-            _ => {vec![]}
+            _ => {
+                vec![]
+            }
         }
     }
 }

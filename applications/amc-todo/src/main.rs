@@ -12,12 +12,12 @@ use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
 use amc::properties::syncing_done;
 use clap::Parser;
+use driver::Driver;
+use driver::DriverState;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::actor::Id;
 use stateright::Property;
-use driver::Driver;
-use driver::DriverState;
 
 mod app;
 mod apphandle;
@@ -36,7 +36,7 @@ struct Opts {
     c: C,
 
     #[clap(flatten)]
-    lib_opts: amc_cli::Opts,
+    lib_args: amc::cli::Args,
 }
 
 type AppHistory = Vec<(GlobalMsg<App>, GlobalMsg<App>)>;
@@ -45,7 +45,7 @@ pub struct Config {
     pub app: App,
 }
 
-impl amc_cli::ModelBuilder for C {
+impl amc::model::ModelBuilder for C {
     type App = App;
 
     type Driver = Driver;
@@ -82,7 +82,7 @@ impl amc_cli::ModelBuilder for C {
         ]
     }
 
-    fn config(&self, _cli_opts: &amc_cli::Opts) -> Self::Config {
+    fn config(&self, _model_opts: &amc::model::Opts) -> Self::Config {
         Config {
             app: self.application(0),
         }
@@ -195,7 +195,7 @@ impl amc_cli::ModelBuilder for C {
 fn main() {
     let Opts {
         c: c_opts,
-        lib_opts,
+        lib_args,
     } = Opts::parse();
-    lib_opts.run(c_opts);
+    lib_args.run(c_opts);
 }

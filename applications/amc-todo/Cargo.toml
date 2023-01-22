@@ -12,4 +12,3 @@ num_cpus = "1.13.1"
 stateright = "0.29.0"
 rand = "0.8.5"
 amc = { path = "../../crates/amc" }
-amc-cli = { path = "../../crates/amc-cli" }

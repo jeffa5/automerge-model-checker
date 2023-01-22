@@ -13,6 +13,15 @@ mod document;
 mod drive;
 mod server;
 
+/// A custom reporter for runs of the model checking.
+pub mod report;
+
+/// Tools for managing CLIs.
+pub mod cli;
+
+/// The overall model.
+pub mod model;
+
 /// All global utilities.
 pub mod global;
 
