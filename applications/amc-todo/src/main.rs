@@ -16,7 +16,6 @@ use driver::Driver;
 use driver::DriverState;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
-use stateright::actor::Id;
 use stateright::Property;
 
 mod app;
@@ -104,7 +103,7 @@ impl amc::model::ModelBuilder for TodoOptions {
                 }
 
                 let cf = &model.cfg.app;
-                let mut single_app = Cow::Owned(cf.init(Id::from(0)));
+                let mut single_app = Cow::Owned(cf.init(0));
 
                 for m in &state.history {
                     match m {

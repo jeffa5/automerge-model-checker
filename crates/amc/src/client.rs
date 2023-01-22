@@ -17,7 +17,7 @@ pub trait Application: Clone + Hash + Eq + Debug + Send + Sync {
     type State: DerefDocument + Send + Sync;
 
     /// Initialise an application, performing any setup logic.
-    fn init(&self, id: Id) -> Self::State;
+    fn init(&self, id: usize) -> Self::State;
 
     /// Execute an application, triggering some behaviour with a given input, expecting a
     /// corresponding output.
@@ -59,7 +59,7 @@ impl<A: Application, D: Drive<A>> Actor for Client<A, D> {
     type State = D::State;
 
     fn on_start(&self, id: Id, o: &mut stateright::actor::Out<Self>) -> Self::State {
-        let (state, messages) = self.driver.init(id);
+        let (state, messages) = self.driver.init(usize::from(id));
         for message in messages {
             o.send(
                 self.server,

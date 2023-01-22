@@ -13,7 +13,7 @@ impl Application for MapSingleDeleter {
 
     type State = AppState;
 
-    fn init(&self, id: stateright::actor::Id) -> Self::State {
+    fn init(&self, id: usize) -> Self::State {
         AppState::new(id)
     }
 
@@ -37,7 +37,7 @@ impl Application for ListDeleter {
 
     type State = AppState;
 
-    fn init(&self, id: stateright::actor::Id) -> Self::State {
+    fn init(&self, id: usize) -> Self::State {
         AppState::new(id)
     }
 

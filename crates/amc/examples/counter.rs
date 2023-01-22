@@ -16,7 +16,6 @@ use amc::model::ModelBuilder;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::ActorModel;
-use stateright::actor::Id;
 use stateright::Property;
 use std::borrow::Cow;
 
@@ -42,7 +41,7 @@ impl Application for Counter {
     type Output = ();
     type State = CounterState;
 
-    fn init(&self, id: Id) -> Self::State {
+    fn init(&self, id: usize) -> Self::State {
         CounterState {
             value: self.initial_value,
             doc: Document::new(id),
@@ -107,7 +106,7 @@ impl Drive<Counter> for Driver {
 
     fn init(
         &self,
-        _id: Id,
+        _application_id: usize,
     ) -> (
         <Self as Drive<Counter>>::State,
         Vec<<Counter as Application>::Input>,

@@ -41,8 +41,8 @@ impl DerefDocument for AppState {
 }
 
 impl AppState {
-    pub fn new(id: stateright::actor::Id, random_ids: bool) -> Self {
-        let seed = usize::from(id) as u64;
+    pub fn new(id: usize, random_ids: bool) -> Self {
+        let seed = id as u64;
         Self {
             doc: Box::new(Document::new(id)),
             random_ids,

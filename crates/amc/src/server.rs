@@ -70,7 +70,7 @@ impl<A: Application> Actor for Server<A> {
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         // Start a timer for periodic syncing.
         o.set_timer(Duration::from_secs(1)..Duration::from_secs(2));
-        self.app.init(id)
+        self.app.init(usize::from(id))
     }
 
     /// Process a message from another peer or client.

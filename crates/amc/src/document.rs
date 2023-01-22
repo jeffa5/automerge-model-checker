@@ -4,7 +4,6 @@ use std::{collections::BTreeMap, ops::Deref};
 
 use automerge::transaction::{Transaction, UnObserved};
 use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ROOT};
-use stateright::actor::Id;
 
 /// A document that holds an automerge object and also the sync states for peers.
 #[derive(Clone)]
@@ -65,9 +64,9 @@ impl Hash for Document {
 
 impl Document {
     /// Create a new document.
-    pub fn new(actor_id: Id) -> Self {
+    pub fn new(server_id: usize) -> Self {
         let mut doc = Automerge::new();
-        let id: usize = actor_id.into();
+        let id: usize = server_id.into();
         doc.set_actor(ActorId::from(id.to_be_bytes()));
         Self {
             am: doc,

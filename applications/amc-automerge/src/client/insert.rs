@@ -13,7 +13,7 @@ impl Application for ListInserter {
 
     type State = AppState;
 
-    fn init(&self, id: stateright::actor::Id) -> Self::State {
+    fn init(&self, id: usize) -> Self::State {
         AppState::new(id)
     }
 

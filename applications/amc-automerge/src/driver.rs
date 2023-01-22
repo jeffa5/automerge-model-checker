@@ -1,5 +1,4 @@
 use amc::driver::Drive;
-use stateright::actor::Id;
 
 use crate::client::App;
 
@@ -31,7 +30,7 @@ impl Drive<App> for Driver {
 
     fn init(
         &self,
-        _id: Id,
+        _application_id: usize,
     ) -> (
         <Self as Drive<App>>::State,
         Vec<<App as amc::prelude::Application>::Input>,

@@ -26,7 +26,7 @@ impl DerefDocument for AppState {
 }
 
 impl AppState {
-    pub fn new(id: stateright::actor::Id) -> Self {
+    pub fn new(id: usize) -> Self {
         Self {
             doc: Box::new(Document::new(id)),
         }

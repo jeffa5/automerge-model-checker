@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 
 use amc::application::Application;
-use stateright::actor::Id;
 
 use crate::{app::AppState, driver::AppOutput};
 
@@ -17,7 +16,7 @@ impl Application for App {
 
     type State = AppState;
 
-    fn init(&self, id: Id) -> Self::State {
+    fn init(&self, id: usize) -> Self::State {
         AppState::new(id, self.random_ids)
     }
 
