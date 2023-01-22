@@ -161,7 +161,7 @@ impl amc::model::ModelBuilder for C {
         )]
     }
 
-    fn record_request(
+    fn record_input(
         &self,
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {
@@ -176,7 +176,7 @@ impl amc::model::ModelBuilder for C {
         }
     }
 
-    fn record_response(
+    fn record_output(
         &self,
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {

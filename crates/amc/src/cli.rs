@@ -86,8 +86,8 @@ impl Args {
         for property in model_builder.properties() {
             model = model.property(property.expectation, property.name, property.condition);
         }
-        let record_request = model_builder.record_request();
-        let record_response = model_builder.record_response();
+        let record_request = model_builder.record_input();
+        let record_response = model_builder.record_output();
         model
             .record_msg_in(record_request)
             .record_msg_out(record_response)

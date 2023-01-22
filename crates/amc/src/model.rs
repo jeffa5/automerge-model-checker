@@ -42,8 +42,8 @@ pub trait ModelBuilder: Debug {
         &self,
     ) -> Vec<Property<ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>>>;
 
-    /// Record a request to the application.
-    fn record_request(
+    /// Record an input to the application.
+    fn record_input(
         &self,
     ) -> fn(
         cfg: &Self::Config,
@@ -53,8 +53,8 @@ pub trait ModelBuilder: Debug {
         |_, _, _| None
     }
 
-    /// Record a response from the application.
-    fn record_response(
+    /// Record an output from the application.
+    fn record_output(
         &self,
     ) -> fn(
         cfg: &Self::Config,

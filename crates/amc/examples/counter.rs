@@ -4,28 +4,21 @@
 //!
 //! The counter that this models is very simple, having an increment and decrement action.
 
-use amc::application::server::Server;
-use amc::application::server::SyncMethod;
 use amc::application::Application;
 use amc::application::DerefDocument;
 use amc::application::Document;
-use amc::driver::client::Client;
 use amc::driver::ApplicationMsg;
 use amc::driver::Drive;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
+use amc::model::ModelBuilder;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
-use stateright::actor::model_peers;
 use stateright::actor::ActorModel;
 use stateright::actor::Id;
-use stateright::actor::Network;
-use stateright::Checker;
-use stateright::Expectation;
-use stateright::Model;
+use stateright::Property;
 use std::borrow::Cow;
-use std::marker::PhantomData;
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Counter {
@@ -98,7 +91,6 @@ impl DerefDocument for CounterState {
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Driver {
     func: DriverFunc,
-    server: Id,
 }
 
 /// Action for the application to perform.
@@ -141,36 +133,106 @@ impl Drive<Counter> for Driver {
     }
 }
 
-#[derive(clap::Subcommand, Debug)]
-enum SubCmd {
-    Serve,
-    CheckDfs,
-    CheckBfs,
-}
-
-#[derive(clap::Parser, Debug)]
+#[derive(clap::Args, Debug)]
 struct Opts {
-    #[clap(subcommand)]
-    command: SubCmd,
-
-    #[clap(long, short, global = true, default_value = "2")]
-    servers: usize,
-
     #[clap(long, global = true, default_value = "1")]
     increments: u8,
 
     #[clap(long, global = true, default_value = "1")]
     decrements: u8,
 
-    #[clap(long, global = true, default_value = "changes")]
-    sync_method: SyncMethod,
-
-    #[clap(long, default_value = "8080")]
-    port: u16,
-
     /// Whether to use random ids for todo creation.
     #[clap(long, global = true)]
     random_ids: bool,
+}
+
+#[derive(clap::Parser, Debug)]
+struct Args {
+    #[clap(flatten)]
+    app_opts: Opts,
+
+    #[clap(flatten)]
+    amc_args: amc::cli::Args,
+}
+
+impl ModelBuilder for Opts {
+    type App = Counter;
+
+    type Driver = Driver;
+
+    type Config = Config;
+
+    type History = Vec<GlobalMsg<Counter>>;
+
+    fn application(&self, _application: usize) -> Self::App {
+        Counter { initial_value: 1 }
+    }
+
+    fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
+        vec![
+            Driver {
+                func: DriverFunc::Inc(self.increments),
+            },
+            Driver {
+                func: DriverFunc::Dec(self.decrements),
+            },
+        ]
+    }
+
+    fn config(&self, model_opts: &amc::model::Opts) -> Self::Config {
+        let max_value = (model_opts.servers * self.increments as usize)
+            - (model_opts.servers * self.decrements as usize);
+        Config { max_value }
+    }
+
+    fn history(&self) -> Self::History {
+        Vec::new()
+    }
+
+    fn properties(
+        &self,
+    ) -> Vec<
+        stateright::Property<
+            ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
+        >,
+    > {
+        vec![Property::<
+            ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
+        >::eventually("max value", |model, state| {
+            for actor in &state.actor_states {
+                if let GlobalActorState::Server(s) = &**actor {
+                    if s.document()
+                        .get(ROOT, "counter")
+                        .unwrap()
+                        .and_then(|(v, _)| v.to_i64())
+                        .unwrap_or_default()
+                        == model.cfg.max_value as i64
+                    {
+                        return true;
+                    }
+                }
+            }
+            false
+        })]
+    }
+
+    fn record_input(
+        &self,
+    ) -> fn(
+        cfg: &Self::Config,
+        history: &Self::History,
+        message: stateright::actor::Envelope<&GlobalMsg<Self::App>>,
+    ) -> Option<Self::History> {
+        |_, h, m| {
+            if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
+                let mut nh = h.clone();
+                nh.push(m.msg.clone());
+                Some(nh)
+            } else {
+                None
+            }
+        }
+    }
 }
 
 struct Config {
@@ -179,77 +241,6 @@ struct Config {
 
 fn main() {
     use clap::Parser;
-    let opts = Opts::parse();
-
-    let max_value =
-        (opts.servers * opts.increments as usize) - (opts.servers * opts.decrements as usize);
-    let mut model = ActorModel::new(Config { max_value }, Vec::new());
-    let app = Counter { initial_value: 1 };
-    for i in 0..opts.servers {
-        model = model.actor(GlobalActor::Server(Server {
-            peers: model_peers(i, opts.servers),
-            sync_method: SyncMethod::Changes,
-            app: app.clone(),
-        }))
-    }
-
-    for i in 0..opts.servers {
-        let i = Id::from(i);
-        model = model.actor(GlobalActor::Client(Client {
-            server: i,
-            driver: Driver {
-                func: DriverFunc::Inc(opts.increments),
-                server: i,
-            },
-            _app: PhantomData::default(),
-        }));
-        model = model.actor(GlobalActor::Client(Client {
-            server: i,
-            driver: Driver {
-                func: DriverFunc::Dec(opts.decrements),
-                server: i,
-            },
-            _app: PhantomData::default(),
-        }));
-    }
-    model = model.property(Expectation::Eventually, "max value", |model, state| {
-        for actor in &state.actor_states {
-            if let GlobalActorState::Server(s) = &**actor {
-                if s.document()
-                    .get(ROOT, "counter")
-                    .unwrap()
-                    .and_then(|(v, _)| v.to_i64())
-                    .unwrap_or_default()
-                    == model.cfg.max_value as i64
-                {
-                    return true;
-                }
-            }
-        }
-        false
-    });
-    model = model.record_msg_in(|_, h, m| {
-        if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
-            let mut nh = h.clone();
-            nh.push(m.msg.clone());
-            Some(nh)
-        } else {
-            None
-        }
-    });
-    model = model.init_network(Network::new_ordered(vec![]));
-    let model = model.checker().threads(num_cpus::get());
-
-    match opts.command {
-        SubCmd::Serve => {
-            println!("Serving web ui on http://127.0.0.1:{}", opts.port);
-            model.serve(("127.0.0.1", opts.port));
-        }
-        SubCmd::CheckDfs => {
-            model.spawn_dfs().join().assert_properties();
-        }
-        SubCmd::CheckBfs => {
-            model.spawn_bfs().join().assert_properties();
-        }
-    }
+    let Args { app_opts, amc_args } = Args::parse();
+    amc_args.run(app_opts);
 }
