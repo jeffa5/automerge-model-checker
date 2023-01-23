@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use num_format::SystemLocale;
 use num_format::ToFormattedString;
@@ -22,6 +23,7 @@ where
         let unique_rate = (data.unique_states as f64 / data.duration.as_secs_f64()).round() as u64;
         let status = if data.done { "Done    " } else { "Checking" };
         let locale = SystemLocale::default().unwrap();
+        let duration = Duration::new(data.duration.as_secs(), 0);
         println!(
             "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), duration={:?}",
             status,
@@ -31,7 +33,7 @@ where
             data.unique_states.to_formatted_string(&locale),
             new_unique.to_formatted_string(&locale),
             unique_rate.to_formatted_string(&locale),
-            data.duration
+            duration
         );
 
         self.last_total = data.total_states;
