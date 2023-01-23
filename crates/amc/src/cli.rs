@@ -95,14 +95,15 @@ impl RunArgs {
     }
 
     /// Run an application.
-    pub fn run<M: ModelBuilder>(self, c: M)
+    pub fn run<M: ModelBuilder>(self, model_builder: M)
     where
         M::Config: Send,
         M::Config: Sync,
         M::History: Send + Sync + 'static,
     {
         println!("{:?}", self);
-        let model = self.actor_model(&c).checker().threads(num_cpus::get());
+        println!("{:?}", model_builder);
+        let model = self.actor_model(&model_builder).checker().threads(num_cpus::get());
 
         match self.command {
             Runner::Explore { port } => {
