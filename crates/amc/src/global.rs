@@ -18,6 +18,24 @@ pub enum GlobalMsg<A: Application> {
     ClientToServer(ApplicationMsg<A>),
 }
 
+impl<A:Application> GlobalMsg<A> {
+    /// Obtain the input to the application, if this was one.
+    pub fn input(&self) -> Option<&A::Input> {
+        match self {
+            Self::ClientToServer(ApplicationMsg::Input(i)) => Some(i),
+            Self::ServerToServer(_) | Self::ClientToServer(_) => None,
+        }
+    }
+
+    /// Obtain the output from the application, if this was one.
+    pub fn output(&self) -> Option<&A::Output> {
+        match self {
+            Self::ClientToServer(ApplicationMsg::Output(o)) => Some(o),
+            Self::ServerToServer(_) | Self::ClientToServer(_) => None,
+        }
+    }
+}
+
 /// The root actor type.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GlobalActor<A, D> {
