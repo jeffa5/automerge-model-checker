@@ -112,11 +112,6 @@ impl Document {
         msg
     }
 
-    /// Check whether this document has finished sending things to peers.
-    pub fn finished_sending_changes(&self) -> bool {
-        self.get_heads() == self.last_sent_heads
-    }
-
     /// Update the last sent heads to the current ones of the document, returning the previous set
     /// of heads.
     pub fn update_last_sent_heads(&mut self) -> Vec<ChangeHash> {
