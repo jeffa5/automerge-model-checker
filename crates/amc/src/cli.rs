@@ -31,6 +31,10 @@ pub struct RunArgs {
     /// Model opts
     #[clap(flatten)]
     pub model_opts: ModelOpts,
+
+    #[clap(long, global = true)]
+    /// Max depth to search to.
+    pub max_depth: Option<usize>,
 }
 
 impl RunArgs {
@@ -41,24 +45,27 @@ impl RunArgs {
         M::Config: Sync,
         M::History: Send + Sync + 'static,
     {
+        tracing_subscriber::fmt::init();
+
         println!("{:?}", self);
         println!("{:?}", model_builder);
-        let model = self
-            .model_opts
-            .to_model(&model_builder)
-            .checker()
-            .threads(std::thread::available_parallelism().unwrap().get());
+        let model = self.model_opts.to_model(&model_builder);
+        let mut checker = model.checker();
+        if let Some(max_depth) = self.max_depth {
+            checker = checker.target_max_depth(max_depth);
+        }
+        checker = checker.threads(std::thread::available_parallelism().unwrap().get());
 
         match self.command {
             Runner::Explore { port } => {
                 println!("Serving web ui on http://127.0.0.1:{}", port);
-                model.serve(("127.0.0.1", port));
+                checker.serve(("127.0.0.1", port));
             }
             Runner::CheckDfs => {
-                model.spawn_dfs().report(&mut Reporter::default()).join();
+                checker.spawn_dfs().report(&mut Reporter::default()).join();
             }
             Runner::CheckBfs => {
-                model.spawn_bfs().report(&mut Reporter::default()).join();
+                checker.spawn_bfs().report(&mut Reporter::default()).join();
             }
         }
     }

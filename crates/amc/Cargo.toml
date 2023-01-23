@@ -9,3 +9,5 @@ automerge = "0.2.0"
 clap = { version = "4.1.1", features = ["derive"] }
 base64 = "0.21.0"
 num-format = { version = "0.4.4", features = ["with-system-locale"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing = "0.1.37"

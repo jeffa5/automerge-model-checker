@@ -11,6 +11,7 @@ rand = "0.8.5"
 amc = { path = "../../crates/amc" }
 smol_str = "0.1.23"
 tinyvec = { version = "1.6.0", features = ["alloc"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 
 [dev-dependencies]
 expect-test = "1.4.0"
