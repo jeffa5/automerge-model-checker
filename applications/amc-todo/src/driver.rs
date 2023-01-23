@@ -1,5 +1,6 @@
 use amc::driver::Drive;
 use smol_str::SmolStr;
+use tinyvec::TinyVec;
 
 use crate::apphandle::App;
 
@@ -32,7 +33,7 @@ pub enum AppOutput {
     Update(bool),
     ToggleActive(bool),
     DeleteTodo(bool),
-    ListTodos(Vec<u32>),
+    ListTodos(TinyVec<[u32; 4]>),
 }
 
 impl Drive<App> for Driver {

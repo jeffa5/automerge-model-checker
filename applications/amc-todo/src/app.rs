@@ -8,6 +8,7 @@ use rand::Rng;
 use rand::SeedableRng;
 use smol_str::SmolStr;
 use std::hash::Hash;
+use tinyvec::TinyVec;
 
 /// The app that clients work with.
 #[derive(Clone, Debug, Eq)]
@@ -120,7 +121,7 @@ impl AppState {
         self.doc.length(ROOT)
     }
 
-    pub fn list_todos(&self) -> Vec<u32> {
+    pub fn list_todos(&self) -> TinyVec<[u32; 4]> {
         self.doc
             .map_range(ROOT, ..)
             .map(|(k, _, _)| k.parse().unwrap())

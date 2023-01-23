@@ -334,6 +334,7 @@ dependencies = [
  "rand 0.8.5",
  "smol_str",
  "stateright",
+ "tinyvec",
 ]
 
 [[package]]
