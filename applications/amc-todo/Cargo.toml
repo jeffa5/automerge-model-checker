@@ -10,3 +10,6 @@ num_cpus = "1.13.1"
 stateright = "0.29.0"
 rand = "0.8.5"
 amc = { path = "../../crates/amc" }
+
+[dev-dependencies]
+expect-test = "1.4.0"

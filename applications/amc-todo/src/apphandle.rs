@@ -7,6 +7,7 @@ use crate::{app::AppState, driver::AppOutput};
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct App {
     pub random_ids: bool,
+    pub initial_change:bool,
 }
 
 impl Application for App {
@@ -17,7 +18,7 @@ impl Application for App {
     type State = AppState;
 
     fn init(&self, id: usize) -> Self::State {
-        AppState::new(id, self.random_ids)
+        AppState::new(id, self.random_ids, self.initial_change)
     }
 
     fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {

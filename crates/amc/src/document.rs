@@ -34,31 +34,29 @@ fn materialize_root(am: &Automerge) -> Value {
     Value::Map(map)
 }
 
-fn materialize_value(am: &Automerge, value: automerge::Value, id : automerge::ObjId) ->Value{
+fn materialize_value(am: &Automerge, value: automerge::Value, id: automerge::ObjId) -> Value {
     match value {
-        automerge::Value::Object(o) =>
-            match o {
-                automerge::ObjType::Map => {
-                    let mut map = BTreeMap::new();
-                    for (k, v, id) in am.map_range(id, ..) {
-                        map.insert(k.to_owned(), materialize_value(am, v, id));
-                    }
-                    Value::Map(map)
-                },
-                automerge::ObjType::List => {
-                    let mut list = Vec::new();
-                    for (_, v, id) in am.list_range(id, ..) {
-                        list.push(materialize_value(am, v, id));
-                    }
-                    Value::List(list)
-                },
-                automerge::ObjType::Text => todo!(),
-                automerge::ObjType::Table => todo!(),
-            },
+        automerge::Value::Object(o) => match o {
+            automerge::ObjType::Map => {
+                let mut map = BTreeMap::new();
+                for (k, v, id) in am.map_range(id, ..) {
+                    map.insert(k.to_owned(), materialize_value(am, v, id));
+                }
+                Value::Map(map)
+            }
+            automerge::ObjType::List => {
+                let mut list = Vec::new();
+                for (_, v, id) in am.list_range(id, ..) {
+                    list.push(materialize_value(am, v, id));
+                }
+                Value::List(list)
+            }
+            automerge::ObjType::Text => todo!(),
+            automerge::ObjType::Table => todo!(),
+        },
         automerge::Value::Scalar(s) => Value::Scalar(s.to_string()),
     }
 }
-
 
 fn materialize(am: &Automerge) -> Value {
     materialize_root(am)

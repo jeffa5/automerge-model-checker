@@ -1,12 +1,8 @@
-use std::borrow::Cow;
+//! amc-todo shows how to implement the application side and client side with a concrete example
 
-/// amc-todo shows how to implement the application side and client side with a concrete example
-///
 use crate::apphandle::App;
 use crate::driver::AppInput;
 use crate::driver::AppOutput;
-use amc::application::Application;
-use amc::driver::ApplicationMsg;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
@@ -27,6 +23,10 @@ struct TodoOptions {
     /// Whether to use random ids for todo creation.
     #[clap(long, global = true)]
     random_ids: bool,
+
+    /// Whether to use generate an initial change.
+    #[clap(long, global = true)]
+    initial_change: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -57,6 +57,7 @@ impl amc::model::ModelBuilder for TodoOptions {
     fn application(&self, _server: usize) -> Self::App {
         App {
             random_ids: self.random_ids,
+            initial_change: self.initial_change,
         }
     }
 
@@ -98,56 +99,38 @@ impl amc::model::ModelBuilder for TodoOptions {
         type Prop = Property<Model>;
         vec![Prop::always(
             "all apps have the right number of tasks",
-            |model, state| {
+            |_model, state| {
                 if !syncing_done(state) {
                     return true;
                 }
 
-                let cf = &model.cfg.app;
-                let mut single_app = Cow::Owned(cf.init(0));
+                let mut expected_task_count = 0;
 
-                for m in &state.history {
-                    match m {
-                        (GlobalMsg::ServerToServer(_), _) => unreachable!(),
-                        (GlobalMsg::ClientToServer(_), GlobalMsg::ServerToServer(_)) => {
-                            unreachable!()
-                        }
-                        (
-                            GlobalMsg::ClientToServer(ApplicationMsg::Input(req)),
-                            GlobalMsg::ClientToServer(ApplicationMsg::Output(res)),
-                        ) => match (req, res) {
+                for (i, o) in &state.history {
+                    match (i.input(), o.output()) {
+                        (Some(req), Some(res)) => match (req, res) {
                             (AppInput::CreateTodo(_), AppOutput::CreateTodo(_)) => {
-                                cf.execute(&mut single_app, req.clone());
+                                expected_task_count += 1;
                             }
-                            (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {
-                                cf.execute(&mut single_app, req.clone());
-                            }
+                            (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {}
                             (AppInput::DeleteTodo(_), AppOutput::DeleteTodo(was_present)) => {
                                 if *was_present {
-                                    cf.execute(&mut single_app, req.clone());
+                                    expected_task_count -= 1;
                                 }
                             }
-                            (AppInput::Update(_id, _text), AppOutput::Update(success)) => {
-                                if *success {
-                                    cf.execute(&mut single_app, req.clone());
-                                }
-                            }
+                            (AppInput::Update(_id, _text), AppOutput::Update(_success)) => {}
                             (AppInput::ListTodos, driver::AppOutput::ListTodos(_ids)) => {}
                             (a, b) => {
                                 unreachable!("{:?}, {:?}", a, b)
                             }
                         },
-                        (GlobalMsg::ClientToServer(ApplicationMsg::Output(_)), _) => {}
-                        (
-                            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)),
-                            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)),
-                        ) => {}
+                        (Some(_), None) | (None, Some(_)) | (None, None) => unreachable!(),
                     }
                 }
 
                 state.actor_states.iter().all(|s| {
                     if let GlobalActorState::Server(s) = &**s {
-                        s.num_todos() == single_app.num_todos()
+                        s.num_todos() == expected_task_count
                     } else {
                         true
                     }
@@ -161,7 +144,7 @@ impl amc::model::ModelBuilder for TodoOptions {
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Input(_))) {
+            if m.msg.input().is_some() {
                 let mut nh = h.clone();
                 nh.push((m.msg.clone(), m.msg.clone()));
                 Some(nh)
@@ -176,7 +159,7 @@ impl amc::model::ModelBuilder for TodoOptions {
     ) -> fn(cfg: &Config, history: &AppHistory, Envelope<&GlobalMsg<App>>) -> Option<AppHistory>
     {
         |_, h, m| {
-            if matches!(m.msg, GlobalMsg::ClientToServer(ApplicationMsg::Output(_))) {
+            if m.msg.output().is_some() {
                 let mut nh = h.clone();
                 nh.last_mut().unwrap().1 = m.msg.clone();
                 Some(nh)
@@ -193,4 +176,278 @@ fn main() {
         amc_args,
     } = Args::parse();
     amc_args.run(todo_options);
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use amc::{application::server::SyncMethod, model::ModelOpts};
+    use stateright::{Checker, Model};
+
+    use expect_test::{expect, Expect};
+
+    use super::*;
+
+    fn check(model_opts: ModelOpts, todo_opts: TodoOptions, expected: Expect) {
+        let model = model_opts.to_model(&todo_opts);
+        let checker = model.checker().spawn_bfs().join();
+
+        let discoveries: BTreeMap<_, _> = checker
+            .discoveries()
+            .into_iter()
+            .map(|(n, p)| (n, p.into_actions()))
+            .collect();
+
+        expected.assert_debug_eq(&discoveries);
+    }
+
+    #[test]
+    fn fully_broken() {
+        let model_opts = ModelOpts {
+            servers: 2,
+            sync_method: SyncMethod::Changes,
+            in_sync_check: false,
+            save_load_check: false,
+            error_free_check: false,
+        };
+        let todo_opts = TodoOptions {
+            random_ids: false,
+            initial_change: false,
+        };
+
+        check(
+            model_opts,
+            todo_opts,
+            expect![[r#"
+                {
+                    "all apps have the right number of tasks": [
+                        Deliver {
+                            src: Id(2),
+                            dst: Id(0),
+                            msg: ClientToServer(
+                                Input(
+                                    CreateTodo(
+                                        "todo 1",
+                                    ),
+                                ),
+                            ),
+                        },
+                        Deliver {
+                            src: Id(6),
+                            dst: Id(1),
+                            msg: ClientToServer(
+                                Input(
+                                    CreateTodo(
+                                        "todo 1",
+                                    ),
+                                ),
+                            ),
+                        },
+                        Timeout(
+                            Id(0),
+                        ),
+                        Deliver {
+                            src: Id(0),
+                            dst: Id(1),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg6fOYDEBSwAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXBnACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AAWZ0b2RvIDEDAA",
+                                    ],
+                                },
+                            ),
+                        },
+                        Timeout(
+                            Id(1),
+                        ),
+                        Deliver {
+                            src: Id(1),
+                            dst: Id(0),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg4AqMC0BSwAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXBnACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AAWZ0b2RvIDEDAA",
+                                    ],
+                                },
+                            ),
+                        },
+                    ],
+                }
+            "#]],
+        );
+    }
+
+    // TODO: enable this once we can get it quick enough
+    // #[test]
+    // fn random_ids_partial_fix() {
+    //     let model_opts = ModelOpts {
+    //         servers: 2,
+    //         sync_method: SyncMethod::Changes,
+    //         in_sync_check: false,
+    //         save_load_check: false,
+    //         error_free_check: false,
+    //     };
+    //     let todo_opts = TodoOptions {
+    //         random_ids: true,
+    //         initial_change: false,
+    //     };
+    //
+    //     check(
+    //         model_opts,
+    //         todo_opts,
+    //         expect![[r#"
+    //             {
+    //                 "correct value": [
+    //                     Deliver {
+    //                         src: Id(2),
+    //                         dst: Id(0),
+    //                         msg: ClientToServer(
+    //                             Input(
+    //                                 Increment,
+    //                             ),
+    //                         ),
+    //                     },
+    //                     Deliver {
+    //                         src: Id(4),
+    //                         dst: Id(1),
+    //                         msg: ClientToServer(
+    //                             Input(
+    //                                 Increment,
+    //                             ),
+    //                         ),
+    //                     },
+    //                     Timeout(
+    //                         Id(0),
+    //                     ),
+    //                     Deliver {
+    //                         src: Id(0),
+    //                         dst: Id(1),
+    //                         msg: ServerToServer(
+    //                             SyncChangeRaw {
+    //                                 missing_changes_bytes: [
+    //                                     "hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
+    //                                 ],
+    //                             },
+    //                         ),
+    //                     },
+    //                     Timeout(
+    //                         Id(1),
+    //                     ),
+    //                     Deliver {
+    //                         src: Id(1),
+    //                         dst: Id(0),
+    //                         msg: ServerToServer(
+    //                             SyncChangeRaw {
+    //                                 missing_changes_bytes: [
+    //                                     "hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
+    //                                 ],
+    //                             },
+    //                         ),
+    //                     },
+    //                 ],
+    //             }
+    //         "#]],
+    //     );
+    // }
+
+    #[test]
+    fn intial_change_partial_fix() {
+        let model_opts = ModelOpts {
+            servers: 2,
+            sync_method: SyncMethod::Changes,
+            in_sync_check: false,
+            save_load_check: false,
+            error_free_check: false,
+        };
+        let todo_opts = TodoOptions {
+            random_ids: false,
+            initial_change: true,
+        };
+
+        check(
+            model_opts,
+            todo_opts,
+            expect![[r#"
+                {
+                    "all apps have the right number of tasks": [
+                        Deliver {
+                            src: Id(2),
+                            dst: Id(0),
+                            msg: ClientToServer(
+                                Input(
+                                    CreateTodo(
+                                        "todo 1",
+                                    ),
+                                ),
+                            ),
+                        },
+                        Deliver {
+                            src: Id(6),
+                            dst: Id(1),
+                            msg: ClientToServer(
+                                Input(
+                                    CreateTodo(
+                                        "todo 1",
+                                    ),
+                                ),
+                            ),
+                        },
+                        Timeout(
+                            Id(0),
+                        ),
+                        Deliver {
+                            src: Id(0),
+                            dst: Id(1),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg978ZBABawGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAAEBAAAACAEEAgQVEjQBQgRWBFcGcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABZnRvZG8gMQMA",
+                                    ],
+                                },
+                            ),
+                        },
+                        Timeout(
+                            Id(1),
+                        ),
+                        Deliver {
+                            src: Id(1),
+                            dst: Id(0),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg20wikYBawGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAQEBAAAACAEEAgQVEjQBQgRWBFcGcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABZnRvZG8gMQMA",
+                                    ],
+                                },
+                            ),
+                        },
+                    ],
+                }
+            "#]],
+        );
+    }
+
+    // TODO: enable this when it gets quick enough
+    // #[test]
+    // fn both_fixes() {
+    //     let model_opts = ModelOpts {
+    //         servers: 2,
+    //         sync_method: SyncMethod::Changes,
+    //         in_sync_check: false,
+    //         save_load_check: false,
+    //         error_free_check: false,
+    //     };
+    //     let counter_opts = TodoOptions {
+    //         random_ids: true,
+    //         initial_change: true,
+    //     };
+    //
+    //     check(
+    //         model_opts,
+    //         counter_opts,
+    //         expect![[r#"
+    //             {}
+    //         "#]],
+    //     );
+    // }
 }

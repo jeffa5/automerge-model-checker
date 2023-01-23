@@ -11,7 +11,7 @@ use std::hash::Hash;
 /// The app that clients work with.
 #[derive(Clone, Debug, Eq)]
 pub struct AppState {
-    doc: Box<Document>,
+    doc: Document,
     random_ids: bool,
     seed: u64,
     rng: StdRng,
@@ -41,10 +41,14 @@ impl DerefDocument for AppState {
 }
 
 impl AppState {
-    pub fn new(id: usize, random_ids: bool) -> Self {
+    pub fn new(id: usize, random_ids: bool, initial_change: bool) -> Self {
         let seed = id as u64;
+        let mut doc = Document::new(id);
+        if initial_change {
+            doc.with_initial_change(|_| {});
+        }
         Self {
-            doc: Box::new(Document::new(id)),
+            doc,
             random_ids,
             seed,
             rng: StdRng::seed_from_u64(seed),
