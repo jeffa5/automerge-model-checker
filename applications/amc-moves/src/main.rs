@@ -93,7 +93,8 @@ struct Driver {
 /// Action for the application to perform.
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 enum DriverFunc {
-    Mover,
+    MoverLastFirst,
+    MoverFirstLast,
 }
 
 impl Drive<List> for Driver {
@@ -107,8 +108,12 @@ impl Drive<List> for Driver {
         Vec<<List as Application>::Input>,
     ) {
         match self.func {
-            DriverFunc::Mover => {
+            DriverFunc::MoverLastFirst => {
                 let msgs = vec![ListInput::Move(2, 0)];
+                ((), msgs)
+            }
+            DriverFunc::MoverFirstLast => {
+                let msgs = vec![ListInput::Move(0, 2)];
                 ((), msgs)
             }
         }
@@ -149,9 +154,14 @@ impl ModelBuilder for MovesOpts {
     }
 
     fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
-        vec![Driver {
-            func: DriverFunc::Mover,
-        }]
+        vec![
+            Driver {
+                func: DriverFunc::MoverLastFirst,
+            },
+            Driver {
+                func: DriverFunc::MoverFirstLast,
+            },
+        ]
     }
 
     fn config(&self, _model_opts: &amc::model::ModelOpts) -> Self::Config {
