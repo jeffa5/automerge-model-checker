@@ -115,18 +115,10 @@ impl RunArgs {
                 model.serve(("127.0.0.1", port));
             }
             Runner::CheckDfs => {
-                model
-                    .spawn_dfs()
-                    .report(&mut Reporter::default())
-                    .join()
-                    .assert_properties();
+                model.spawn_dfs().report(&mut Reporter::default()).join();
             }
             Runner::CheckBfs => {
-                model
-                    .spawn_bfs()
-                    .report(&mut Reporter::default())
-                    .join()
-                    .assert_properties();
+                model.spawn_bfs().report(&mut Reporter::default()).join();
             }
         }
     }
