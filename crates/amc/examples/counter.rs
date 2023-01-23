@@ -177,10 +177,6 @@ struct CounterOpts {
 
     #[clap(long, global = true, default_value = "2")]
     decrements: u8,
-
-    /// Whether to use random ids for todo creation.
-    #[clap(long, global = true)]
-    random_ids: bool,
 }
 
 #[derive(clap::Parser, Debug)]
