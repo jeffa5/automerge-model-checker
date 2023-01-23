@@ -6,6 +6,5 @@ edition = "2021"
 [dependencies]
 automerge = "0.2.0"
 clap = { version = "4.1.1", features = ["derive"] }
-num_cpus = "1.13.1"
 stateright = "0.29.0"
 amc = { path = "../../crates/amc" }

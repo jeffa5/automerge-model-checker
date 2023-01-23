@@ -298,7 +298,6 @@ dependencies = [
  "base64 0.21.0",
  "clap",
  "num-format",
- "num_cpus",
  "stateright",
 ]
 
@@ -309,7 +308,6 @@ dependencies = [
  "amc",
  "automerge",
  "clap",
- "num_cpus",
  "stateright",
 ]
 
@@ -321,7 +319,6 @@ dependencies = [
  "automerge",
  "clap",
  "expect-test",
- "num_cpus",
  "rand 0.8.5",
  "stateright",
 ]
@@ -334,7 +331,6 @@ dependencies = [
  "automerge",
  "clap",
  "expect-test",
- "num_cpus",
  "rand 0.8.5",
  "stateright",
 ]

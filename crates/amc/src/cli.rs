@@ -1,7 +1,5 @@
 use clap::Parser;
-use stateright::{
-    Checker, Model,
-};
+use stateright::{Checker, Model};
 
 use crate::{
     model::{ModelBuilder, ModelOpts},
@@ -49,7 +47,7 @@ impl RunArgs {
             .model_opts
             .to_model(&model_builder)
             .checker()
-            .threads(num_cpus::get());
+            .threads(std::thread::available_parallelism().unwrap().get());
 
         match self.command {
             Runner::Explore { port } => {
