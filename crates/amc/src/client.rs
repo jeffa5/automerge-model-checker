@@ -1,4 +1,5 @@
 use std::{borrow::Cow, fmt::Debug, hash::Hash, marker::PhantomData};
+use tracing::debug;
 
 use stateright::actor::{Actor, Id};
 
@@ -78,12 +79,16 @@ impl<A: Application, D: Drive<A>> Actor for Client<A, D> {
         o: &mut stateright::actor::Out<Self>,
     ) {
         match msg {
-            GlobalMsg::ServerToServer(_) => unreachable!(),
-            GlobalMsg::ClientToServer(ApplicationMsg::Input(_)) => {
+            GlobalMsg::ServerToServer(_) | GlobalMsg::ClientToServer(ApplicationMsg::Input(_)) => {
                 unreachable!()
             }
             GlobalMsg::ClientToServer(ApplicationMsg::Output(output)) => {
                 let messages = self.driver.handle_output(state, output);
+                if !messages.is_empty() {
+                    debug!(
+                        new_input_count=messages.len(), "new inputs generated in response to output"
+                    );
+                }
                 for message in messages {
                     o.send(
                         self.server,

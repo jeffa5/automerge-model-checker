@@ -1,5 +1,7 @@
 use clap::Parser;
 use stateright::{Checker, Model};
+use tracing::subscriber::set_global_default;
+use tracing_subscriber::EnvFilter;
 
 use crate::{
     model::{ModelBuilder, ModelOpts},
@@ -45,7 +47,8 @@ impl RunArgs {
         M::Config: Sync,
         M::History: Send + Sync + 'static,
     {
-        tracing_subscriber::fmt::init();
+        let collector = tracing_subscriber::fmt().with_ansi(false).with_env_filter(EnvFilter::from_default_env()).finish();
+        set_global_default(collector).unwrap();
 
         println!("{:?}", self);
         println!("{:?}", model_builder);

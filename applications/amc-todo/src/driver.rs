@@ -1,4 +1,5 @@
 use amc::driver::Drive;
+use tracing::debug;
 use smol_str::SmolStr;
 use tinyvec::TinyVec;
 
@@ -59,7 +60,7 @@ impl Drive<App> for Driver {
         _state: &mut std::borrow::Cow<Self::State>,
         output: <App as amc::prelude::Application>::Output,
     ) -> Vec<<App as amc::prelude::Application>::Input> {
-        match (&self.func, output) {
+        let inputs = match (&self.func, &output) {
             (DriverState::Updater, AppOutput::ListTodos(ids)) => ids
                 .iter()
                 .map(|id| AppInput::Update(*id, SmolStr::new_inline("b")))
@@ -73,6 +74,10 @@ impl Drive<App> for Driver {
             _ => {
                 vec![]
             }
+        };
+        if !inputs.is_empty() {
+            debug!(?output, generated=?inputs, "Handling output");
         }
+        inputs
     }
 }

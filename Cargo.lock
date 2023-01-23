@@ -337,6 +337,7 @@ dependencies = [
  "smol_str",
  "stateright",
  "tinyvec",
+ "tracing",
  "tracing-subscriber",
 ]
 

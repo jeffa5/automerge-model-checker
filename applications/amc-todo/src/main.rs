@@ -2,6 +2,7 @@
 
 use crate::apphandle::App;
 use crate::driver::AppInput;
+use tracing::trace;
 use crate::driver::AppOutput;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
@@ -146,6 +147,7 @@ impl amc::model::ModelBuilder for TodoOptions {
         |_, h, m| {
             if m.msg.input().is_some() {
                 let mut nh = h.clone();
+                trace!(envelope=?m, "Recording input");
                 nh.push((m.msg.clone(), m.msg.clone()));
                 Some(nh)
             } else {
@@ -161,6 +163,7 @@ impl amc::model::ModelBuilder for TodoOptions {
         |_, h, m| {
             if m.msg.output().is_some() {
                 let mut nh = h.clone();
+                trace!(envelope=?m, "Recording output");
                 nh.last_mut().unwrap().1 = m.msg.clone();
                 Some(nh)
             } else {
