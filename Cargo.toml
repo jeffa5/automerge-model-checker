@@ -4,6 +4,7 @@ members = [
     "applications/amc-counter",
     "applications/amc-automerge",
     "applications/amc-todo",
+    "applications/amc-moves",
 ]
 
 [profile.release]

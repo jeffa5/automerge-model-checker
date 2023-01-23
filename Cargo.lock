@@ -326,6 +326,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "amc-moves"
+version = "0.1.0"
+dependencies = [
+ "amc",
+ "automerge",
+ "clap",
+ "expect-test",
+ "rand 0.8.5",
+ "stateright",
+]
+
+[[package]]
 name = "amc-todo"
 version = "0.1.0"
 dependencies = [
