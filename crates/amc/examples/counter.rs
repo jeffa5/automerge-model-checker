@@ -13,6 +13,7 @@ use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
 use amc::global::GlobalMsg;
 use amc::model::ModelBuilder;
+use amc::properties::syncing_done;
 use automerge::transaction::Transactable;
 use automerge::ROOT;
 use stateright::actor::ActorModel;
@@ -134,10 +135,10 @@ impl Drive<Counter> for Driver {
 
 #[derive(clap::Args, Debug)]
 struct CounterOpts {
-    #[clap(long, global = true, default_value = "1")]
+    #[clap(long, global = true, default_value = "2")]
     increments: u8,
 
-    #[clap(long, global = true, default_value = "1")]
+    #[clap(long, global = true, default_value = "2")]
     decrements: u8,
 
     /// Whether to use random ids for todo creation.
@@ -179,9 +180,9 @@ impl ModelBuilder for CounterOpts {
     }
 
     fn config(&self, model_opts: &amc::model::ModelOpts) -> Self::Config {
-        let max_value = (model_opts.servers * self.increments as usize)
+        let final_value = (model_opts.servers * self.increments as usize)
             - (model_opts.servers * self.decrements as usize);
-        Config { max_value }
+        Config { final_value }
     }
 
     fn history(&self) -> Self::History {
@@ -195,24 +196,57 @@ impl ModelBuilder for CounterOpts {
             ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
         >,
     > {
-        vec![Property::<
-            ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
-        >::eventually("max value", |model, state| {
-            for actor in &state.actor_states {
-                if let GlobalActorState::Server(s) = &**actor {
-                    if s.document()
+        type Prop =
+            Property<ActorModel<GlobalActor<Counter, Driver>, Config, Vec<GlobalMsg<Counter>>>>;
+        vec![
+            Prop::eventually("reach final value", |model, state| {
+                for actor in &state.actor_states {
+                    if let GlobalActorState::Server(s) = &**actor {
+                        if s.document()
+                            .get(ROOT, "counter")
+                            .unwrap()
+                            .and_then(|(v, _)| v.to_i64())
+                            .unwrap_or_default()
+                            == model.cfg.final_value as i64
+                        {
+                            return true;
+                        }
+                    }
+                }
+                false
+            }),
+            Prop::always("correct value", |_model, state| {
+                // When states are in sync, they should have the value of the counter matching that of
+                // the combination of increments and decrements.
+                if !syncing_done(state) {
+                    return true;
+                }
+
+                let mut expected_value = 0;
+                for msg in &state.history {
+                    match msg.input() {
+                        Some(CounterMsg::Increment) => {
+                            expected_value += 1;
+                        }
+                        Some(CounterMsg::Decrement) => {
+                            expected_value -= 1;
+                        }
+                        None => {}
+                    }
+                }
+
+                if let GlobalActorState::Server(s) = &**state.actor_states.first().unwrap() {
+                    let actual_value = s
+                        .document()
                         .get(ROOT, "counter")
                         .unwrap()
                         .and_then(|(v, _)| v.to_i64())
-                        .unwrap_or_default()
-                        == model.cfg.max_value as i64
-                    {
-                        return true;
-                    }
+                        .unwrap_or_default();
+                    return actual_value == expected_value;
                 }
-            }
-            false
-        })]
+                panic!("Couldn't find a server!");
+            }),
+        ]
     }
 
     fn record_input(
@@ -234,8 +268,9 @@ impl ModelBuilder for CounterOpts {
     }
 }
 
+#[derive(Debug)]
 struct Config {
-    max_value: usize,
+    final_value: usize,
 }
 
 fn main() {
