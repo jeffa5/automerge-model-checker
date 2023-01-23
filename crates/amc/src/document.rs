@@ -79,6 +79,22 @@ impl Document {
         }
     }
 
+    /// Create an initial change for the document.
+    ///
+    /// This ensures that, when syncing, documents have a common root to merge from.
+    pub fn with_initial_change(&mut self, make_change: fn(&mut Transaction<'_, UnObserved>)) {
+        assert!(self.am.get_changes(&[]).unwrap().is_empty());
+
+        let actor = self.get_actor().clone();
+        self.am.set_actor(ActorId::from(999u64.to_be_bytes()));
+
+        let mut txn = self.transaction();
+        make_change(&mut txn);
+        txn.commit();
+
+        self.am.set_actor(actor);
+    }
+
     /// Check whether this document has errored.
     pub fn has_error(&self) -> bool {
         self.error
