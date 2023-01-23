@@ -22,7 +22,9 @@ use stateright::Property;
 use std::borrow::Cow;
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-struct List {}
+struct List {
+    initial_size: usize,
+}
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct ListState {
@@ -50,9 +52,14 @@ impl Application for List {
 
             // for now start with 3 elements
 
-            txn.insert(&list_id, 0, 'a').unwrap();
-            txn.insert(&list_id, 1, 'b').unwrap();
-            txn.insert(&list_id, 2, 'c').unwrap();
+            for i in 0..self.initial_size {
+                txn.insert(
+                    &list_id,
+                    i,
+                    char::from_u32(('a' as u32) + i as u32).unwrap(),
+                )
+                .unwrap();
+            }
         });
 
         ListState { doc }
@@ -88,6 +95,7 @@ impl DerefDocument for ListState {
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Driver {
     func: DriverFunc,
+    initial_size: usize,
 }
 
 /// Action for the application to perform.
@@ -109,11 +117,11 @@ impl Drive<List> for Driver {
     ) {
         match self.func {
             DriverFunc::MoverLastFirst => {
-                let msgs = vec![ListInput::Move(2, 0)];
+                let msgs = vec![ListInput::Move(self.initial_size-1, 0)];
                 ((), msgs)
             }
             DriverFunc::MoverFirstLast => {
-                let msgs = vec![ListInput::Move(0, 2)];
+                let msgs = vec![ListInput::Move(0, self.initial_size-1)];
                 ((), msgs)
             }
         }
@@ -129,7 +137,11 @@ impl Drive<List> for Driver {
 }
 
 #[derive(clap::Args, Debug)]
-struct MovesOpts {}
+struct MovesOpts {
+    /// Initial size of the list.
+    #[clap(long, global = true, default_value = "2")]
+    initial_size: usize,
+}
 
 #[derive(clap::Parser, Debug)]
 struct Args {
@@ -150,16 +162,20 @@ impl ModelBuilder for MovesOpts {
     type History = Vec<GlobalMsg<List>>;
 
     fn application(&self, _application: usize) -> Self::App {
-        List {}
+        List {
+            initial_size: self.initial_size,
+        }
     }
 
     fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
         vec![
             Driver {
                 func: DriverFunc::MoverLastFirst,
+                initial_size: self.initial_size,
             },
             Driver {
                 func: DriverFunc::MoverFirstLast,
+                initial_size: self.initial_size,
             },
         ]
     }
@@ -266,7 +282,7 @@ mod tests {
             save_load_check: false,
             error_free_check: false,
         };
-        let moves_opts = MovesOpts {};
+        let moves_opts = MovesOpts { initial_size: 1 };
 
         check(
             model_opts,
@@ -280,7 +296,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     Move(
-                                        2,
+                                        0,
                                         0,
                                     ),
                                 ),
@@ -292,7 +308,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     Move(
-                                        2,
+                                        0,
                                         0,
                                     ),
                                 ),
@@ -307,7 +323,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kg5e83wgBagEAOxE/7D9ZQVWV2J2nS/Pc9U9vhtuGIgHrW3eX74NIYwgAAAAAAAAAAAEFAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4EfAEBfgMBfgAWY34BAH8BfwQ",
+                                        "hW9Kg4uoy0wBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAAEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
                                     ],
                                 },
                             ),
@@ -321,7 +337,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kgxfm+RUBagEAOxE/7D9ZQVWV2J2nS/Pc9U9vhtuGIgHrW3eX74NIYwgAAAAAAAAAAQEFAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4EfAEBfgMBfgAWY34BAH8BfwQ",
+                                        "hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
                                     ],
                                 },
                             ),
@@ -341,7 +357,7 @@ mod tests {
             save_load_check: false,
             error_free_check: false,
         };
-        let moves_opts = MovesOpts {};
+        let moves_opts = MovesOpts { initial_size: 1 };
 
         check(
             model_opts,
@@ -355,7 +371,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     Move(
-                                        2,
+                                        0,
                                         0,
                                     ),
                                 ),
@@ -367,7 +383,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     Move(
-                                        2,
+                                        0,
                                         0,
                                     ),
                                 ),
@@ -381,7 +397,7 @@ mod tests {
                             dst: Id(1),
                             msg: ServerToServer(
                                 SyncMessageRaw {
-                                    message_bytes: "QgGXvN8IVm6aCN89w7vkLMzRLDFLFQThTSRGH7wFSTMXtgABAAYCCgd2+EkA",
+                                    message_bytes: "QgGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowABAAYCCgcCvF8A",
                                 },
                             ),
                         },
@@ -390,7 +406,7 @@ mod tests {
                             dst: Id(0),
                             msg: ServerToServer(
                                 SyncMessageRaw {
-                                    message_bytes: "QgEX5vkVRcCHHuMqJOYH6QIZlzwkY/kI56cnY9Sfcev5bQGXvN8IVm6aCN89w7vkLMzRLDFLFQThTSRGH7wFSTMXtgEABgIKB7BkWQF0hW9Kgxfm+RUBagEAOxE/7D9ZQVWV2J2nS/Pc9U9vhtuGIgHrW3eX74NIYwgAAAAAAAAAAQEFAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4EfAEBfgMBfgAWY34BAH8BfwQ",
+                                    message_bytes: "QgHv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowEABgIKB8CsVgF0hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
                                 },
                             ),
                         },
@@ -399,7 +415,7 @@ mod tests {
                             dst: Id(1),
                             msg: ServerToServer(
                                 SyncMessageRaw {
-                                    message_bytes: "QgIX5vkVRcCHHuMqJOYH6QIZlzwkY/kI56cnY9Sfcev5bZe83whWbpoI3z3Du+QszNEsMUsVBOFNJEYfvAVJMxe2AAEBF+b5FUXAhx7jKiTmB+kCGZc8JGP5COenJ2PUn3Hr+W0FAQoHxDoBdIVvSoOXvN8IAWoBADsRP+w/WUFVldidp0vz3PVPb4bbhiIB61t3l++DSGMIAAAAAAAAAAABBQAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+BHwBAX4DAX4AFmN+AQB/AX8E",
+                                    message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAEB7+/CuG90nP066zL05yAIIASzVPPkFXOaSi00hcbAw+0FAQoHgj0BdIVvSoOLqMtMAWoBGdv8glVqhIccW7/FPZvzxkEbVnf8cSmJ8LgrA/PQqMcIAAAAAAAAAAABAwAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+An4BAX4DAX4AFmF+AQB/AX8C",
                                 },
                             ),
                         },
@@ -408,7 +424,7 @@ mod tests {
                             dst: Id(0),
                             msg: ServerToServer(
                                 SyncMessageRaw {
-                                    message_bytes: "QgIX5vkVRcCHHuMqJOYH6QIZlzwkY/kI56cnY9Sfcev5bZe83whWbpoI3z3Du+QszNEsMUsVBOFNJEYfvAVJMxe2AAECF+b5FUXAhx7jKiTmB+kCGZc8JGP5COenJ2PUn3Hr+W2XvN8IVm6aCN89w7vkLMzRLDFLFQThTSRGH7wFSTMXtgAA",
+                                    message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAECi6jLTLGdB5Ak9b+C57ufwPd0/mr5qKwjMoZ16C4c7aPv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QAA",
                                 },
                             ),
                         },
