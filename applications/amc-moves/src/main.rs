@@ -287,7 +287,7 @@ mod tests {
                             ),
                         },
                         Deliver {
-                            src: Id(3),
+                            src: Id(4),
                             dst: Id(1),
                             msg: ClientToServer(
                                 Input(
@@ -362,7 +362,7 @@ mod tests {
                             ),
                         },
                         Deliver {
-                            src: Id(3),
+                            src: Id(4),
                             dst: Id(1),
                             msg: ClientToServer(
                                 Input(
