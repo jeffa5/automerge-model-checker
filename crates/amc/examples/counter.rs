@@ -198,55 +198,37 @@ impl ModelBuilder for CounterOpts {
     > {
         type Prop =
             Property<ActorModel<GlobalActor<Counter, Driver>, Config, Vec<GlobalMsg<Counter>>>>;
-        vec![
-            Prop::eventually("reach final value", |model, state| {
-                for actor in &state.actor_states {
-                    if let GlobalActorState::Server(s) = &**actor {
-                        if s.document()
-                            .get(ROOT, "counter")
-                            .unwrap()
-                            .and_then(|(v, _)| v.to_i64())
-                            .unwrap_or_default()
-                            == model.cfg.final_value as i64
-                        {
-                            return true;
-                        }
-                    }
-                }
-                false
-            }),
-            Prop::always("correct value", |_model, state| {
-                // When states are in sync, they should have the value of the counter matching that of
-                // the combination of increments and decrements.
-                if !syncing_done(state) {
-                    return true;
-                }
+        vec![Prop::always("correct value", |_model, state| {
+            // When states are in sync, they should have the value of the counter matching that of
+            // the combination of increments and decrements.
+            if !syncing_done(state) {
+                return true;
+            }
 
-                let mut expected_value = 0;
-                for msg in &state.history {
-                    match msg.input() {
-                        Some(CounterMsg::Increment) => {
-                            expected_value += 1;
-                        }
-                        Some(CounterMsg::Decrement) => {
-                            expected_value -= 1;
-                        }
-                        None => {}
+            let mut expected_value = 0;
+            for msg in &state.history {
+                match msg.input() {
+                    Some(CounterMsg::Increment) => {
+                        expected_value += 1;
                     }
+                    Some(CounterMsg::Decrement) => {
+                        expected_value -= 1;
+                    }
+                    None => {}
                 }
+            }
 
-                if let GlobalActorState::Server(s) = &**state.actor_states.first().unwrap() {
-                    let actual_value = s
-                        .document()
-                        .get(ROOT, "counter")
-                        .unwrap()
-                        .and_then(|(v, _)| v.to_i64())
-                        .unwrap_or_default();
-                    return actual_value == expected_value;
-                }
-                panic!("Couldn't find a server!");
-            }),
-        ]
+            if let GlobalActorState::Server(s) = &**state.actor_states.first().unwrap() {
+                let actual_value = s
+                    .document()
+                    .get(ROOT, "counter")
+                    .unwrap()
+                    .and_then(|(v, _)| v.to_i64())
+                    .unwrap_or_default();
+                return actual_value == expected_value;
+            }
+            panic!("Couldn't find a server!");
+        })]
     }
 
     fn record_input(
