@@ -15,6 +15,7 @@ use amc::global::GlobalMsg;
 use amc::model::ModelBuilder;
 use amc::properties::syncing_done;
 use automerge::transaction::Transactable;
+use automerge::ScalarValue;
 use automerge::ROOT;
 use stateright::actor::ActorModel;
 use stateright::Property;
@@ -23,6 +24,8 @@ use std::borrow::Cow;
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Counter {
     initial_value: usize,
+    counter_type: bool,
+    initial_change: bool,
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
@@ -43,37 +46,63 @@ impl Application for Counter {
     type State = CounterState;
 
     fn init(&self, id: usize) -> Self::State {
+        let mut doc = Document::new(id);
+        if self.initial_change {
+            doc.with_initial_change(|txn| {
+                txn.put(ROOT, "counter", ScalarValue::counter(0)).unwrap();
+            })
+        }
         CounterState {
             value: self.initial_value,
-            doc: Document::new(id),
+            doc,
         }
     }
 
     fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
             CounterMsg::Increment => {
-                let value = state
-                    .doc
-                    .get(ROOT, "counter")
-                    .unwrap()
-                    .and_then(|(v, _)| v.to_i64())
-                    .unwrap_or_default();
-                let state = state.to_mut();
-                let mut txn = state.doc.transaction();
-                txn.put(ROOT, "counter", value + 1).unwrap();
-                txn.commit();
+                if self.counter_type {
+                    let state = state.to_mut();
+                    let mut txn = state.doc.transaction();
+                    if txn.get(ROOT, "counter").unwrap().is_none() {
+                        txn.put(ROOT, "counter", ScalarValue::counter(0)).unwrap();
+                    }
+                    txn.increment(ROOT, "counter", 1).unwrap();
+                    txn.commit();
+                } else {
+                    let value = state
+                        .doc
+                        .get(ROOT, "counter")
+                        .unwrap()
+                        .and_then(|(v, _)| v.to_i64())
+                        .unwrap_or_default();
+                    let state = state.to_mut();
+                    let mut txn = state.doc.transaction();
+                    txn.put(ROOT, "counter", value + 1).unwrap();
+                    txn.commit();
+                }
             }
             CounterMsg::Decrement => {
-                let value = state
-                    .doc
-                    .get(ROOT, "counter")
-                    .unwrap()
-                    .and_then(|(v, _)| v.to_i64())
-                    .unwrap_or_default();
-                let state = state.to_mut();
-                let mut txn = state.doc.transaction();
-                txn.put(ROOT, "counter", value - 1).unwrap();
-                txn.commit();
+                if self.counter_type {
+                    let state = state.to_mut();
+                    let mut txn = state.doc.transaction();
+                    if txn.get(ROOT, "counter").unwrap().is_none() {
+                        txn.put(ROOT, "counter", ScalarValue::counter(0)).unwrap();
+                    }
+                    txn.increment(ROOT, "counter", -1).unwrap();
+                    txn.commit();
+                } else {
+                    let value = state
+                        .doc
+                        .get(ROOT, "counter")
+                        .unwrap()
+                        .and_then(|(v, _)| v.to_i64())
+                        .unwrap_or_default();
+                    let state = state.to_mut();
+                    let mut txn = state.doc.transaction();
+                    txn.put(ROOT, "counter", value - 1).unwrap();
+                    txn.commit();
+                }
             }
         }
     }
@@ -135,6 +164,14 @@ impl Drive<Counter> for Driver {
 
 #[derive(clap::Args, Debug)]
 struct CounterOpts {
+    /// Whether to use the built-in counter type, part 1 of a fix.
+    #[clap(long, global = true)]
+    counter_type: bool,
+
+    /// Whether to initialise the document the same for each application, part 2 of a fix.
+    #[clap(long, global = true)]
+    initial_change: bool,
+
     #[clap(long, global = true, default_value = "2")]
     increments: u8,
 
@@ -165,7 +202,11 @@ impl ModelBuilder for CounterOpts {
     type History = Vec<GlobalMsg<Counter>>;
 
     fn application(&self, _application: usize) -> Self::App {
-        Counter { initial_value: 1 }
+        Counter {
+            initial_value: 1,
+            counter_type: self.counter_type,
+            initial_change: self.initial_change,
+        }
     }
 
     fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
