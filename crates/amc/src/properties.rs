@@ -113,6 +113,23 @@ where
     )
 }
 
+/// Check that all servers have the same document heads.
+pub fn all_same_heads<T, A>(actors: &[Arc<GlobalActorState<T, A>>]) -> bool
+where
+    T: Drive<A>,
+    A: Application,
+{
+    actors.windows(2).all(|w| match (&*w[0], &*w[1]) {
+        (GlobalActorState::Client(_), GlobalActorState::Client(_)) => true,
+        (GlobalActorState::Client(_), GlobalActorState::Server(_)) => true,
+        (GlobalActorState::Server(_), GlobalActorState::Client(_)) => true,
+        (GlobalActorState::Server(a), GlobalActorState::Server(b)) => {
+            a.document().get_heads() == b.document().get_heads()
+        }
+    })
+}
+
+
 fn all_same_state<T, A>(actors: &[Arc<GlobalActorState<T, A>>]) -> bool
 where
     T: Drive<A>,
