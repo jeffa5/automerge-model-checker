@@ -179,10 +179,8 @@ impl ModelBuilder for CounterOpts {
         ]
     }
 
-    fn config(&self, model_opts: &amc::model::ModelOpts) -> Self::Config {
-        let final_value = (model_opts.servers * self.increments as usize)
-            - (model_opts.servers * self.decrements as usize);
-        Config { final_value }
+    fn config(&self, _model_opts: &amc::model::ModelOpts) -> Self::Config {
+        Config {}
     }
 
     fn history(&self) -> Self::History {
@@ -251,9 +249,7 @@ impl ModelBuilder for CounterOpts {
 }
 
 #[derive(Debug)]
-struct Config {
-    final_value: usize,
-}
+struct Config {}
 
 fn main() {
     use clap::Parser;
