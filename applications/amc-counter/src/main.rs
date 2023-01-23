@@ -285,7 +285,7 @@ impl ModelBuilder for CounterOpts {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Config {}
 
 fn main() {

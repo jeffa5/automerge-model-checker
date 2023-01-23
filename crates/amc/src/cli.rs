@@ -1,9 +1,10 @@
 use clap::Parser;
-use stateright::{Checker, Model};
+use stateright::{actor::ActorModel, Checker, Model};
 use tracing::subscriber::set_global_default;
 use tracing_subscriber::EnvFilter;
 
 use crate::{
+    global::GlobalActor,
     model::{ModelBuilder, ModelOpts},
     report::Reporter,
 };
@@ -19,6 +20,8 @@ pub enum Runner {
     },
     /// Launch a checker using depth-first search.
     CheckDfs,
+    /// Launch a checker using depth-first search, iterating over progressively larger depths.
+    CheckIterative,
     /// Launch a checker using breadth-first search.
     CheckBfs,
 }
@@ -34,30 +37,51 @@ pub struct RunArgs {
     #[clap(flatten)]
     pub model_opts: ModelOpts,
 
-    #[clap(long, global = true)]
+    #[clap(long, global = true, default_value = "1000")]
     /// Max depth to search to.
-    pub max_depth: Option<usize>,
+    pub max_depth: usize,
 }
 
 impl RunArgs {
+    fn build_checker<M: ModelBuilder>(
+        &self,
+        model: &ActorModel<GlobalActor<M::App, M::Driver>, M::Config, M::History>,
+    ) -> stateright::CheckerBuilder<
+        ActorModel<
+            GlobalActor<<M as ModelBuilder>::App, <M as ModelBuilder>::Driver>,
+            <M as ModelBuilder>::Config,
+            <M as ModelBuilder>::History,
+        >,
+    >
+    where
+        M::Config: Send,
+        M::Config: Sync + Clone,
+        M::History: Send + Sync + 'static,
+    {
+        let mut checker = model.clone().checker();
+        checker = checker.target_max_depth(self.max_depth);
+        checker = checker.threads(std::thread::available_parallelism().unwrap().get());
+        checker
+    }
+
     /// Run an application.
     pub fn run<M: ModelBuilder>(self, model_builder: M)
     where
         M::Config: Send,
-        M::Config: Sync,
+        M::Config: Sync + Clone,
         M::History: Send + Sync + 'static,
     {
-        let collector = tracing_subscriber::fmt().with_ansi(false).with_env_filter(EnvFilter::from_default_env()).finish();
+        let collector = tracing_subscriber::fmt()
+            .with_ansi(false)
+            .with_env_filter(EnvFilter::from_default_env())
+            .finish();
         set_global_default(collector).unwrap();
 
         println!("{:?}", self);
         println!("{:?}", model_builder);
         let model = self.model_opts.to_model(&model_builder);
-        let mut checker = model.checker();
-        if let Some(max_depth) = self.max_depth {
-            checker = checker.target_max_depth(max_depth);
-        }
-        checker = checker.threads(std::thread::available_parallelism().unwrap().get());
+
+        let checker = self.build_checker::<M>(&model);
 
         match self.command {
             Runner::Explore { port } => {
@@ -66,6 +90,39 @@ impl RunArgs {
             }
             Runner::CheckDfs => {
                 checker.spawn_dfs().report(&mut Reporter::default()).join();
+            }
+            Runner::CheckIterative => {
+                let limit = self.max_depth;
+                for max_depth in 1..=limit {
+                    println!("Checking with max depth {}", max_depth);
+                    let mut checker = self.build_checker::<M>(&model);
+                    checker = checker.target_max_depth(max_depth);
+                    let checker = checker.spawn_dfs().report(&mut Reporter::default()).join();
+
+                    let mut finished = false;
+                    for property in checker.model().properties() {
+                        match property.expectation {
+                            stateright::Expectation::Always => {
+                                if checker.discovery(property.name).is_some() {
+                                    finished = true;
+                                }
+                            }
+                            stateright::Expectation::Eventually => {
+                                if checker.discovery(property.name).is_some() {
+                                    finished = true;
+                                }
+                            }
+                            stateright::Expectation::Sometimes => {
+                                if checker.discovery(property.name).is_none() {
+                                    finished = true;
+                                }
+                            }
+                        }
+                    }
+                    if finished {
+                        break;
+                    }
+                }
             }
             Runner::CheckBfs => {
                 checker.spawn_bfs().report(&mut Reporter::default()).join();

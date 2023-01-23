@@ -193,7 +193,7 @@ fn max_list_size_is_the_max(state: &Arc<ActorState>, cfg: &Config) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Config {
     pub max_map_size: usize,
     pub max_list_size: usize,

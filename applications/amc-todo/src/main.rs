@@ -41,7 +41,7 @@ struct Args {
 
 type AppHistory = Vec<(GlobalMsg<App>, GlobalMsg<App>)>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub app: App,
 }
