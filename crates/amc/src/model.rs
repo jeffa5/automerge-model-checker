@@ -20,7 +20,7 @@ pub trait ModelBuilder: Debug {
     type Driver: Drive<Self::App> + 'static;
 
     /// The type of config for the model.
-    type Config: 'static;
+    type Config: Debug + 'static;
 
     /// The type of history for the model.
     type History: Clone + Debug + Hash;

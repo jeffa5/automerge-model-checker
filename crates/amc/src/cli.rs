@@ -45,10 +45,11 @@ impl RunArgs {
         &self,
         model_builder: &M,
     ) -> ActorModel<GlobalActor<M::App, M::Driver>, M::Config, M::History> {
-        let mut model = ActorModel::new(
-            model_builder.config(&self.model_opts),
-            model_builder.history(),
-        );
+        let config = model_builder.config(&self.model_opts);
+        println!("Built config: {:?}", config);
+        let history = model_builder.history();
+        println!("Built history: {:?}", history);
+        let mut model = ActorModel::new(config, history);
 
         // add servers
         for i in 0..self.model_opts.servers {
@@ -103,7 +104,10 @@ impl RunArgs {
     {
         println!("{:?}", self);
         println!("{:?}", model_builder);
-        let model = self.actor_model(&model_builder).checker().threads(num_cpus::get());
+        let model = self
+            .actor_model(&model_builder)
+            .checker()
+            .threads(num_cpus::get());
 
         match self.command {
             Runner::Explore { port } => {
