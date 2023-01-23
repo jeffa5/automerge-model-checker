@@ -580,9 +580,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.1.1"
+version = "4.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ec7a4128863c188deefe750ac1d1dfe66c236909f845af04beed823638dc1b2"
+checksum = "0e638668a62aced2c9fb72b5135a33b4a500485ccf2a0e402e09aa04ab2fc115"
 dependencies = [
  "bitflags",
  "clap_derive",
@@ -2093,7 +2093,7 @@ dependencies = [
 [[package]]
 name = "stateright"
 version = "0.29.0"
-source = "git+https://github.com/stateright/stateright?branch=master#95dc83fe5cd557d2fa744fb6b57891a9d39e438f"
+source = "git+https://github.com/jeffa5/stateright?branch=dev#572611a4ff49048d68c1548c245319a7e4f32675"
 dependencies = [
  "actix-web",
  "ahash 0.3.8",
