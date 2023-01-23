@@ -1,6 +1,6 @@
 //! An example of implementing an application to be tested with AMC.
 //!
-//! Run with `cargo run --release --example counter -- --help`
+//! Run with `cargo run --release --bin amc-counter -- --help`
 //!
 //! The counter that this models is very simple, having an increment and decrement action.
 
