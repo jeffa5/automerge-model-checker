@@ -148,16 +148,13 @@ where
 }
 
 /// Check whether syncing is complete at this time. That is, there are no sync messages pending
-/// delivery.
+/// delivery and all documents have the same heads.
 pub fn syncing_done<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
 where
     A: Application,
     D: Drive<A>,
 {
-    let all_actors_changes_sent = state.actor_states.iter().all(|state| match &**state {
-        GlobalActorState::Server(server) => server.document().finished_sending_changes(),
-        GlobalActorState::Client(_) => true,
-    });
+    let all_documents_same_heads = all_same_heads(&state.actor_states);
 
     let network_contains_sync_messages = state.network.iter_deliverable().any(|e| match e.msg {
         GlobalMsg::ServerToServer(s2s) => match s2s {
@@ -170,7 +167,7 @@ where
         GlobalMsg::ClientToServer(_) => false,
     });
 
-    all_actors_changes_sent && !network_contains_sync_messages
+    all_documents_same_heads && !network_contains_sync_messages
 }
 
 fn syncing_done_and_in_sync<A, D, H>(state: &ActorModelState<GlobalActor<A, D>, H>) -> bool
