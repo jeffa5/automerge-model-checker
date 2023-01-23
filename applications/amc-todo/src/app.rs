@@ -6,6 +6,7 @@ use automerge::ROOT;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
+use smol_str::SmolStr;
 use std::hash::Hash;
 
 /// The app that clients work with.
@@ -56,7 +57,7 @@ impl AppState {
     }
 
     // create a todo in the document and return its id
-    pub fn create_todo(&mut self, text: String) -> u32 {
+    pub fn create_todo(&mut self, text: SmolStr) -> u32 {
         let mut tx = self.doc.transaction();
         let new_id: u32 = if self.random_ids {
             self.rng.gen()
@@ -72,15 +73,15 @@ impl AppState {
             .put_object(ROOT, new_id.to_string(), ObjType::Map)
             .unwrap();
         tx.put(&todo, "completed", false).unwrap();
-        tx.put(&todo, "text", text).unwrap();
+        tx.put(&todo, "text", text.as_str()).unwrap();
         tx.commit();
         new_id
     }
 
-    pub fn update_text(&mut self, id: u32, text: String) -> bool {
+    pub fn update_text(&mut self, id: u32, text: SmolStr) -> bool {
         let mut tx = self.doc.transaction();
         if let Some((_, todo)) = tx.get(ROOT, id.to_string()).unwrap() {
-            tx.put(todo, "text", text).unwrap();
+            tx.put(todo, "text", text.as_str()).unwrap();
             tx.commit();
             true
         } else {

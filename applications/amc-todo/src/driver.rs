@@ -1,4 +1,5 @@
 use amc::driver::Drive;
+use smol_str::SmolStr;
 
 use crate::apphandle::App;
 
@@ -17,8 +18,8 @@ pub enum DriverState {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum AppInput {
-    CreateTodo(String),
-    Update(u32, String),
+    CreateTodo(SmolStr),
+    Update(u32, SmolStr),
     ToggleActive(u32),
     DeleteTodo(u32),
     ListTodos,
@@ -45,7 +46,7 @@ impl Drive<App> for Driver {
         Vec<<App as amc::prelude::Application>::Input>,
     ) {
         match self.func {
-            DriverState::Creater => ((), vec![AppInput::CreateTodo("todo 1".to_owned())]),
+            DriverState::Creater => ((), vec![AppInput::CreateTodo(SmolStr::new_inline("a"))]),
             DriverState::Updater => ((), vec![AppInput::ListTodos]),
             DriverState::Toggler => ((), vec![AppInput::ListTodos]),
             DriverState::Deleter => ((), vec![AppInput::ListTodos]),
@@ -60,7 +61,7 @@ impl Drive<App> for Driver {
         match (&self.func, output) {
             (DriverState::Updater, AppOutput::ListTodos(ids)) => ids
                 .iter()
-                .map(|id| AppInput::Update(*id, "updated todo".to_owned()))
+                .map(|id| AppInput::Update(*id, SmolStr::new_inline("b")))
                 .collect(),
             (DriverState::Toggler, AppOutput::ListTodos(ids)) => {
                 ids.iter().map(|id| AppInput::ToggleActive(*id)).collect()
