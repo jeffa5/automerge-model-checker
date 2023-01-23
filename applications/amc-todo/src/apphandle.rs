@@ -7,7 +7,7 @@ use crate::{app::AppState, driver::AppOutput};
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct App {
     pub random_ids: bool,
-    pub initial_change:bool,
+    pub initial_change: bool,
 }
 
 impl Application for App {
