@@ -60,13 +60,15 @@ impl Application for List {
 
     fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
-            ListInput::Move(from, to) => {
+            ListInput::Move(from, mut to) => {
                 let (_, list_id) = state.document().get(ROOT, "list").unwrap().unwrap();
                 let mut txn = state.to_mut().document_mut().transaction();
-                assert!(from > to);
                 let (item, _) = txn.get(&list_id, from).unwrap().unwrap();
                 let item = item.into_scalar().unwrap();
                 txn.delete(&list_id, from).unwrap();
+                if from < to {
+                    to -= 1;
+                }
                 txn.insert(&list_id, to, item).unwrap();
                 txn.commit();
             }
