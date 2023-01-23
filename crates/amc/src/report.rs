@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::hash::Hash;
 use std::time::Duration;
 
 use num_format::SystemLocale;
@@ -51,6 +52,7 @@ where
     ) where
         <M as Model>::Action: std::fmt::Debug,
         <M as Model>::State: std::fmt::Debug,
+        <M as Model>::State: Hash,
     {
         let discoveries: BTreeMap<_, _> = discoveries.into_iter().collect();
         for (name, discovery) in discoveries {
@@ -58,6 +60,7 @@ where
                 "Discovered \"{}\" {} {}",
                 name, discovery.classification, discovery.path,
             );
+            println!("Fingerprint path for explore: {}", discovery.path.encode());
         }
     }
 }
