@@ -29,11 +29,13 @@ impl Debug for Document {
                 m.insert(k, v);
             }
             s.field("doc", &m)
+                .field("heads", &self.get_heads())
                 .field("sync_states", &self.sync_states)
                 .field("last_sent_heads", &self.last_sent_heads)
                 .field("error", &self.error);
         } else {
             s.field("am", &self.am)
+                .field("heads", &self.get_heads())
                 .field("sync_states", &self.sync_states)
                 .field("last_sent_heads", &self.last_sent_heads)
                 .field("error", &self.error);
