@@ -76,10 +76,6 @@ pub struct ModelOpts {
     #[clap(long, global = true, default_value = "changes")]
     pub sync_method: SyncMethod,
 
-    /// Enable checking documents are in the same state during checking of the document.
-    #[clap(long, global = true)]
-    pub same_state_check: bool,
-
     /// Enable checking documents are in sync and don't have any other messages.
     #[clap(long, global = true)]
     pub in_sync_check: bool,

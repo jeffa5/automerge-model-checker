@@ -26,31 +26,13 @@ where
     D: Drive<A>,
     H: Hash + Debug + Clone,
 {
-    model = with_same_state_check(model);
     model = with_in_sync_check(model);
     model = with_save_load_check(model);
     model = with_error_free_check(model);
     model
 }
 
-/// Ensure that all applications eventually end up with the same state.
-pub fn with_same_state_check<A, D, C, H>(
-    model: ActorModel<GlobalActor<A, D>, C, H>,
-) -> ActorModel<GlobalActor<A, D>, C, H>
-where
-    A: Application,
-    D: Drive<A>,
-    H: Hash + Debug + Clone,
-{
-    model.property(
-        stateright::Expectation::Eventually,
-        "all actors have the same value for all keys",
-        |_, state| all_same_state(&state.actor_states),
-    )
-}
-
 /// Ensure that all applications have the same state when there is no syncing to be done.
-// TODO: is this more general than the with_same_state_check? This should also check at the end.
 pub fn with_in_sync_check<A, D, C, H>(
     model: ActorModel<GlobalActor<A, D>, C, H>,
 ) -> ActorModel<GlobalActor<A, D>, C, H>
@@ -128,7 +110,6 @@ where
         }
     })
 }
-
 
 fn all_same_state<T, A>(actors: &[Arc<GlobalActorState<T, A>>]) -> bool
 where

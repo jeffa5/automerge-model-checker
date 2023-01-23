@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use amc::global::{GlobalActor, GlobalActorState};
 use crate::app::{LIST_KEY, MAP_KEY};
 use crate::client::App;
+use amc::global::{GlobalActor, GlobalActorState};
 
 use crate::driver::Driver;
 use clap::Parser;

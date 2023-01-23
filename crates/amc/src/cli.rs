@@ -71,9 +71,6 @@ impl RunArgs {
             }
         }
 
-        if self.model_opts.same_state_check {
-            model = properties::with_same_state_check(model);
-        }
         if self.model_opts.in_sync_check {
             model = properties::with_in_sync_check(model);
         }

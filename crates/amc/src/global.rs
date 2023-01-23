@@ -18,7 +18,7 @@ pub enum GlobalMsg<A: Application> {
     ClientToServer(ApplicationMsg<A>),
 }
 
-impl<A:Application> GlobalMsg<A> {
+impl<A: Application> GlobalMsg<A> {
     /// Obtain the input to the application, if this was one.
     pub fn input(&self) -> Option<&A::Input> {
         match self {
