@@ -19,16 +19,58 @@ pub struct Document {
     debug_materialize: bool,
 }
 
+#[derive(Debug)]
+enum Value {
+    Map(BTreeMap<String, Value>),
+    List(Vec<Value>),
+    Scalar(String),
+}
+
+fn materialize_root(am: &Automerge) -> Value {
+    let mut map = BTreeMap::new();
+    for (k, v, id) in am.map_range(ROOT, ..) {
+        map.insert(k.to_owned(), materialize_value(am, v, id));
+    }
+    Value::Map(map)
+}
+
+fn materialize_value(am: &Automerge, value: automerge::Value, id : automerge::ObjId) ->Value{
+    match value {
+        automerge::Value::Object(o) =>
+            match o {
+                automerge::ObjType::Map => {
+                    let mut map = BTreeMap::new();
+                    for (k, v, id) in am.map_range(id, ..) {
+                        map.insert(k.to_owned(), materialize_value(am, v, id));
+                    }
+                    Value::Map(map)
+                },
+                automerge::ObjType::List => {
+                    let mut list = Vec::new();
+                    for (_, v, id) in am.list_range(id, ..) {
+                        list.push(materialize_value(am, v, id));
+                    }
+                    Value::List(list)
+                },
+                automerge::ObjType::Text => todo!(),
+                automerge::ObjType::Table => todo!(),
+            },
+        automerge::Value::Scalar(s) => Value::Scalar(s.to_string()),
+    }
+}
+
+
+fn materialize(am: &Automerge) -> Value {
+    materialize_root(am)
+}
+
 impl Debug for Document {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = f.debug_struct("Document");
         if self.debug_materialize {
             // todo: materialize
-            let mut m = BTreeMap::new();
-            for (k, v, _) in self.am.map_range(ROOT, ..) {
-                m.insert(k, v);
-            }
-            s.field("doc", &m)
+            let v = materialize(&self.am);
+            s.field("doc", &v)
                 .field("heads", &self.get_heads())
                 .field("sync_states", &self.sync_states)
                 .field("last_sent_heads", &self.last_sent_heads)
