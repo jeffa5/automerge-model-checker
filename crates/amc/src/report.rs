@@ -60,7 +60,7 @@ where
                 "Discovered \"{}\" {} {}",
                 name, discovery.classification, discovery.path,
             );
-            println!("Fingerprint path for explore: {}", discovery.path.encode());
+            println!("To explore this path try re-running with `explore {}`", discovery.path.encode());
         }
     }
 }

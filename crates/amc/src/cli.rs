@@ -10,13 +10,17 @@ use crate::{
 };
 
 /// How to run the model.
-#[derive(clap::Subcommand, Copy, Clone, Debug)]
+#[derive(clap::Subcommand, Clone, Debug)]
 pub enum Runner {
     /// Launch an interactive explorer in the browser.
     Explore {
         /// Port to serve UI on.
         #[clap(long, default_value = "8080")]
         port: u16,
+
+        /// Path to jump to in explorer.
+        #[clap()]
+        path:Option<String>,
     },
     /// Launch a checker using depth-first search.
     CheckDfs,
@@ -84,8 +88,9 @@ impl RunArgs {
         let checker = self.build_checker::<M>(&model);
 
         match self.command {
-            Runner::Explore { port } => {
-                println!("Serving web ui on http://127.0.0.1:{}", port);
+            Runner::Explore { port, path } => {
+                let path = path.map(|p| format!("/#/steps/{}", p)).unwrap_or_default();
+                println!("Serving web ui on http://127.0.0.1:{}{}", port, path);
                 checker.serve(("127.0.0.1", port));
             }
             Runner::CheckDfs => {
