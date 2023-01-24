@@ -231,7 +231,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     CreateTodo(
-                                        "todo 1",
+                                        "a",
                                     ),
                                 ),
                             ),
@@ -242,7 +242,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     CreateTodo(
-                                        "todo 1",
+                                        "a",
                                     ),
                                 ),
                             ),
@@ -256,7 +256,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kg6fOYDEBSwAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXBnACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AAWZ0b2RvIDEDAA",
+                                        "hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA",
                                     ],
                                 },
                             ),
@@ -270,7 +270,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kg4AqMC0BSwAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXBnACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AAWZ0b2RvIDEDAA",
+                                        "hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA",
                                     ],
                                 },
                             ),
@@ -380,7 +380,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     CreateTodo(
-                                        "todo 1",
+                                        "a",
                                     ),
                                 ),
                             ),
@@ -391,7 +391,7 @@ mod tests {
                             msg: ClientToServer(
                                 Input(
                                     CreateTodo(
-                                        "todo 1",
+                                        "a",
                                     ),
                                 ),
                             ),
@@ -405,7 +405,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kg978ZBABawGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAAEBAAAACAEEAgQVEjQBQgRWBFcGcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABZnRvZG8gMQMA",
+                                        "hW9KgzEuzhgBZgGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAAEBAAAACAEEAgQVEjQBQgRWBFcBcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA",
                                     ],
                                 },
                             ),
@@ -419,7 +419,7 @@ mod tests {
                             msg: ServerToServer(
                                 SyncChangeRaw {
                                     missing_changes_bytes: [
-                                        "hW9Kg20wikYBawGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAQEBAAAACAEEAgQVEjQBQgRWBFcGcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABZnRvZG8gMQMA",
+                                        "hW9Kg3oqwacBZgGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAQEBAAAACAEEAgQVEjQBQgRWBFcBcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA",
                                     ],
                                 },
                             ),
