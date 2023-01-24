@@ -3,6 +3,8 @@
 //! Run with `cargo run --release --bin amc-moves -- --help`
 //!
 //! This models concurrently moving elements in a list.
+//!
+//! From https://dl.acm.org/doi/pdf/10.1145/3380787.3393677
 
 use amc::application::Application;
 use amc::application::DerefDocument;
