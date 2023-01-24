@@ -13,12 +13,14 @@ This might be able to help designers of data types check their merge behaviour t
 
 ## Current applications
 
-- [Automerge itself](./applications/amc-automerge)
-    - `cargo run --release --bin amc-automerge`
+- [Counter](./applications/amc-counter)
+    - `cargo run --release --bin amc-counter -- check-iterative`
 - [Todos](./applications/amc-todo)
-    - `cargo run --release --bin amc-todo`
-- [Counter](./amc/examples/counter.rs)
-    - `cargo run --release --example counter`
+    - `cargo run --release --bin amc-todo -- check-iterative`
+- [Concurrent moves in a list](./applications/amc-moves)
+    - `cargo run --release --bin amc-moves -- check-iterative`
+- [Automerge itself](./applications/amc-automerge)
+    - `cargo run --release --bin amc-automerge -- check-iterative`
 
 ## Design
 
