@@ -2,6 +2,7 @@
 name = "amc"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [dependencies]
 stateright = "0.29.0"
