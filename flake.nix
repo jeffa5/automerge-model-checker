@@ -59,6 +59,8 @@
         })
         cargo-watch
         cargo-flamegraph
+        cargo-release
+        cargo-semver-checks
       ];
     };
   };
