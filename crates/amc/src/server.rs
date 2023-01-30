@@ -12,6 +12,7 @@ use crate::global::GlobalTimer;
 use automerge::sync;
 use automerge::Automerge;
 use automerge::Change;
+use stateright::actor::model_timeout;
 use stateright::actor::Actor;
 use stateright::actor::Id;
 use stateright::actor::Out;
@@ -65,6 +66,7 @@ pub enum ServerMsg {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Timer {
     Synchronise,
+    Restart,
 }
 
 impl<A: Application> Actor for Server<A> {
@@ -77,10 +79,8 @@ impl<A: Application> Actor for Server<A> {
     /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         // Start a timer for periodic syncing.
-        o.set_timer(
-            GlobalTimer::Server(Timer::Synchronise),
-            Duration::from_secs(1)..Duration::from_secs(2),
-        );
+        o.set_timer(GlobalTimer::Server(Timer::Synchronise), model_timeout());
+        o.set_timer(GlobalTimer::Server(Timer::Restart), model_timeout());
         self.app.init(usize::from(id))
     }
 
@@ -143,11 +143,22 @@ impl<A: Application> Actor for Server<A> {
         timer: &Self::Timer,
         o: &mut Out<Self>,
     ) {
-        o.set_timer(
-            timer.clone(),
-            Duration::from_secs(1)..Duration::from_secs(2),
-        );
-        self.sync(state, o)
+        match timer {
+            GlobalTimer::Server(Timer::Synchronise) => {
+                o.set_timer(
+                    timer.clone(),
+                    Duration::from_secs(1)..Duration::from_secs(2),
+                );
+                self.sync(state, o)
+            }
+            GlobalTimer::Server(Timer::Restart) => {
+                o.set_timer(
+                    timer.clone(),
+                    Duration::from_secs(1)..Duration::from_secs(2),
+                );
+                self.restart(state)
+            }
+        }
     }
 }
 
@@ -200,5 +211,12 @@ impl<A: Application> Server<A> {
                 );
             }
         }
+    }
+
+    fn restart(&self, state: &mut Cow<<Self as Actor>::State>) {
+        let document = state.to_mut().document_mut();
+        let bytes = document.save();
+        document.load(&bytes);
+        document.reload_sync_states()
     }
 }

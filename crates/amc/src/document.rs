@@ -193,6 +193,12 @@ impl Document {
         self.am.save()
     }
 
+    /// Load a document, overwriting the current one.
+    pub fn load(&mut self, bytes: &[u8]) {
+        let am = Automerge::load(bytes).unwrap();
+        self.am = am;
+    }
+
     /// Merge another document with this one.
     pub fn merge(&mut self, other: &mut Automerge) {
         self.am.merge(other).unwrap();
@@ -201,6 +207,15 @@ impl Document {
     /// Create a transaction.
     pub fn transaction(&mut self) -> Transaction<UnObserved> {
         self.am.transaction()
+    }
+
+    /// Reload sync states associated with this document.
+    pub(crate) fn reload_sync_states(&mut self) {
+        for ss in self.sync_states.values_mut() {
+            let bytes = ss.encode();
+            let new_state = sync::State::decode(&bytes).unwrap();
+            *ss = new_state
+        }
     }
 }
 
