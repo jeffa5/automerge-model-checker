@@ -2,6 +2,7 @@ use amc::application::DerefDocument;
 use amc::application::Document;
 use automerge::transaction::Transactable;
 use automerge::ObjType;
+use automerge::ReadDoc;
 use automerge::ROOT;
 use rand::rngs::StdRng;
 use rand::Rng;

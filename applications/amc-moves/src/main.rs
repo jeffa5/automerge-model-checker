@@ -18,6 +18,7 @@ use amc::model::ModelBuilder;
 use amc::properties::syncing_done;
 use automerge::transaction::Transactable;
 use automerge::ObjType;
+use automerge::ReadDoc;
 use automerge::ROOT;
 use stateright::actor::ActorModel;
 use stateright::Property;

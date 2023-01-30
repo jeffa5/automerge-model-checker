@@ -15,6 +15,7 @@ use amc::global::GlobalMsg;
 use amc::model::ModelBuilder;
 use amc::properties::syncing_done;
 use automerge::transaction::Transactable;
+use automerge::ReadDoc;
 use automerge::ScalarValue;
 use automerge::ROOT;
 use stateright::actor::ActorModel;

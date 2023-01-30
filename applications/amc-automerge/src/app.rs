@@ -3,6 +3,7 @@ use amc::application::Document;
 use automerge::transaction::Transactable;
 use automerge::transaction::UnObserved;
 use automerge::ObjType;
+use automerge::ReadDoc;
 use automerge::Value;
 use automerge::ROOT;
 

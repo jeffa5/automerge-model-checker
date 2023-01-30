@@ -2,8 +2,9 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::{collections::BTreeMap, ops::Deref};
 
+use automerge::sync::SyncDoc;
 use automerge::transaction::{Transaction, UnObserved};
-use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ROOT};
+use automerge::{sync, ActorId, Automerge, Change, ChangeHash, ReadDoc, ROOT};
 
 /// A document that holds an automerge object and also the sync states for peers.
 #[derive(Clone)]

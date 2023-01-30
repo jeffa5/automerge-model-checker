@@ -8,7 +8,7 @@ repository = "https://github.com/jeffa5/automerge-model-checker"
 
 [dependencies]
 stateright = "0.29.0"
-automerge = "0.2.0"
+automerge = "0.3.0"
 clap = { version = "4.1.1", features = ["derive"] }
 base64 = "0.21.0"
 num-format = { version = "0.4.4", features = ["with-system-locale"] }
