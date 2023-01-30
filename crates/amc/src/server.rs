@@ -8,6 +8,7 @@ use crate::client::Application;
 use crate::client::ApplicationMsg;
 use crate::client::DerefDocument;
 use crate::global::GlobalMsg;
+use crate::global::GlobalTimer;
 use automerge::sync;
 use automerge::Automerge;
 use automerge::Change;
@@ -61,15 +62,25 @@ pub enum ServerMsg {
     },
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub enum Timer {
+    Synchronise,
+}
+
 impl<A: Application> Actor for Server<A> {
     type Msg = GlobalMsg<A>;
 
     type State = A::State;
 
+    type Timer = GlobalTimer;
+
     /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         // Start a timer for periodic syncing.
-        o.set_timer(Duration::from_secs(1)..Duration::from_secs(2));
+        o.set_timer(
+            GlobalTimer::Server(Timer::Synchronise),
+            Duration::from_secs(1)..Duration::from_secs(2),
+        );
         self.app.init(usize::from(id))
     }
 
@@ -125,8 +136,17 @@ impl<A: Application> Actor for Server<A> {
     }
 
     /// Handle a timeout, used to trigger syncing events as this gets interleaved when checking.
-    fn on_timeout(&self, _id: Id, state: &mut Cow<Self::State>, o: &mut Out<Self>) {
-        o.set_timer(Duration::from_secs(1)..Duration::from_secs(2));
+    fn on_timeout(
+        &self,
+        _id: Id,
+        state: &mut Cow<Self::State>,
+        timer: &Self::Timer,
+        o: &mut Out<Self>,
+    ) {
+        o.set_timer(
+            timer.clone(),
+            Duration::from_secs(1)..Duration::from_secs(2),
+        );
         self.sync(state, o)
     }
 }

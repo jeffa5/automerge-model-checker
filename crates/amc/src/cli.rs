@@ -20,7 +20,7 @@ pub enum Runner {
 
         /// Path to jump to in explorer.
         #[clap()]
-        path:Option<String>,
+        path: Option<String>,
     },
     /// Launch a checker using depth-first search.
     CheckDfs,

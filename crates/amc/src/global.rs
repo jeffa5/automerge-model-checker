@@ -5,7 +5,7 @@ use stateright::actor::{Actor, Id, Out};
 use crate::{
     client::{Application, ApplicationMsg, Client},
     drive::Drive,
-    server::{Server, ServerMsg},
+    server::{self, Server, ServerMsg},
 };
 
 /// The root message type.
@@ -54,10 +54,19 @@ pub enum GlobalActorState<D: Drive<A>, A: Application> {
     Server(<Server<A> as Actor>::State),
 }
 
+/// The global timer type.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum GlobalTimer {
+    /// Timers for the server.
+    Server(server::Timer),
+}
+
 impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
     type Msg = GlobalMsg<A>;
 
     type State = GlobalActorState<D, A>;
+
+    type Timer = GlobalTimer;
 
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         match self {
@@ -112,22 +121,32 @@ impl<A: Application, D: Drive<A>> Actor for GlobalActor<A, D> {
         }
     }
 
-    fn on_timeout(&self, id: Id, state: &mut Cow<Self::State>, o: &mut Out<Self>) {
+    fn on_timeout(
+        &self,
+        id: Id,
+        state: &mut Cow<Self::State>,
+        timer: &Self::Timer,
+        o: &mut Out<Self>,
+    ) {
         use GlobalActor as A;
         use GlobalActorState as S;
-        match (self, &**state) {
-            (A::Client(_), S::Client(_)) => {}
-            (A::Client(_), S::Server(_)) => {}
-            (A::Server(server_actor), S::Server(server_state)) => {
+        match (self, &**state, timer) {
+            (A::Client(_), S::Client(_), GlobalTimer::Server(_)) => {}
+            (A::Client(_), S::Server(_), GlobalTimer::Server(_)) => {}
+            (
+                A::Server(server_actor),
+                S::Server(server_state),
+                timer @ GlobalTimer::Server(_server_timer),
+            ) => {
                 let mut server_state = Cow::Borrowed(server_state);
                 let mut server_out = Out::new();
-                server_actor.on_timeout(id, &mut server_state, &mut server_out);
+                server_actor.on_timeout(id, &mut server_state, timer, &mut server_out);
                 if let Cow::Owned(server_state) = server_state {
                     *state = Cow::Owned(GlobalActorState::Server(server_state))
                 }
                 o.append(&mut server_out);
             }
-            (A::Server(_), S::Client(_)) => {}
+            (A::Server(_), S::Client(_), GlobalTimer::Server(_)) => {}
         }
     }
 }

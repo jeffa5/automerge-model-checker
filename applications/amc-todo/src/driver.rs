@@ -1,7 +1,7 @@
 use amc::driver::Drive;
-use tracing::debug;
 use smol_str::SmolStr;
 use tinyvec::TinyVec;
+use tracing::debug;
 
 use crate::apphandle::App;
 

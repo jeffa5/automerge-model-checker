@@ -1,11 +1,16 @@
 use crate::{
-    application::{server::{SyncMethod, Server}, Application},
+    application::{
+        server::{Server, SyncMethod},
+        Application,
+    },
+    client::Client,
     driver::Drive,
-    global::{GlobalActor, GlobalMsg}, client::Client, properties,
+    global::{GlobalActor, GlobalMsg},
+    properties,
 };
 use clap::Args;
 use stateright::{
-    actor::{ActorModel, Envelope, model_peers, Id, Network},
+    actor::{model_peers, ActorModel, Envelope, Id, Network},
     Property,
 };
 use std::fmt::Debug;

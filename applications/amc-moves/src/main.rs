@@ -119,11 +119,11 @@ impl Drive<List> for Driver {
     ) {
         match self.func {
             DriverFunc::MoverLastFirst => {
-                let msgs = vec![ListInput::Move(self.initial_size-1, 0)];
+                let msgs = vec![ListInput::Move(self.initial_size - 1, 0)];
                 ((), msgs)
             }
             DriverFunc::MoverFirstLast => {
-                let msgs = vec![ListInput::Move(0, self.initial_size-1)];
+                let msgs = vec![ListInput::Move(0, self.initial_size - 1)];
                 ((), msgs)
             }
         }

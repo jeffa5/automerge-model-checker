@@ -3,7 +3,11 @@ use tracing::debug;
 
 use stateright::actor::{Actor, Id};
 
-use crate::{document::Document, driver::Drive, global::GlobalMsg};
+use crate::{
+    document::Document,
+    driver::Drive,
+    global::{GlobalMsg, GlobalTimer},
+};
 
 /// An Application is coupled with a server and implements an atomic action against the document.
 /// This ensures that no sync messages are applied within the body of execution.
@@ -59,6 +63,8 @@ impl<A: Application, D: Drive<A>> Actor for Client<A, D> {
 
     type State = D::State;
 
+    type Timer = GlobalTimer;
+
     fn on_start(&self, id: Id, o: &mut stateright::actor::Out<Self>) -> Self::State {
         let (state, messages) = self.driver.init(usize::from(id));
         for message in messages {
@@ -86,7 +92,8 @@ impl<A: Application, D: Drive<A>> Actor for Client<A, D> {
                 let messages = self.driver.handle_output(state, output);
                 if !messages.is_empty() {
                     debug!(
-                        new_input_count=messages.len(), "new inputs generated in response to output"
+                        new_input_count = messages.len(),
+                        "new inputs generated in response to output"
                     );
                 }
                 for message in messages {

@@ -2,7 +2,6 @@
 
 use crate::apphandle::App;
 use crate::driver::AppInput;
-use tracing::trace;
 use crate::driver::AppOutput;
 use amc::global::GlobalActor;
 use amc::global::GlobalActorState;
@@ -14,6 +13,7 @@ use driver::DriverState;
 use stateright::actor::ActorModel;
 use stateright::actor::Envelope;
 use stateright::Property;
+use tracing::trace;
 
 mod app;
 mod apphandle;

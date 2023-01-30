@@ -122,7 +122,7 @@ impl Document {
     /// Create an initial change for the document.
     ///
     /// This ensures that, when syncing, documents have a common root to merge from.
-    pub fn with_initial_change<F:Fn(&mut Transaction<'_, UnObserved>)>(&mut self, make_change: F) {
+    pub fn with_initial_change<F: Fn(&mut Transaction<'_, UnObserved>)>(&mut self, make_change: F) {
         assert!(self.am.get_changes(&[]).unwrap().is_empty());
 
         let actor = self.get_actor().clone();

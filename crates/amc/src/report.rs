@@ -60,7 +60,10 @@ where
                 "Discovered \"{}\" {} {}",
                 name, discovery.classification, discovery.path,
             );
-            println!("To explore this path try re-running with `explore {}`", discovery.path.encode());
+            println!(
+                "To explore this path try re-running with `explore {}`",
+                discovery.path.encode()
+            );
         }
     }
 }
