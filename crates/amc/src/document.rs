@@ -106,9 +106,8 @@ impl Hash for Document {
 
 impl Document {
     /// Create a new document.
-    pub fn new(server_id: usize) -> Self {
+    pub fn new(id: usize) -> Self {
         let mut doc = Automerge::new();
-        let id: usize = server_id.into();
         doc.set_actor(ActorId::from(id.to_be_bytes()));
         Self {
             am: doc,

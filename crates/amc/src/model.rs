@@ -102,7 +102,7 @@ impl ModelOpts {
         &self,
         model_builder: &M,
     ) -> ActorModel<GlobalActor<M::App, M::Driver>, M::Config, M::History> {
-        let config = model_builder.config(&self);
+        let config = model_builder.config(self);
         println!("Built config: {:?}", config);
         let history = model_builder.history();
         println!("Built history: {:?}", history);
