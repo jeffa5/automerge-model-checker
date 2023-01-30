@@ -8,6 +8,5 @@
 /.direnv
 
 
-# Added by cargo
-
 /result
+/results
