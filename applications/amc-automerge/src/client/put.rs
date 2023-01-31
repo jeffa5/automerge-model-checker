@@ -1,4 +1,4 @@
-use crate::app::AppState;
+use crate::{app::AppState, scalar::ScalarValue};
 
 use super::Application;
 
@@ -7,7 +7,7 @@ use super::Application;
 pub struct MapSinglePutter;
 
 impl Application for MapSinglePutter {
-    type Input = (String, String);
+    type Input = (String, ScalarValue);
 
     type Output = ();
 
@@ -31,7 +31,7 @@ impl Application for MapSinglePutter {
 pub struct ListPutter;
 
 impl Application for ListPutter {
-    type Input = (usize, String);
+    type Input = (usize, ScalarValue);
 
     type Output = ();
     type State = AppState;

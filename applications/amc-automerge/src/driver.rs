@@ -1,6 +1,6 @@
 use amc::driver::Drive;
 
-use crate::client::App;
+use crate::{client::App, scalar::ScalarValue};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Driver {
@@ -12,7 +12,7 @@ pub enum DriverState {
     MapSinglePut {
         request_count: usize,
         key: String,
-        value: String,
+        value: ScalarValue,
     },
     MapSingleDelete {
         request_count: usize,
@@ -21,12 +21,12 @@ pub enum DriverState {
     ListStartPut {
         request_count: usize,
         index: usize,
-        value: String,
+        value: ScalarValue,
     },
     ListInsert {
         request_count: usize,
         index: usize,
-        value: String,
+        value: ScalarValue,
     },
     ListDelete {
         request_count: usize,
@@ -36,10 +36,10 @@ pub enum DriverState {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DriverMsg {
-    MapSinglePut { key: String, value: String },
+    MapSinglePut { key: String, value: ScalarValue },
     MapSingleDelete { key: String },
-    ListPut { index: usize, value: String },
-    ListInsert { index: usize, value: String },
+    ListPut { index: usize, value: ScalarValue },
+    ListInsert { index: usize, value: ScalarValue },
     ListDelete { index: usize },
 }
 

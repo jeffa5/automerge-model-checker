@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::app::{LIST_KEY, MAP_KEY};
 use crate::client::App;
+use crate::scalar::ScalarValue;
 use amc::global::{GlobalActor, GlobalActorState};
 
 use crate::driver::Driver;
@@ -11,6 +12,7 @@ use stateright::Property;
 mod app;
 mod client;
 mod driver;
+mod scalar;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
 enum ObjectType {
@@ -20,9 +22,37 @@ enum ObjectType {
 
 #[derive(Parser, Debug)]
 struct AutomergeOpts {
-    // What object type to check.
+    /// What object type to check.
     #[clap(long, global = true, default_value = "map")]
     object_type: crate::ObjectType,
+
+    /// Use the bytes type.
+    #[clap(long, global = true)]
+    bytes: bool,
+
+    /// Use the string type.
+    #[clap(long, global = true)]
+    string: bool,
+
+    /// Use the int type.
+    #[clap(long, global = true)]
+    int: bool,
+
+    /// Use the uint type.
+    #[clap(long, global = true)]
+    uint: bool,
+
+    /// Use the timestamp type.
+    #[clap(long, global = true)]
+    timestamp: bool,
+
+    /// Use the boolean type.
+    #[clap(long, global = true)]
+    boolean: bool,
+
+    /// Use the null type.
+    #[clap(long, global = true)]
+    null: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -60,50 +90,90 @@ impl amc::model::ModelBuilder for AutomergeOpts {
     }
 
     fn drivers(&self, server: usize) -> Vec<Self::Driver> {
-        let value = char::from_u32(('a' as u32) + server as u32).unwrap().to_string();
-        let drivers = match self.object_type {
-            ObjectType::Map => {
-                vec![
-                    Driver {
-                        func: crate::driver::DriverState::MapSinglePut {
-                            request_count: 2,
-                            key: "key".to_owned(),
-                            value: value.clone(),
+        let mut drivers = vec![];
+        let mut add_drivers = |value: ScalarValue| {
+            let mut new_drivers = match self.object_type {
+                ObjectType::Map => {
+                    vec![
+                        Driver {
+                            func: crate::driver::DriverState::MapSinglePut {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                                value: value.clone(),
+                            },
                         },
-                    },
-                    Driver {
-                        func: crate::driver::DriverState::MapSingleDelete {
-                            request_count: 2,
-                            key: "key".to_owned(),
+                        Driver {
+                            func: crate::driver::DriverState::MapSingleDelete {
+                                request_count: 2,
+                                key: "key".to_owned(),
+                            },
                         },
-                    },
-                ]
-            }
-            ObjectType::List => {
-                vec![
-                    Driver {
-                        func: crate::driver::DriverState::ListStartPut {
-                            request_count: 2,
-                            index: 0,
-                            value: value.clone(),
+                    ]
+                }
+                ObjectType::List => {
+                    vec![
+                        Driver {
+                            func: crate::driver::DriverState::ListStartPut {
+                                request_count: 2,
+                                index: 0,
+                                value: value.clone(),
+                            },
                         },
-                    },
-                    Driver {
-                        func: crate::driver::DriverState::ListDelete {
-                            request_count: 2,
-                            index: 0,
+                        Driver {
+                            func: crate::driver::DriverState::ListDelete {
+                                request_count: 2,
+                                index: 0,
+                            },
                         },
-                    },
-                    Driver {
-                        func: crate::driver::DriverState::ListInsert {
-                            request_count: INSERT_REQUEST_COUNT,
-                            index: 0,
-                            value: value.clone(),
+                        Driver {
+                            func: crate::driver::DriverState::ListInsert {
+                                request_count: INSERT_REQUEST_COUNT,
+                                index: 0,
+                                value: value.clone(),
+                            },
                         },
-                    },
-                ]
-            }
+                    ]
+                }
+            };
+            drivers.append(&mut new_drivers);
         };
+        if self.bytes {
+            let value = ScalarValue::Bytes(
+                char::from_u32(('a' as u32) + server as u32)
+                    .unwrap()
+                    .to_string()
+                    .into(),
+            );
+            add_drivers(value);
+        }
+        if self.string {
+            let value = ScalarValue::Str(
+                char::from_u32(('a' as u32) + server as u32)
+                    .unwrap()
+                    .to_string(),
+            );
+            add_drivers(value);
+        }
+        if self.int {
+            let value = ScalarValue::Int(server as i64);
+            add_drivers(value);
+        }
+        if self.uint {
+            let value = ScalarValue::Uint(server as u64);
+            add_drivers(value);
+        }
+        if self.timestamp {
+            let value = ScalarValue::Timestamp(server as i64);
+            add_drivers(value);
+        }
+        if self.boolean {
+            let value = ScalarValue::Boolean(server % 2 == 0);
+            add_drivers(value);
+        }
+        if self.null {
+            let value = ScalarValue::Null;
+            add_drivers(value);
+        }
         println!("Adding clients {:?}", drivers);
         drivers
     }

@@ -7,6 +7,8 @@ use automerge::ReadDoc;
 use automerge::Value;
 use automerge::ROOT;
 
+use crate::scalar::ScalarValue;
+
 pub const LIST_KEY: &str = "list";
 pub const MAP_KEY: &str = "map";
 
@@ -33,20 +35,20 @@ impl AppState {
         }
     }
 
-    pub fn get(&self, key: &str) -> Option<String> {
+    pub fn get(&self, key: &str) -> Option<ScalarValue> {
         let (_, map) = self.doc.get(ROOT, MAP_KEY).ok().flatten()?;
         self.doc
             .get(map, key)
             .unwrap()
-            .map(|(v, _)| v.into_string().unwrap())
+            .map(|(v, _)| v.into_scalar().unwrap().into())
     }
 
-    pub fn get_list(&self, index: usize) -> Option<String> {
+    pub fn get_list(&self, index: usize) -> Option<ScalarValue> {
         let (_, map) = self.doc.get(ROOT, LIST_KEY).ok().flatten()?;
         self.doc
             .get(map, index)
             .unwrap()
-            .map(|(v, _)| v.into_string().unwrap())
+            .map(|(v, _)| v.into_scalar().unwrap().into())
     }
 
     fn get_map_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
@@ -65,14 +67,14 @@ impl AppState {
         }
     }
 
-    pub fn put_map(&mut self, key: String, value: String) {
+    pub fn put_map(&mut self, key: String, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let map = Self::get_map_obj(&mut tx);
         tx.put(map, key, value).unwrap();
         tx.commit();
     }
 
-    pub fn put_list(&mut self, index: usize, value: String) {
+    pub fn put_list(&mut self, index: usize, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let list = Self::get_list_obj(&mut tx);
         if tx.put(list, index, value).is_err() {
@@ -95,7 +97,7 @@ impl AppState {
         tx.commit();
     }
 
-    pub fn insert(&mut self, index: usize, value: String) {
+    pub fn insert(&mut self, index: usize, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let list = match tx.get(ROOT, LIST_KEY) {
             Ok(Some((Value::Object(ObjType::List), list))) => list,

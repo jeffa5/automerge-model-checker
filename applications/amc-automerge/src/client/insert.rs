@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::app::AppState;
+use crate::{app::AppState, scalar::ScalarValue};
 
 use super::Application;
 
@@ -9,7 +9,7 @@ use super::Application;
 pub struct ListInserter;
 
 impl Application for ListInserter {
-    type Input = (usize, String);
+    type Input = (usize, ScalarValue);
 
     type Output = ();
 
