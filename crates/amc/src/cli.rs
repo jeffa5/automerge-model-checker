@@ -1,6 +1,6 @@
 use clap::Parser;
 use stateright::{actor::ActorModel, Checker, Model};
-use tracing::subscriber::set_global_default;
+use tracing::{debug, subscriber::set_global_default};
 use tracing_subscriber::EnvFilter;
 
 use crate::{
@@ -104,26 +104,28 @@ impl RunArgs {
                     checker = checker.target_max_depth(max_depth);
                     let checker = checker.spawn_dfs().report(&mut Reporter::default()).join();
 
-                    let mut finished = false;
-                    for property in checker.model().properties() {
+                    let finished = checker.model().properties().iter().any(|property| {
+                        let discovery = checker.discovery(property.name);
+                        debug!(?property.expectation, ?property.name, ?discovery, "checking for discovery");
                         match property.expectation {
                             stateright::Expectation::Always => {
-                                if checker.discovery(property.name).is_some() {
-                                    finished = true;
+                                if discovery.is_some() {
+                                    return true
                                 }
                             }
                             stateright::Expectation::Eventually => {
-                                if checker.discovery(property.name).is_some() {
-                                    finished = true;
+                                if discovery.is_some() {
+                                    return true
                                 }
                             }
                             stateright::Expectation::Sometimes => {
-                                if checker.discovery(property.name).is_none() {
-                                    finished = true;
+                                if discovery.is_some() {
+                                    return true
                                 }
                             }
                         }
-                    }
+                        false
+                    });
                     if finished {
                         break;
                     }
