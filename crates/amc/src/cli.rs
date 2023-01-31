@@ -104,7 +104,7 @@ impl RunArgs {
                     checker = checker.target_max_depth(max_depth);
                     let checker = checker.spawn_dfs().report(&mut Reporter::default()).join();
 
-                    let finished = checker.model().properties().iter().any(|property| {
+                    let finished = checker.model().properties().iter().all(|property| {
                         let discovery = checker.discovery(property.name);
                         debug!(?property.expectation, ?property.name, ?discovery, "checking for discovery");
                         match property.expectation {
@@ -119,7 +119,7 @@ impl RunArgs {
                                 }
                             }
                             stateright::Expectation::Sometimes => {
-                                if discovery.is_some() {
+                                if discovery.is_none() {
                                     return true
                                 }
                             }

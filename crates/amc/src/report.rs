@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::hash::Hash;
 use std::time::Duration;
 
@@ -45,10 +46,7 @@ where
 
     fn report_discoveries(
         &mut self,
-        discoveries: std::collections::HashMap<
-            &'static str,
-            stateright::report::ReportDiscovery<M>,
-        >,
+        discoveries: HashMap<&'static str, stateright::report::ReportDiscovery<M>>,
     ) where
         <M as Model>::Action: std::fmt::Debug,
         <M as Model>::State: std::fmt::Debug,
