@@ -7,7 +7,7 @@ use super::Application;
 pub struct MapSinglePutter;
 
 impl Application for MapSinglePutter {
-    type Input = String;
+    type Input = (String, String);
 
     type Output = ();
 
@@ -20,10 +20,9 @@ impl Application for MapSinglePutter {
     fn execute(
         &self,
         document: &mut std::borrow::Cow<Self::State>,
-        input: Self::Input,
+        (key, value): Self::Input,
     ) -> Self::Output {
-        let value = 'A';
-        document.to_mut().put_map(input, value.to_string());
+        document.to_mut().put_map(key, value);
     }
 }
 
@@ -32,7 +31,7 @@ impl Application for MapSinglePutter {
 pub struct ListPutter;
 
 impl Application for ListPutter {
-    type Input = usize;
+    type Input = (usize, String);
 
     type Output = ();
     type State = AppState;
@@ -44,9 +43,8 @@ impl Application for ListPutter {
     fn execute(
         &self,
         document: &mut std::borrow::Cow<Self::State>,
-        input: Self::Input,
+        (index, value): Self::Input,
     ) -> Self::Output {
-        let value = 'A';
-        document.to_mut().put_list(input, value.to_string());
+        document.to_mut().put_list(index, value);
     }
 }

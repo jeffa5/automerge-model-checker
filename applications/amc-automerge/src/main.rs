@@ -59,7 +59,8 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         c
     }
 
-    fn drivers(&self, _server: usize) -> Vec<Self::Driver> {
+    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
+        let value = char::from_u32(('a' as u32) + server as u32).unwrap().to_string();
         let drivers = match self.object_type {
             ObjectType::Map => {
                 vec![
@@ -67,6 +68,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         func: crate::driver::DriverState::MapSinglePut {
                             request_count: 2,
                             key: "key".to_owned(),
+                            value: value.clone(),
                         },
                     },
                     Driver {
@@ -83,6 +85,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         func: crate::driver::DriverState::ListStartPut {
                             request_count: 2,
                             index: 0,
+                            value: value.clone(),
                         },
                     },
                     Driver {
@@ -95,6 +98,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         func: crate::driver::DriverState::ListInsert {
                             request_count: INSERT_REQUEST_COUNT,
                             index: 0,
+                            value: value.clone(),
                         },
                     },
                 ]

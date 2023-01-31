@@ -38,11 +38,11 @@ impl Application for App {
 
     fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
         match input {
-            DriverMsg::MapSinglePut { key } => self.map_single_putter.execute(document, key),
+            DriverMsg::MapSinglePut { key, value } => self.map_single_putter.execute(document, (key, value)),
             DriverMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),
-            DriverMsg::ListPut { index } => self.list_start_putter.execute(document, index),
+            DriverMsg::ListPut { index, value } => self.list_start_putter.execute(document, (index, value)),
+            DriverMsg::ListInsert { index, value } => self.list_inserter.execute(document, (index, value)),
             DriverMsg::ListDelete { index } => self.list_deleter.execute(document, index),
-            DriverMsg::ListInsert { index } => self.list_inserter.execute(document, index),
         }
     }
 }

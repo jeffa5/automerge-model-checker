@@ -9,20 +9,38 @@ pub struct Driver {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DriverState {
-    MapSinglePut { request_count: usize, key: String },
-    MapSingleDelete { request_count: usize, key: String },
-    ListStartPut { request_count: usize, index: usize },
-    ListDelete { request_count: usize, index: usize },
-    ListInsert { request_count: usize, index: usize },
+    MapSinglePut {
+        request_count: usize,
+        key: String,
+        value: String,
+    },
+    MapSingleDelete {
+        request_count: usize,
+        key: String,
+    },
+    ListStartPut {
+        request_count: usize,
+        index: usize,
+        value: String,
+    },
+    ListInsert {
+        request_count: usize,
+        index: usize,
+        value: String,
+    },
+    ListDelete {
+        request_count: usize,
+        index: usize,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DriverMsg {
-    MapSinglePut { key: String },
+    MapSinglePut { key: String, value: String },
     MapSingleDelete { key: String },
-    ListPut { index: usize },
+    ListPut { index: usize, value: String },
+    ListInsert { index: usize, value: String },
     ListDelete { index: usize },
-    ListInsert { index: usize },
 }
 
 impl Drive<App> for Driver {
@@ -36,9 +54,16 @@ impl Drive<App> for Driver {
         Vec<<App as amc::prelude::Application>::Input>,
     ) {
         match &self.func {
-            DriverState::MapSinglePut { request_count, key } => {
+            DriverState::MapSinglePut {
+                request_count,
+                key,
+                value,
+            } => {
                 let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::MapSinglePut { key: key.clone() })
+                    .map(|_| DriverMsg::MapSinglePut {
+                        key: key.clone(),
+                        value: value.clone(),
+                    })
                     .collect();
                 ((), msgs)
             }
@@ -51,9 +76,13 @@ impl Drive<App> for Driver {
             DriverState::ListStartPut {
                 request_count,
                 index,
+                value,
             } => {
                 let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::ListPut { index: *index })
+                    .map(|_| DriverMsg::ListPut {
+                        index: *index,
+                        value: value.clone(),
+                    })
                     .collect();
                 ((), msgs)
             }
@@ -69,9 +98,13 @@ impl Drive<App> for Driver {
             DriverState::ListInsert {
                 request_count,
                 index,
+                value,
             } => {
                 let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::ListInsert { index: *index })
+                    .map(|_| DriverMsg::ListInsert {
+                        index: *index,
+                        value: value.clone(),
+                    })
                     .collect();
                 ((), msgs)
             }

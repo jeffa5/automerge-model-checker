@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::app::AppState;
 
 use super::Application;
@@ -7,7 +9,7 @@ use super::Application;
 pub struct ListInserter;
 
 impl Application for ListInserter {
-    type Input = usize;
+    type Input = (usize, String);
 
     type Output = ();
 
@@ -17,12 +19,7 @@ impl Application for ListInserter {
         AppState::new(id)
     }
 
-    fn execute(
-        &self,
-        document: &mut std::borrow::Cow<Self::State>,
-        input: Self::Input,
-    ) -> Self::Output {
-        let value = 'A';
-        document.to_mut().insert(input, value.to_string());
+    fn execute(&self, document: &mut Cow<Self::State>, (index, value): Self::Input) -> Self::Output {
+        document.to_mut().insert(index, value);
     }
 }
