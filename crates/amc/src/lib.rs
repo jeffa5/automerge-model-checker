@@ -9,6 +9,8 @@
 
 mod bytes;
 mod client;
+/// Combinators for making drivers.
+pub mod combinators;
 mod document;
 mod drive;
 mod server;

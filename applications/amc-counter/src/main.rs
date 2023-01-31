@@ -7,6 +7,8 @@
 use amc::application::Application;
 use amc::application::DerefDocument;
 use amc::application::Document;
+use amc::combinators::Repeat;
+use amc::combinators::Repeater;
 use amc::driver::ApplicationMsg;
 use amc::driver::Drive;
 use amc::global::GlobalActor;
@@ -126,10 +128,10 @@ struct Driver {
 /// Action for the application to perform.
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 enum DriverFunc {
-    /// Number of times to send an increment.
-    Inc(u8),
-    /// Number of times to send a decrement.
-    Dec(u8),
+    /// Send an increment.
+    Inc,
+    /// Send a decrement.
+    Dec,
 }
 
 impl Drive<Counter> for Driver {
@@ -143,12 +145,12 @@ impl Drive<Counter> for Driver {
         Vec<<Counter as Application>::Input>,
     ) {
         match self.func {
-            DriverFunc::Inc(n) => {
-                let msgs = (0..n).map(|_| CounterMsg::Increment).collect();
+            DriverFunc::Inc => {
+                let msgs = vec![CounterMsg::Increment];
                 ((), msgs)
             }
-            DriverFunc::Dec(n) => {
-                let msgs = (0..n).map(|_| CounterMsg::Decrement).collect();
+            DriverFunc::Dec => {
+                let msgs = vec![CounterMsg::Decrement];
                 ((), msgs)
             }
         }
@@ -192,7 +194,7 @@ struct Args {
 impl ModelBuilder for CounterOpts {
     type App = Counter;
 
-    type Driver = Driver;
+    type Driver = Repeater<Driver>;
 
     type Config = Config;
 
@@ -209,11 +211,13 @@ impl ModelBuilder for CounterOpts {
     fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
         vec![
             Driver {
-                func: DriverFunc::Inc(self.increments),
-            },
+                func: DriverFunc::Inc,
+            }
+            .repeat(self.increments),
             Driver {
-                func: DriverFunc::Dec(self.decrements),
-            },
+                func: DriverFunc::Dec,
+            }
+            .repeat(self.decrements),
         ]
     }
 
@@ -233,7 +237,7 @@ impl ModelBuilder for CounterOpts {
         >,
     > {
         type Prop =
-            Property<ActorModel<GlobalActor<Counter, Driver>, Config, Vec<GlobalMsg<Counter>>>>;
+            Property<ActorModel<GlobalActor<Counter, Repeater<Driver>>, Config, Vec<GlobalMsg<Counter>>>>;
         vec![Prop::always("correct value", |_model, state| {
             // When states are in sync, they should have the value of the counter matching that of
             // the combination of increments and decrements.
