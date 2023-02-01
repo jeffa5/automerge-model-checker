@@ -74,7 +74,7 @@ def main():
 
     a = sns.relplot(df, x="depth", y="duration_ms", hue="run_cmd", kind="line", marker='o')
     a.set(xlabel="Depth")
-    a.set(ylabel="Duration (s)")
+    a.set(ylabel="Duration (ms)")
     plt.show()
 
 
