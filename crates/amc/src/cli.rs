@@ -129,6 +129,15 @@ impl RunArgs {
                     if finished {
                         break;
                     }
+                    if max_depth != checker.max_depth() {
+                        debug!(
+                            max_depth,
+                            checker_max_depth = checker.max_depth(),
+                            "Did not reach max depth limit"
+                        );
+                        println!("Exhausted model");
+                        break;
+                    }
                 }
             }
             Runner::CheckBfs => {
