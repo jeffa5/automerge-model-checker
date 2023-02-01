@@ -37,4 +37,10 @@ run amc-todo check-iterative --initial-change
 run amc-todo check-iterative --initial-change --random-ids
 
 info automerge
-run amc-automerge check-iterative
+run amc-automerge check-iterative --bytes
+run amc-automerge check-iterative --string
+run amc-automerge check-iterative --int
+run amc-automerge check-iterative --uint
+run amc-automerge check-iterative --timestamp
+run amc-automerge check-iterative --boolean
+run amc-automerge check-iterative --null
