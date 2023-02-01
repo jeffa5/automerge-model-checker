@@ -175,10 +175,10 @@ struct CounterOpts {
     #[clap(long, global = true)]
     initial_change: bool,
 
-    #[clap(long, global = true, default_value = "2")]
+    #[clap(long, global = true, default_value = "1")]
     increments: u8,
 
-    #[clap(long, global = true, default_value = "2")]
+    #[clap(long, global = true, default_value = "1")]
     decrements: u8,
 }
 
