@@ -19,7 +19,11 @@ impl Application for ListInserter {
         AppState::new(id)
     }
 
-    fn execute(&self, document: &mut Cow<Self::State>, (index, value): Self::Input) -> Self::Output {
+    fn execute(
+        &self,
+        document: &mut Cow<Self::State>,
+        (index, value): Self::Input,
+    ) -> Self::Output {
         document.to_mut().insert(index, value);
     }
 }
