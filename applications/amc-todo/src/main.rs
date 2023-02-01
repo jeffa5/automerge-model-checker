@@ -105,18 +105,20 @@ impl amc::model::ModelBuilder for TodoOptions {
                     return true;
                 }
 
-                let mut expected_task_count = 0;
+                let mut present_tasks = Vec::new();
 
                 for (i, o) in &state.history {
                     match (i.input(), o.output()) {
                         (Some(req), Some(res)) => match (req, res) {
-                            (AppInput::CreateTodo(_), AppOutput::CreateTodo(_)) => {
-                                expected_task_count += 1;
+                            (AppInput::CreateTodo(_), AppOutput::CreateTodo(id)) => {
+                                present_tasks.push(id);
                             }
                             (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {}
-                            (AppInput::DeleteTodo(_), AppOutput::DeleteTodo(was_present)) => {
-                                if *was_present {
-                                    expected_task_count -= 1;
+                            (AppInput::DeleteTodo(id), AppOutput::DeleteTodo(_)) => {
+                                if let Some(index_to_remove) =
+                                    present_tasks.iter().position(|&x| x == id)
+                                {
+                                    present_tasks.swap_remove(index_to_remove);
                                 }
                             }
                             (AppInput::Update(_id, _text), AppOutput::Update(_success)) => {}
@@ -129,6 +131,7 @@ impl amc::model::ModelBuilder for TodoOptions {
                     }
                 }
 
+                let expected_task_count = present_tasks.len();
                 state.actor_states.iter().all(|s| {
                     if let GlobalActorState::Server(s) = &**s {
                         s.num_todos() == expected_task_count
