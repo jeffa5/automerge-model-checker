@@ -219,78 +219,78 @@ mod tests {
         );
     }
 
-    // TODO: enable this once we can get it quick enough
-    // #[test]
-    // fn random_ids_partial_fix() {
-    //     let model_opts = ModelOpts {
-    //         servers: 2,
-    //         sync_method: SyncMethod::Changes,
-    //         in_sync_check: false,
-    //         save_load_check: false,
-    //         error_free_check: false,
-    //     };
-    //     let todo_opts = TodoOptions {
-    //         random_ids: true,
-    //         initial_change: false,
-    //     };
-    //
-    //     check(
-    //         model_opts,
-    //         todo_opts,
-    //         expect![[r#"
-    //             {
-    //                 "correct value": [
-    //                     Deliver {
-    //                         src: Id(2),
-    //                         dst: Id(0),
-    //                         msg: ClientToServer(
-    //                             Input(
-    //                                 Increment,
-    //                             ),
-    //                         ),
-    //                     },
-    //                     Deliver {
-    //                         src: Id(4),
-    //                         dst: Id(1),
-    //                         msg: ClientToServer(
-    //                             Input(
-    //                                 Increment,
-    //                             ),
-    //                         ),
-    //                     },
-    //                     Timeout(
-    //                         Id(0),
-    //                     ),
-    //                     Deliver {
-    //                         src: Id(0),
-    //                         dst: Id(1),
-    //                         msg: ServerToServer(
-    //                             SyncChangeRaw {
-    //                                 missing_changes_bytes: [
-    //                                     "hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-    //                                 ],
-    //                             },
-    //                         ),
-    //                     },
-    //                     Timeout(
-    //                         Id(1),
-    //                     ),
-    //                     Deliver {
-    //                         src: Id(1),
-    //                         dst: Id(0),
-    //                         msg: ServerToServer(
-    //                             SyncChangeRaw {
-    //                                 missing_changes_bytes: [
-    //                                     "hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-    //                                 ],
-    //                             },
-    //                         ),
-    //                     },
-    //                 ],
-    //             }
-    //         "#]],
-    //     );
-    // }
+    #[ignore]
+    #[test]
+    fn random_ids_partial_fix() {
+        let model_opts = ModelOpts {
+            servers: 2,
+            sync_method: SyncMethod::Changes,
+            in_sync_check: false,
+            save_load_check: false,
+            error_free_check: false,
+        };
+        let todo_opts = TodoOptions {
+            random_ids: true,
+            initial_change: false,
+        };
+
+        amc_test::check_bfs(
+            model_opts,
+            todo_opts,
+            expect![[r#"
+                {
+                    "correct value": [
+                        Deliver {
+                            src: Id(2),
+                            dst: Id(0),
+                            msg: ClientToServer(
+                                Input(
+                                    Increment,
+                                ),
+                            ),
+                        },
+                        Deliver {
+                            src: Id(4),
+                            dst: Id(1),
+                            msg: ClientToServer(
+                                Input(
+                                    Increment,
+                                ),
+                            ),
+                        },
+                        Timeout(
+                            Id(0),
+                        ),
+                        Deliver {
+                            src: Id(0),
+                            dst: Id(1),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
+                                    ],
+                                },
+                            ),
+                        },
+                        Timeout(
+                            Id(1),
+                        ),
+                        Deliver {
+                            src: Id(1),
+                            dst: Id(0),
+                            msg: ServerToServer(
+                                SyncChangeRaw {
+                                    missing_changes_bytes: [
+                                        "hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
+                                    ],
+                                },
+                            ),
+                        },
+                    ],
+                }
+            "#]],
+        );
+    }
 
     #[test]
     fn intial_change_partial_fix() {
@@ -322,27 +322,27 @@ mod tests {
         );
     }
 
-    // TODO: enable this when it gets quick enough
-    // #[test]
-    // fn both_fixes() {
-    //     let model_opts = ModelOpts {
-    //         servers: 2,
-    //         sync_method: SyncMethod::Changes,
-    //         in_sync_check: false,
-    //         save_load_check: false,
-    //         error_free_check: false,
-    //     };
-    //     let counter_opts = TodoOptions {
-    //         random_ids: true,
-    //         initial_change: true,
-    //     };
-    //
-    //     check(
-    //         model_opts,
-    //         counter_opts,
-    //         expect![[r#"
-    //             {}
-    //         "#]],
-    //     );
-    // }
+    #[ignore]
+    #[test]
+    fn both_fixes() {
+        let model_opts = ModelOpts {
+            servers: 2,
+            sync_method: SyncMethod::Changes,
+            in_sync_check: false,
+            save_load_check: false,
+            error_free_check: false,
+        };
+        let counter_opts = TodoOptions {
+            random_ids: true,
+            initial_change: true,
+        };
+
+        amc_test::check_bfs(
+            model_opts,
+            counter_opts,
+            expect![[r#"
+                {}
+            "#]],
+        );
+    }
 }
