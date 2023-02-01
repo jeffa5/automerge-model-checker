@@ -40,7 +40,7 @@ def main():
 
     results = []
     for resdir in os.listdir(results_dir):
-        with open(os.path.join(results_dir, resdir), "r", encoding="utf-8") as resfile:
+        with open(os.path.join(results_dir, resdir, "out"), "r", encoding="utf-8") as resfile:
             for line in resfile.readlines():
                 line = line.strip()
                 if not line.startswith("Done"):
