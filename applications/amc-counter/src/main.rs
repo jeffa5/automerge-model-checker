@@ -304,9 +304,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
-    use amc::{application::server::SyncMethod, model::ModelOpts};
+    use amc::{application::server::SyncMethod, model::ModelOpts, report::TestReporter};
     use stateright::{Checker, Model};
 
     use expect_test::{expect, Expect};
@@ -315,15 +313,9 @@ mod tests {
 
     fn check(model_opts: ModelOpts, counter_opts: CounterOpts, expected: Expect) {
         let model = model_opts.to_model(&counter_opts);
-        let checker = model.checker().spawn_bfs().join();
-
-        let discoveries: BTreeMap<_, _> = checker
-            .discoveries()
-            .into_iter()
-            .map(|(n, p)| (n, p.into_actions()))
-            .collect();
-
-        expected.assert_debug_eq(&discoveries);
+        let mut reporter = TestReporter::default();
+        model.checker().spawn_bfs().report(&mut reporter).join();
+        expected.assert_eq(&reporter.data);
     }
 
     #[test]
@@ -346,57 +338,15 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-            {
-                "correct value": [
-                    Deliver {
-                        src: Id(2),
-                        dst: Id(0),
-                        msg: ClientToServer(
-                            Input(
-                                Increment,
-                            ),
-                        ),
-                    },
-                    Deliver {
-                        src: Id(4),
-                        dst: Id(1),
-                        msg: ClientToServer(
-                            Input(
-                                Increment,
-                            ),
-                        ),
-                    },
-                    Timeout(
-                        Id(0),
-                    ),
-                    Deliver {
-                        src: Id(0),
-                        dst: Id(1),
-                        msg: ServerToServer(
-                            SyncChangeRaw {
-                                missing_changes_bytes: [
-                                    "hW9Kg9HytnIBLQAIAAAAAAAAAAABAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA",
-                                ],
-                            },
-                        ),
-                    },
-                    Timeout(
-                        Id(1),
-                    ),
-                    Deliver {
-                        src: Id(1),
-                        dst: Id(0),
-                        msg: ServerToServer(
-                            SyncChangeRaw {
-                                missing_changes_bytes: [
-                                    "hW9Kg37mM9cBLQAIAAAAAAAAAAEBAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA",
-                                ],
-                            },
-                        ),
-                    },
-                ],
-            }
-        "#]],
+                Done states=7810, unique=2793, max_depth=7
+                Discovered "correct value" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg9HytnIBLQAIAAAAAAAAAAABAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg37mM9cBLQAIAAAAAAAAAAEBAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
+                To explore this path try re-running with `explore 12586295122497767706/10532121986310608739/4594617407493338948/16928188289055674841/14287108221676609114/17121499248988355341/12817064365569736558`"#]],
         );
     }
 
@@ -420,57 +370,15 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                {
-                    "correct value": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(4),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=7810, unique=2793, max_depth=7
+                Discovered "correct value" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
+                To explore this path try re-running with `explore 12586295122497767706/10523655236178006975/4817824121712768443/2353486163341217474/470983902780759494/3940016343886851216/11973647857737093227`"#]],
         );
     }
 
@@ -494,57 +402,15 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                {
-                    "correct value": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(4),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg/YbISQBXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAAECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg7tkl20BXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAQECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=7810, unique=2793, max_depth=7
+                Discovered "correct value" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg/YbISQBXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAAECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7tkl20BXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAQECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
+                To explore this path try re-running with `explore 11851034823671676899/5803437920469526979/12506160443869374158/5589695348560030457/15235376469677352807/12358122021797399281/14218684217226664515`"#]],
         );
     }
 
@@ -568,7 +434,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                {}
+                Done states=352659, unique=64929, max_depth=17
             "#]],
         );
     }

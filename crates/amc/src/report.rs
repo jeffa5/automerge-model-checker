@@ -65,3 +65,47 @@ where
         }
     }
 }
+
+/// Reporter that only reports the final status with a stable output for use in tests.
+#[derive(Default)]
+pub struct TestReporter {
+    /// Data collected by the reporter.
+    pub data: String,
+}
+
+impl<M> stateright::report::Reporter<M> for TestReporter
+where
+    M: Model,
+{
+    fn report_checking(&mut self, data: stateright::report::ReportData) {
+        if !data.done {
+            return;
+        }
+
+        self.data.push_str(&format!(
+            "Done states={}, unique={}, max_depth={}\n",
+            data.total_states, data.unique_states, data.max_depth,
+        ));
+    }
+
+    fn report_discoveries(
+        &mut self,
+        discoveries: HashMap<&'static str, stateright::report::ReportDiscovery<M>>,
+    ) where
+        <M as Model>::Action: std::fmt::Debug,
+        <M as Model>::State: std::fmt::Debug,
+        <M as Model>::State: Hash,
+    {
+        let discoveries: BTreeMap<_, _> = discoveries.into_iter().collect();
+        for (name, discovery) in discoveries {
+            self.data.push_str(&format!(
+                "Discovered \"{}\" {} {}",
+                name, discovery.classification, discovery.path,
+            ));
+            self.data.push_str(&format!(
+                "To explore this path try re-running with `explore {}`",
+                discovery.path.encode()
+            ));
+        }
+    }
+}
