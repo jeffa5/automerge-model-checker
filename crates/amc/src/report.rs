@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::time::Duration;
 
 use num_format::SystemLocale;
 use num_format::ToFormattedString;
@@ -26,9 +25,9 @@ where
         let max_depth = data.max_depth;
         let status = if data.done { "Done    " } else { "Checking" };
         let locale = SystemLocale::default().unwrap();
-        let duration = Duration::new(data.duration.as_secs(), 0);
+        let duration = data.duration.as_millis();
         println!(
-            "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), max_depth={}, duration={:?}",
+            "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), max_depth={}, duration={:?}ms",
             status,
             data.total_states.to_formatted_string(&locale),
             new_total.to_formatted_string(&locale),

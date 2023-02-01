@@ -21,14 +21,20 @@ class Results:
     states: int
     unique: int
     depth: int
-    duration_s: int
+    duration_ms: int
 
 
 def to_latex_table(results: List[Results]) -> str:
     """Convert list of results to a latex table."""
-    lines = [f"{r.states} & {r.unique} & {r.depth} & {r.duration_s}" for r in results]
+    lines = [f"{r.states} & {r.unique} & {r.depth} & {r.duration_ms}" for r in results]
     return "\n".join(lines)
 
+def is_float(s:str) -> bool:
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 def main():
     results_dir = "results"
@@ -40,16 +46,16 @@ def main():
                 line = line.strip()
                 if not line.startswith("Done"):
                     continue
-                parts = [re.sub("[,ns]+", "", x) for x in re.split(r"[ =]+", line) if x]
-                nums = [int(x) for x in parts if x.isdigit()]
+                parts = [re.sub("[,mns]+", "", x) for x in re.split(r"[ =]+", line) if x]
+                nums = [float(x) for x in parts if is_float(x)]
                 assert len(nums) == 4
                 states = nums[0]
                 unique = nums[1]
                 depth = nums[2]
-                duration_s = nums[3]
-                results.append((resdir, states, unique, depth, duration_s))
+                duration_ms = nums[3]
+                results.append((resdir, states, unique, depth, duration_ms))
 
-    df = pd.DataFrame(results, columns = ["run_cmd", "states", "unique", "depth", "duration_s"])
+    df = pd.DataFrame(results, columns = ["run_cmd", "states", "unique", "depth", "duration_ms"])
     df.set_index("run_cmd", inplace=True)
     print(df)
 
@@ -66,7 +72,7 @@ def main():
     a.set(ylabel="Total states")
     plt.show()
 
-    a = sns.relplot(df, x="depth", y="duration_s", hue="run_cmd", kind="line", marker='o')
+    a = sns.relplot(df, x="depth", y="duration_ms", hue="run_cmd", kind="line", marker='o')
     a.set(xlabel="Depth")
     a.set(ylabel="Duration (s)")
     plt.show()
