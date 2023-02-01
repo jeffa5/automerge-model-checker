@@ -210,15 +210,15 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=55117, unique=22075, max_depth=7
+                Done states=1678, unique=651, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg2FFLKgBTwAIAAAAAAAAAAABAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7dZRG8BTwAIAAAAAAAAAAEBAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 15452957160119689351/2382815500850056710/8111381211804313161/3626831637270537747/15919421438256274104/10561930214489353045/3860228754695809727`"#]],
+                To explore this path try re-running with `explore 8834054245916827928/2711285872498653153/1881594481882534608/3574177192691817672/15313835021245131647/11164681738517205339/2419102392726606731`"#]],
         );
     }
 
@@ -240,15 +240,15 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=68430, unique=29147, max_depth=7
+                Done states=2157, unique=856, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kgwgf+QYBWAAIAAAAAAAAAAABAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzQ0MjI0MTQwNwljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7WbvTIBWAAIAAAAAAAAAAEBAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzU0MzE0NDU0NQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 15452957160119689351/12382573908977832907/18145475013656775376/10648721681414430409/3627556555054181984/3972318222558024843/1755286072116325268`"#]],
+                To explore this path try re-running with `explore 8834054245916827928/13803142587272929732/12910559937317636747/9372264707866864915/4057633810598148725/13349169562147048614/14621510963469290164`"#]],
         );
     }
 
@@ -270,15 +270,15 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=55117, unique=22075, max_depth=7
+                Done states=1678, unique=651, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9KgxyNDm8BbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAAECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg75sovgBbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAQECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
-                To explore this path try re-running with `explore 16996445121915788513/15048590559404185920/10822610882158225664/17700366276199367581/8763046345997887752/3447151373637425228/5534433402016584600`"#]],
+                To explore this path try re-running with `explore 1766162618599153337/16058784185849688961/4571219151017098578/12028928343021117232/18346254702243812579/7243911262121863261/6612536647059921398`"#]],
         );
     }
 
