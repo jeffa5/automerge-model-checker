@@ -7,7 +7,6 @@ Plot the benchmark results.
 import os
 import re
 from dataclasses import dataclass
-from pprint import pprint
 import matplotlib.pyplot as plt
 from typing import List
 import pandas as pd
