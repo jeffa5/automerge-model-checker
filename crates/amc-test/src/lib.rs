@@ -13,6 +13,6 @@ where
 {
     let model = model_opts.to_model(&app_opts);
     let mut reporter = TestReporter::default();
-    model.checker().spawn_bfs().report(&mut reporter).join();
+    model.checker().spawn_bfs().join_and_report(&mut reporter);
     expected.assert_eq(&reporter.data);
 }
