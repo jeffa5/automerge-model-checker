@@ -67,12 +67,12 @@ impl amc::model::ModelBuilder for TodoOptions {
             Driver {
                 func: DriverState::Creater,
             },
-            Driver {
-                func: DriverState::Updater,
-            },
-            Driver {
-                func: DriverState::Toggler,
-            },
+            // Driver {
+            //     func: DriverState::Updater,
+            // },
+            // Driver {
+            //     func: DriverState::Toggler,
+            // },
             Driver {
                 func: DriverState::Deleter,
             },
