@@ -61,6 +61,11 @@
         cargo-flamegraph
         cargo-release
         cargo-semver-checks
+
+        python3
+        python3Packages.pandas
+        python3Packages.matplotlib
+        python3Packages.seaborn
       ];
     };
   };
