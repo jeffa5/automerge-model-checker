@@ -212,14 +212,13 @@ mod tests {
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Timeout(Id(0), Server(Synchronise))
-                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg2FFLKgBTwAIAAAAAAAAAAABAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
-                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
-                To explore this path try re-running with `explore 15452957160119689351/3210042352026110368/18396006589142099424/10246799946254443721/10312886345779638499/18143704973132934324/11380457927101504841`"#]],
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7dZRG8BTwAIAAAAAAAAAAEBAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
+                To explore this path try re-running with `explore 15452957160119689351/2382815500850056710/8111381211804313161/3626831637270537747/15919421438256274104/10561930214489353045/3860228754695809727`"#]],
         );
     }
 
-    #[ignore]
     #[test]
     fn random_ids_partial_fix() {
         let model_opts = ModelOpts {
@@ -238,57 +237,15 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                {
-                    "correct value": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(4),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    Increment,
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=68430, unique=29147, max_depth=7
+                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kgwgf+QYBWAAIAAAAAAAAAAABAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzQ0MjI0MTQwNwljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7WbvTIBWAAIAAAAAAAAAAEBAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzU0MzE0NDU0NQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
+                To explore this path try re-running with `explore 15452957160119689351/12382573908977832907/18145475013656775376/10648721681414430409/3627556555054181984/3972318222558024843/1755286072116325268`"#]],
         );
     }
 
@@ -315,10 +272,10 @@ mod tests {
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Timeout(Id(0), Server(Synchronise))
-                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9KgxyNDm8BbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAAECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
-                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
-                To explore this path try re-running with `explore 15452957160119689351/3210042352026110368/18396006589142099424/10246799946254443721/10312886345779638499/18143704973132934324/11380457927101504841`"#]],
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg75sovgBbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAQECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
+                To explore this path try re-running with `explore 16996445121915788513/15048590559404185920/10822610882158225664/17700366276199367581/8763046345997887752/3447151373637425228/5534433402016584600`"#]],
         );
     }
 
