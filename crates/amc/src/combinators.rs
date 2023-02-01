@@ -11,9 +11,9 @@ pub struct Repeater<D> {
 
 /// State for the repeater.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct RepeaterState<D: Clone + 'static> {
-    inner: Cow<'static, D>,
-    finished_repeats: u8,
+pub struct RepeaterState<S: Clone + 'static> {
+    inner: S,
+    current_repeat: u8,
     application_id: usize,
 }
 
@@ -31,8 +31,8 @@ where
     ) -> (<Self as Drive<A>>::State, Vec<<A as Application>::Input>) {
         let (inner, inputs) = self.driver.init(application_id);
         let state = RepeaterState {
-            inner: Cow::Owned(inner),
-            finished_repeats: 0,
+            inner,
+            current_repeat: 0,
             application_id,
         };
         (state, inputs)
@@ -43,14 +43,21 @@ where
         state: &mut std::borrow::Cow<Self::State>,
         output: <A as Application>::Output,
     ) -> Vec<<A as Application>::Input> {
-        let state = state.to_mut();
-        let generated_inputs = self.driver.handle_output(&mut state.inner, output);
+        let mut inner_state = Cow::Borrowed(&state.inner);
+        let generated_inputs = self.driver.handle_output(&mut inner_state, output);
+        if let Cow::Owned(inner_state) = inner_state {
+            *state = Cow::Owned(RepeaterState {
+                inner: inner_state,
+                current_repeat: state.current_repeat,
+                application_id: state.application_id,
+            })
+        }
         if generated_inputs.is_empty() {
             // no changes, try to repeat
-            state.finished_repeats += 1;
-            if state.finished_repeats != self.repeats {
+            if state.current_repeat + 1 != self.repeats {
                 let (driver_state, new_inputs) = self.driver.init(state.application_id);
-                state.inner = Cow::Owned(driver_state);
+                state.to_mut().current_repeat += 1;
+                state.to_mut().inner = driver_state;
                 return new_inputs;
             }
         }

@@ -331,7 +331,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=7810, unique=2793, max_depth=7
+                Done states=2045, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -363,7 +363,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=7810, unique=2793, max_depth=7
+                Done states=2045, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -395,7 +395,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=7810, unique=2793, max_depth=7
+                Done states=2045, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -427,7 +427,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=352659, unique=64929, max_depth=17
+                Done states=16775, unique=4649, max_depth=13
             "#]],
         );
     }
