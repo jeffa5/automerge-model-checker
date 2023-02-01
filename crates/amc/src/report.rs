@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::hash::Hash;
 
 use num_format::SystemLocale;
@@ -45,7 +44,7 @@ where
 
     fn report_discoveries(
         &mut self,
-        discoveries: HashMap<&'static str, stateright::report::ReportDiscovery<M>>,
+        discoveries: BTreeMap<&'static str, stateright::report::ReportDiscovery<M>>,
     ) where
         <M as Model>::Action: std::fmt::Debug,
         <M as Model>::State: std::fmt::Debug,
@@ -89,7 +88,7 @@ where
 
     fn report_discoveries(
         &mut self,
-        discoveries: HashMap<&'static str, stateright::report::ReportDiscovery<M>>,
+        discoveries: BTreeMap<&'static str, stateright::report::ReportDiscovery<M>>,
     ) where
         <M as Model>::Action: std::fmt::Debug,
         <M as Model>::State: std::fmt::Debug,

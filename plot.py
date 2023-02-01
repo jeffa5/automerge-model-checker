@@ -77,6 +77,5 @@ def main():
     a.set(ylabel="Duration (ms)")
     plt.show()
 
-
 if __name__ == "__main__":
     main()
