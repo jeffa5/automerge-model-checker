@@ -254,27 +254,11 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use amc::{application::server::SyncMethod, model::ModelOpts};
-    use stateright::{Checker, Model};
 
-    use expect_test::{expect, Expect};
+    use expect_test::expect;
 
     use super::*;
-
-    fn check(model_opts: ModelOpts, moves_opts: MovesOpts, expected: Expect) {
-        let model = model_opts.to_model(&moves_opts);
-        let checker = model.checker().spawn_bfs().join();
-
-        let discoveries: BTreeMap<_, _> = checker
-            .discoveries()
-            .into_iter()
-            .map(|(n, p)| (n, p.into_actions()))
-            .collect();
-
-        expected.assert_debug_eq(&discoveries);
-    }
 
     #[test]
     fn fully_broken() {
@@ -287,67 +271,19 @@ mod tests {
         };
         let moves_opts = MovesOpts { initial_size: 1 };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             moves_opts,
             expect![[r#"
-                {
-                    "no duplicates when in sync": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    Move(
-                                        0,
-                                        0,
-                                    ),
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(4),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    Move(
-                                        0,
-                                        0,
-                                    ),
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg4uoy0wBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAAEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=850, unique=289, max_depth=7
+                Discovered "no duplicates when in sync" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Move(0, 0))) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Move(0, 0))) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg4uoy0wBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAAEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
+                To explore this path try re-running with `explore 8254865953802481250/15134007679214237126/1854148942347951330/7054574326594983179/10220315455194759674/4959537383118375197/16542431495947621425`"#]],
         );
     }
 
@@ -362,78 +298,20 @@ mod tests {
         };
         let moves_opts = MovesOpts { initial_size: 1 };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             moves_opts,
             expect![[r#"
-                {
-                    "no duplicates when in sync": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    Move(
-                                        0,
-                                        0,
-                                    ),
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(4),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    Move(
-                                        0,
-                                        0,
-                                    ),
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncMessageRaw {
-                                    message_bytes: "QgGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowABAAYCCgcCvF8A",
-                                },
-                            ),
-                        },
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncMessageRaw {
-                                    message_bytes: "QgHv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowEABgIKB8CsVgF0hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI",
-                                },
-                            ),
-                        },
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncMessageRaw {
-                                    message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAEB7+/CuG90nP066zL05yAIIASzVPPkFXOaSi00hcbAw+0FAQoHgj0BdIVvSoOLqMtMAWoBGdv8glVqhIccW7/FPZvzxkEbVnf8cSmJ8LgrA/PQqMcIAAAAAAAAAAABAwAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+An4BAX4DAX4AFmF+AQB/AX8C",
-                                },
-                            ),
-                        },
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncMessageRaw {
-                                    message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAECi6jLTLGdB5Ak9b+C57ufwPd0/mr5qKwjMoZ16C4c7aPv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QAA",
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=37338, unique=17433, max_depth=8
+                Discovered "no duplicates when in sync" counterexample Path[7]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Move(0, 0))) }
+                - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Move(0, 0))) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowABAAYCCgcCvF8A" }) }
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgHv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowEABgIKB8CsVgF0hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI" }) }
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAEB7+/CuG90nP066zL05yAIIASzVPPkFXOaSi00hcbAw+0FAQoHgj0BdIVvSoOLqMtMAWoBGdv8glVqhIccW7/FPZvzxkEbVnf8cSmJ8LgrA/PQqMcIAAAAAAAAAAABAwAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+An4BAX4DAX4AFmF+AQB/AX8C" }) }
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAECi6jLTLGdB5Ak9b+C57ufwPd0/mr5qKwjMoZ16C4c7aPv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QAA" }) }
+                To explore this path try re-running with `explore 8254865953802481250/15134007679214237126/1854148942347951330/14817110740913175525/17285012148065056254/15359434071906971792/11995381388941843489/5980922237718437709`"#]],
         );
     }
 }

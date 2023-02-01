@@ -305,19 +305,11 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use amc::{application::server::SyncMethod, model::ModelOpts, report::TestReporter};
-    use stateright::{Checker, Model};
+    use amc::{application::server::SyncMethod, model::ModelOpts};
 
-    use expect_test::{expect, Expect};
+    use expect_test::expect;
 
     use super::*;
-
-    fn check(model_opts: ModelOpts, counter_opts: CounterOpts, expected: Expect) {
-        let model = model_opts.to_model(&counter_opts);
-        let mut reporter = TestReporter::default();
-        model.checker().spawn_bfs().report(&mut reporter).join();
-        expected.assert_eq(&reporter.data);
-    }
 
     #[test]
     fn fully_broken() {
@@ -335,7 +327,7 @@ mod tests {
             decrements: 1,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             counter_opts,
             expect![[r#"
@@ -367,7 +359,7 @@ mod tests {
             decrements: 1,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             counter_opts,
             expect![[r#"
@@ -399,7 +391,7 @@ mod tests {
             decrements: 1,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             counter_opts,
             expect![[r#"
@@ -431,7 +423,7 @@ mod tests {
             decrements: 1,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             counter_opts,
             expect![[r#"

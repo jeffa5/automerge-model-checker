@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/amc",
+    "crates/amc-test",
     "applications/amc-counter",
     "applications/amc-automerge",
     "applications/amc-todo",

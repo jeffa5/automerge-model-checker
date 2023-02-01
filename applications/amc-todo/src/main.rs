@@ -183,27 +183,11 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use amc::{application::server::SyncMethod, model::ModelOpts};
-    use stateright::{Checker, Model};
 
-    use expect_test::{expect, Expect};
+    use expect_test::expect;
 
     use super::*;
-
-    fn check(model_opts: ModelOpts, todo_opts: TodoOptions, expected: Expect) {
-        let model = model_opts.to_model(&todo_opts);
-        let checker = model.checker().spawn_bfs().join();
-
-        let discoveries: BTreeMap<_, _> = checker
-            .discoveries()
-            .into_iter()
-            .map(|(n, p)| (n, p.into_actions()))
-            .collect();
-
-        expected.assert_debug_eq(&discoveries);
-    }
 
     #[test]
     fn fully_broken() {
@@ -219,65 +203,19 @@ mod tests {
             initial_change: false,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             todo_opts,
             expect![[r#"
-                {
-                    "all apps have the right number of tasks": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    CreateTodo(
-                                        "a",
-                                    ),
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(6),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    CreateTodo(
-                                        "a",
-                                    ),
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=55117, unique=22075, max_depth=7
+                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                To explore this path try re-running with `explore 15452957160119689351/3210042352026110368/18396006589142099424/10246799946254443721/10312886345779638499/18143704973132934324/11380457927101504841`"#]],
         );
     }
 
@@ -368,65 +306,19 @@ mod tests {
             initial_change: true,
         };
 
-        check(
+        amc_test::check_bfs(
             model_opts,
             todo_opts,
             expect![[r#"
-                {
-                    "all apps have the right number of tasks": [
-                        Deliver {
-                            src: Id(2),
-                            dst: Id(0),
-                            msg: ClientToServer(
-                                Input(
-                                    CreateTodo(
-                                        "a",
-                                    ),
-                                ),
-                            ),
-                        },
-                        Deliver {
-                            src: Id(6),
-                            dst: Id(1),
-                            msg: ClientToServer(
-                                Input(
-                                    CreateTodo(
-                                        "a",
-                                    ),
-                                ),
-                            ),
-                        },
-                        Timeout(
-                            Id(0),
-                        ),
-                        Deliver {
-                            src: Id(0),
-                            dst: Id(1),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9KgzEuzhgBZgGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAAEBAAAACAEEAgQVEjQBQgRWBFcBcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA",
-                                    ],
-                                },
-                            ),
-                        },
-                        Timeout(
-                            Id(1),
-                        ),
-                        Deliver {
-                            src: Id(1),
-                            dst: Id(0),
-                            msg: ServerToServer(
-                                SyncChangeRaw {
-                                    missing_changes_bytes: [
-                                        "hW9Kg3oqwacBZgGihieAmuu1Im/vM2WKUP9eOl19e4lwZghwlxtNesBrSggAAAAAAAAAAQEBAAAACAEEAgQVEjQBQgRWBFcBcAIAAQIAAAECAX0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA",
-                                    ],
-                                },
-                            ),
-                        },
-                    ],
-                }
-            "#]],
+                Done states=55117, unique=22075, max_depth=7
+                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Deliver { src: Id(6), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
+                - Timeout(Id(0), Server(Synchronise))
+                - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg3sU3+4BRgAIAAAAAAAAAAABAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                - Timeout(Id(1), Server(Synchronise))
+                - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg1W34z4BRgAIAAAAAAAAAAEBAQAAAAgBBAIEFRI0AUIEVgRXAXACAAECAAABAgF9ATEJY29tcGxldGVkBHRleHQDfwACAX0AARZhAwA"] }) }
+                To explore this path try re-running with `explore 15452957160119689351/3210042352026110368/18396006589142099424/10246799946254443721/10312886345779638499/18143704973132934324/11380457927101504841`"#]],
         );
     }
 

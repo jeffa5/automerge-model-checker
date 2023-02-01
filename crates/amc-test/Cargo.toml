@@ -1,0 +1,11 @@
+[package]
+name = "amc-test"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[dependencies]
+amc = { path = "../amc" }
+expect-test = "1.4.0"
+stateright = "0.29.0"

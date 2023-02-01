@@ -318,6 +318,7 @@ name = "amc-counter"
 version = "0.1.0"
 dependencies = [
  "amc",
+ "amc-test",
  "automerge",
  "clap",
  "expect-test",
@@ -330,6 +331,7 @@ name = "amc-moves"
 version = "0.1.0"
 dependencies = [
  "amc",
+ "amc-test",
  "automerge",
  "clap",
  "expect-test",
@@ -338,10 +340,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "amc-test"
+version = "0.1.0"
+dependencies = [
+ "amc",
+ "expect-test",
+ "stateright",
+]
+
+[[package]]
 name = "amc-todo"
 version = "0.1.0"
 dependencies = [
  "amc",
+ "amc-test",
  "automerge",
  "clap",
  "expect-test",

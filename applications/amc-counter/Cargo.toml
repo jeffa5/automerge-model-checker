@@ -14,3 +14,4 @@ amc = { path = "../../crates/amc" }
 
 [dev-dependencies]
 expect-test = "1.4.0"
+amc-test = { path = "../../crates/amc-test" }
