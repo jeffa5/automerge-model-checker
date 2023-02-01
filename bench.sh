@@ -13,7 +13,7 @@ function info() {
 function run() {
   bin=$1
   shift
-  filename=$@
+  filename="${bin}_$@"
   filename="${filename// /_}"
   out="$results_dir/$filename"
   cmd="cargo run -q --release --bin $bin -- $@ | tee $out"
