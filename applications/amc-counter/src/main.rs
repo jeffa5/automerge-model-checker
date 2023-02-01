@@ -236,8 +236,9 @@ impl ModelBuilder for CounterOpts {
             ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config, Self::History>,
         >,
     > {
-        type Prop =
-            Property<ActorModel<GlobalActor<Counter, Repeater<Driver>>, Config, Vec<GlobalMsg<Counter>>>>;
+        type Prop = Property<
+            ActorModel<GlobalActor<Counter, Repeater<Driver>>, Config, Vec<GlobalMsg<Counter>>>,
+        >;
         vec![Prop::always("correct value", |_model, state| {
             // When states are in sync, they should have the value of the counter matching that of
             // the combination of increments and decrements.
