@@ -5,6 +5,7 @@ Plot the benchmark results.
 """
 
 import os
+import shutil
 import re
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
@@ -59,23 +60,26 @@ def main():
     print(df)
     print(df.dtypes)
 
+    shutil.rmtree("plots", ignore_errors=True)
+    os.makedirs("plots")
+
     a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker='o')
     a.set(xscale="log")
     a.set(yscale="log")
     a.set(xlabel="Total states")
     a.set(ylabel="Unique states")
-    plt.show()
+    plt.savefig("plots/total-vs-unique.pdf")
 
     a = sns.relplot(df, x="depth", y="states", hue="run_cmd", kind="line", marker='o')
     a.set(yscale="log")
     a.set(xlabel="Depth")
     a.set(ylabel="Total states")
-    plt.show()
+    plt.savefig("plots/depth-vs-total.pdf")
 
     a = sns.relplot(df, x="depth", y="duration_ms", hue="run_cmd", kind="line", marker='o')
     a.set(xlabel="Depth")
     a.set(ylabel="Duration (ms)")
-    plt.show()
+    plt.savefig("plots/depth-vs-duration.pdf")
 
 if __name__ == "__main__":
     main()
