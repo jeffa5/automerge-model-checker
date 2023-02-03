@@ -48,15 +48,16 @@ def main():
                 parts = [re.sub("[,mns]+", "", x) for x in re.split(r"[ =]+", line) if x]
                 nums = [float(x) for x in parts if is_float(x)]
                 assert len(nums) == 4
-                states = nums[0]
-                unique = nums[1]
-                depth = nums[2]
+                states = int(nums[0])
+                unique = int(nums[1])
+                depth = int(nums[2])
                 duration_ms = nums[3]
                 results.append((resdir, states, unique, depth, duration_ms))
 
     df = pd.DataFrame(results, columns = ["run_cmd", "states", "unique", "depth", "duration_ms"])
     df.set_index("run_cmd", inplace=True)
     print(df)
+    print(df.dtypes)
 
     a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker='o')
     a.set(xscale="log")
