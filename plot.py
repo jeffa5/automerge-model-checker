@@ -29,24 +29,30 @@ def to_latex_table(results: List[Results]) -> str:
     lines = [f"{r.states} & {r.unique} & {r.depth} & {r.duration_ms}" for r in results]
     return "\n".join(lines)
 
-def is_float(s:str) -> bool:
+
+def is_float(s: str) -> bool:
     try:
         float(s)
         return True
     except ValueError:
         return False
 
+
 def main():
     results_dir = "results"
 
     results = []
     for resdir in os.listdir(results_dir):
-        with open(os.path.join(results_dir, resdir, "out"), "r", encoding="utf-8") as resfile:
+        with open(
+            os.path.join(results_dir, resdir, "out"), "r", encoding="utf-8"
+        ) as resfile:
             for line in resfile.readlines():
                 line = line.strip()
                 if not line.startswith("Done"):
                     continue
-                parts = [re.sub("[,mns]+", "", x) for x in re.split(r"[ =]+", line) if x]
+                parts = [
+                    re.sub("[,mns]+", "", x) for x in re.split(r"[ =]+", line) if x
+                ]
                 nums = [float(x) for x in parts if is_float(x)]
                 assert len(nums) == 4
                 states = int(nums[0])
@@ -55,7 +61,9 @@ def main():
                 duration_ms = nums[3]
                 results.append((resdir, states, unique, depth, duration_ms))
 
-    df = pd.DataFrame(results, columns = ["run_cmd", "states", "unique", "depth", "duration_ms"])
+    df = pd.DataFrame(
+        results, columns=["run_cmd", "states", "unique", "depth", "duration_ms"]
+    )
     df.set_index("run_cmd", inplace=True)
     print(df)
     print(df.dtypes)
@@ -63,23 +71,26 @@ def main():
     shutil.rmtree("plots", ignore_errors=True)
     os.makedirs("plots")
 
-    a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker='o')
+    a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker="o")
     a.set(xscale="log")
     a.set(yscale="log")
     a.set(xlabel="Total states")
     a.set(ylabel="Unique states")
     plt.savefig("plots/total-vs-unique.pdf")
 
-    a = sns.relplot(df, x="depth", y="states", hue="run_cmd", kind="line", marker='o')
+    a = sns.relplot(df, x="depth", y="states", hue="run_cmd", kind="line", marker="o")
     a.set(yscale="log")
     a.set(xlabel="Depth")
     a.set(ylabel="Total states")
     plt.savefig("plots/depth-vs-total.pdf")
 
-    a = sns.relplot(df, x="depth", y="duration_ms", hue="run_cmd", kind="line", marker='o')
+    a = sns.relplot(
+        df, x="depth", y="duration_ms", hue="run_cmd", kind="line", marker="o"
+    )
     a.set(xlabel="Depth")
     a.set(ylabel="Duration (ms)")
     plt.savefig("plots/depth-vs-duration.pdf")
+
 
 if __name__ == "__main__":
     main()

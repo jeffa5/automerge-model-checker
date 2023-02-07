@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+Run benchmarks in different combinations.
+"""
+
 import os
 import shutil
 import subprocess
@@ -10,41 +14,63 @@ RESULTS_DIR = "results"
 
 
 def build():
+    """
+    Build the binaries.
+    """
     subprocess.run(["cargo", "build", "--release"], check=True)
 
 
 def make_results_dir():
+    """
+    Clear and create the results dir.
+    """
     shutil.rmtree(RESULTS_DIR)
     os.makedirs(RESULTS_DIR)
 
 
 @dataclass
 class Config:
+    """
+    Config for benchmark runs.
+    """
+
     bin_name: str
     sync_method: str
     servers: int
     extra_flags: List[str]
 
     def dir(self) -> str:
-        d = f"{self.bin_name}_{self.sync_method}_{self.servers}"
+        """
+        Build the dir name for this config.
+        """
+        directory = f"{self.bin_name}_{self.sync_method}_{self.servers}"
         if self.extra_flags:
-            d += "_"
-            d += "_".join(self.extra_flags)
-        return d
+            directory += "_"
+            directory += "_".join(self.extra_flags)
+        return directory
 
     def to_args(self) -> str:
-        a = f"--sync-method={self.sync_method} --servers={self.servers}"
+        """
+        Convert config to args for running.
+        """
+        args = f"--sync-method={self.sync_method} --servers={self.servers}"
         if self.extra_flags:
-            a += " "
-            a += " ".join([f"--{n}" for n in self.extra_flags])
-        return a
+            args += " "
+            args += " ".join([f"--{n}" for n in self.extra_flags])
+        return args
 
 
 def run(config: Config):
+    """
+    Run a single config.
+    """
     out_dir = os.path.join(RESULTS_DIR, config.dir())
     out_file = os.path.join(out_dir, "out")
     os.makedirs(out_dir)
-    cmd = f"cargo run -q --release --bin {config.bin_name} -- check-iterative {config.to_args()} | tee {out_file}"
+    cmd = (
+        f"cargo run -q --release --bin {config.bin_name} -- "
+        + f"check-iterative {config.to_args()} | tee {out_file}"
+    )
     print("Running command:", cmd)
     subprocess.run(
         cmd,
@@ -54,6 +80,9 @@ def run(config: Config):
 
 
 def main():
+    """
+    Run the benchmarks.
+    """
     build()
     make_results_dir()
 
