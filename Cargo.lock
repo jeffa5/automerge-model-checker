@@ -297,6 +297,7 @@ dependencies = [
  "automerge",
  "base64 0.21.0",
  "clap",
+ "hex",
  "num-format",
  "stateright",
  "tracing",

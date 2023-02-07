@@ -69,9 +69,13 @@ impl Debug for Document {
         let heads = self
             .get_heads()
             .into_iter()
-            .map(|h| h.0)
+            .map(|h| hex::encode(h.0))
             .collect::<Vec<_>>();
-        let last_sent_heads = self.last_sent_heads.iter().map(|h| h.0).collect::<Vec<_>>();
+        let last_sent_heads = self
+            .last_sent_heads
+            .iter()
+            .map(|h| hex::encode(h.0))
+            .collect::<Vec<_>>();
         if self.debug_materialize {
             // todo: materialize
             let v = materialize(&self.am);
