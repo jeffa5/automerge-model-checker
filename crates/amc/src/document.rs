@@ -77,7 +77,6 @@ impl Debug for Document {
             .map(|h| hex::encode(h.0))
             .collect::<Vec<_>>();
         if self.debug_materialize {
-            // todo: materialize
             let v = materialize(&self.am);
             s.field("doc", &v);
         } else {
