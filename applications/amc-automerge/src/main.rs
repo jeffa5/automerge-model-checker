@@ -127,9 +127,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             },
                         },
                         Driver {
-                            func: crate::driver::DriverState::ListDelete {
-                                index: 0,
-                            },
+                            func: crate::driver::DriverState::ListDelete { index: 0 },
                         },
                         Driver {
                             func: crate::driver::DriverState::ListInsert {
@@ -149,15 +147,10 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 },
                             },
                             Driver {
-                                func: crate::driver::DriverState::TextDelete {
-                                    index: 0,
-                                },
+                                func: crate::driver::DriverState::TextDelete { index: 0 },
                             },
                             Driver {
-                                func: crate::driver::DriverState::TextInsert {
-                                    index: 0,
-                                    value: s,
-                                },
+                                func: crate::driver::DriverState::TextInsert { index: 0, value: s },
                             },
                         ]
                     } else {
@@ -165,7 +158,10 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     }
                 }
             };
-            let mut new_drivers = new_drivers.into_iter().map(|d| d.repeat(self.repeats)).collect();
+            let mut new_drivers = new_drivers
+                .into_iter()
+                .map(|d| d.repeat(self.repeats))
+                .collect();
             drivers.append(&mut new_drivers);
         };
         if self.bytes {
