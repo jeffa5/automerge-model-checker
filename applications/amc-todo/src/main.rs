@@ -28,6 +28,14 @@ struct TodoOptions {
     /// Whether to use generate an initial change.
     #[clap(long, global = true)]
     initial_change: bool,
+
+    /// Update existing todos.
+    #[clap(long)]
+    updater: bool,
+
+    /// Toggle todos.
+    #[clap(long)]
+    toggler: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -63,20 +71,25 @@ impl amc::model::ModelBuilder for TodoOptions {
     }
 
     fn drivers(&self, _server: usize) -> Vec<Self::Driver> {
-        vec![
+        let mut drivers = vec![
             Driver {
                 func: DriverState::Creater,
             },
-            // Driver {
-            //     func: DriverState::Updater,
-            // },
-            // Driver {
-            //     func: DriverState::Toggler,
-            // },
             Driver {
                 func: DriverState::Deleter,
             },
-        ]
+        ];
+        if self.updater {
+            drivers.push(Driver {
+                func: DriverState::Updater,
+            });
+        }
+        if self.toggler {
+            drivers.push(Driver {
+                func: DriverState::Toggler,
+            });
+        }
+        drivers
     }
 
     fn config(&self, _model_opts: &amc::model::ModelOpts) -> Self::Config {
@@ -204,6 +217,8 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: false,
             initial_change: false,
+            updater:  false,
+            toggler: false,
         };
 
         amc_test::check_bfs(
@@ -234,6 +249,8 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: true,
             initial_change: false,
+            updater:  false,
+            toggler: false,
         };
 
         amc_test::check_bfs(
@@ -264,6 +281,8 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: false,
             initial_change: true,
+            updater:  false,
+            toggler: false,
         };
 
         amc_test::check_bfs(
@@ -295,6 +314,8 @@ mod tests {
         let counter_opts = TodoOptions {
             random_ids: true,
             initial_change: true,
+            updater:  false,
+            toggler: false,
         };
 
         amc_test::check_bfs(
