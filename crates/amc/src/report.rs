@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 use std::hash::Hash;
+use std::time::Duration;
+use std::time::Instant;
 
 use num_format::SystemLocale;
 use num_format::ToFormattedString;
@@ -10,6 +12,7 @@ use stateright::Model;
 pub struct Reporter {
     last_total: usize,
     last_unique: usize,
+    last_report: Option<Instant>,
 }
 
 impl<M> stateright::report::Reporter<M> for Reporter
@@ -17,6 +20,16 @@ where
     M: Model,
 {
     fn report_checking(&mut self, data: stateright::report::ReportData) {
+        if !data.done {
+            if let Some(last_report) = self.last_report {
+                let time_since_last_report = last_report.elapsed();
+                if time_since_last_report < Duration::from_secs(1) {
+                    return;
+                }
+            }
+            self.last_report = Some(Instant::now());
+        }
+
         let new_total = data.total_states - self.last_total;
         let total_rate = (data.total_states as f64 / data.duration.as_secs_f64()).round() as u64;
         let new_unique = data.unique_states - self.last_unique;
@@ -61,6 +74,10 @@ where
                 discovery.path.encode()
             );
         }
+    }
+
+    fn delay(&self) -> std::time::Duration {
+        std::time::Duration::from_millis(10)
     }
 }
 
