@@ -81,6 +81,10 @@ pub struct ModelOpts {
     #[clap(long, global = true, default_value = "changes")]
     pub sync_method: SyncMethod,
 
+    /// Whether to perform server restarts.
+    #[clap(long, global = true)]
+    pub restarts: bool,
+
     /// Enable checking documents are in sync and don't have any other messages.
     #[clap(long, global = true)]
     pub in_sync_check: bool,
@@ -113,6 +117,7 @@ impl ModelOpts {
             model = model.actor(GlobalActor::Server(Server {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
+                restarts: self.restarts,
                 app: model_builder.application(i),
             }))
         }

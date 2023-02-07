@@ -28,6 +28,8 @@ pub struct Server<A> {
     pub peers: Vec<Id>,
     /// Method to synchronise with peers.
     pub sync_method: SyncMethod,
+    /// Whether to trigger restarts in the application.
+    pub restarts: bool,
     /// Application logic.
     pub app: A,
 }
@@ -80,7 +82,9 @@ impl<A: Application> Actor for Server<A> {
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
         // Start a timer for periodic syncing.
         o.set_timer(GlobalTimer::Server(Timer::Synchronise), model_timeout());
-        o.set_timer(GlobalTimer::Server(Timer::Restart), model_timeout());
+        if self.restarts {
+            o.set_timer(GlobalTimer::Server(Timer::Restart), model_timeout());
+        }
         self.app.init(usize::from(id))
     }
 

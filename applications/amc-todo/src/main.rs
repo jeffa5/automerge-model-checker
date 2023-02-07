@@ -210,6 +210,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -217,7 +218,7 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: false,
             initial_change: false,
-            updater:  false,
+            updater: false,
             toggler: false,
         };
 
@@ -242,6 +243,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -249,7 +251,7 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: true,
             initial_change: false,
-            updater:  false,
+            updater: false,
             toggler: false,
         };
 
@@ -274,6 +276,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -281,7 +284,7 @@ mod tests {
         let todo_opts = TodoOptions {
             random_ids: false,
             initial_change: true,
-            updater:  false,
+            updater: false,
             toggler: false,
         };
 
@@ -307,6 +310,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -314,7 +318,7 @@ mod tests {
         let counter_opts = TodoOptions {
             random_ids: true,
             initial_change: true,
-            updater:  false,
+            updater: false,
             toggler: false,
         };
 

@@ -316,6 +316,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -348,6 +349,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -380,6 +382,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
@@ -412,6 +415,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            restarts: false,
             in_sync_check: false,
             save_load_check: false,
             error_free_check: false,
