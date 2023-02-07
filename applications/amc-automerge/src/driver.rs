@@ -18,7 +18,7 @@ pub enum DriverState {
         request_count: usize,
         key: String,
     },
-    ListStartPut {
+    ListPut {
         request_count: usize,
         index: usize,
         value: ScalarValue,
@@ -32,7 +32,7 @@ pub enum DriverState {
         request_count: usize,
         index: usize,
     },
-    TextStartPut {
+    TextPut {
         request_count: usize,
         index: usize,
         value: String,
@@ -90,7 +90,7 @@ impl Drive<App> for Driver {
                     .collect();
                 ((), msgs)
             }
-            DriverState::ListStartPut {
+            DriverState::ListPut {
                 request_count,
                 index,
                 value,
@@ -125,7 +125,7 @@ impl Drive<App> for Driver {
                     .collect();
                 ((), msgs)
             }
-            DriverState::TextStartPut {
+            DriverState::TextPut {
                 request_count,
                 index,
                 value,

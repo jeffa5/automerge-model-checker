@@ -23,10 +23,10 @@ pub use put::TextPutter;
 pub struct App {
     pub map_single_putter: put::MapSinglePutter,
     pub map_single_deleter: delete::MapSingleDeleter,
-    pub list_start_putter: put::ListPutter,
+    pub list_putter: put::ListPutter,
     pub list_deleter: delete::ListDeleter,
     pub list_inserter: insert::ListInserter,
-    pub text_start_putter: put::TextPutter,
+    pub text_putter: put::TextPutter,
     pub text_deleter: delete::TextDeleter,
     pub text_inserter: insert::TextInserter,
 }
@@ -49,14 +49,14 @@ impl Application for App {
             }
             DriverMsg::MapSingleDelete { key } => self.map_single_deleter.execute(document, key),
             DriverMsg::ListPut { index, value } => {
-                self.list_start_putter.execute(document, (index, value))
+                self.list_putter.execute(document, (index, value))
             }
             DriverMsg::ListInsert { index, value } => {
                 self.list_inserter.execute(document, (index, value))
             }
             DriverMsg::ListDelete { index } => self.list_deleter.execute(document, index),
             DriverMsg::TextPut { index, value } => {
-                self.text_start_putter.execute(document, (index, value))
+                self.text_putter.execute(document, (index, value))
             }
             DriverMsg::TextInsert { index, value } => {
                 self.text_inserter.execute(document, (index, value))

@@ -85,10 +85,10 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         let c = App {
             map_single_putter: client::MapSinglePutter,
             map_single_deleter: client::MapSingleDeleter,
-            list_start_putter: client::ListPutter,
+            list_putter: client::ListPutter,
             list_deleter: client::ListDeleter,
             list_inserter: client::ListInserter,
-            text_start_putter: client::TextPutter,
+            text_putter: client::TextPutter,
             text_deleter: client::TextDeleter,
             text_inserter: client::TextInserter,
         };
@@ -120,7 +120,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                 ObjectType::List => {
                     vec![
                         Driver {
-                            func: crate::driver::DriverState::ListStartPut {
+                            func: crate::driver::DriverState::ListPut {
                                 request_count: 2,
                                 index: 0,
                                 value: value.clone(),
@@ -145,7 +145,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     if let ScalarValue::Str(s) = value {
                         vec![
                             Driver {
-                                func: crate::driver::DriverState::TextStartPut {
+                                func: crate::driver::DriverState::TextPut {
                                     request_count: 2,
                                     index: 0,
                                     value: s.clone(),
