@@ -276,7 +276,7 @@ mod tests {
             model_opts,
             moves_opts,
             expect![[r#"
-                Done states=850, unique=289, max_depth=7
+                Done states=502, unique=289, max_depth=7
                 Discovered "no duplicates when in sync" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Move(0, 0))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Move(0, 0))) }
@@ -284,7 +284,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg4uoy0wBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAAEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
-                To explore this path try re-running with `explore 8254865953802481250/15134007679214237126/1854148942347951330/7054574326594983179/10220315455194759674/4959537383118375197/16542431495947621425`"#]],
+                To explore this path try re-running with `explore 989895131523661519/9629008048735085213/2945674711648958142/7484395196802973298/8986840453897689648/15855679113791863516/7181443774157603252`"#]],
         );
     }
 
@@ -304,7 +304,7 @@ mod tests {
             model_opts,
             moves_opts,
             expect![[r#"
-                Done states=37338, unique=17433, max_depth=8
+                Done states=5403, unique=2013, max_depth=8
                 Discovered "no duplicates when in sync" counterexample Path[7]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Move(0, 0))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Move(0, 0))) }
@@ -313,7 +313,7 @@ mod tests {
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgHv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowEABgIKB8CsVgF0hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI" }) }
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAEB7+/CuG90nP066zL05yAIIASzVPPkFXOaSi00hcbAw+0FAQoHgj0BdIVvSoOLqMtMAWoBGdv8glVqhIccW7/FPZvzxkEbVnf8cSmJ8LgrA/PQqMcIAAAAAAAAAAABAwAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+An4BAX4DAX4AFmF+AQB/AX8C" }) }
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAECi6jLTLGdB5Ak9b+C57ufwPd0/mr5qKwjMoZ16C4c7aPv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QAA" }) }
-                To explore this path try re-running with `explore 8254865953802481250/15134007679214237126/1854148942347951330/14817110740913175525/17285012148065056254/15359434071906971792/11995381388941843489/5980922237718437709`"#]],
+                To explore this path try re-running with `explore 989895131523661519/9629008048735085213/2945674711648958142/6748872524998518923/14659593233181165081/4196886151292571453/12920924051922563149/15608510881148094730`"#]],
         );
     }
 }

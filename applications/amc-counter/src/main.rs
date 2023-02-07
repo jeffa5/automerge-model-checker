@@ -332,7 +332,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=2045, unique=883, max_depth=7
+                Done states=1193, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -340,7 +340,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg9HytnIBLQAIAAAAAAAAAAABAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg37mM9cBLQAIAAAAAAAAAAEBAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
-                To explore this path try re-running with `explore 12586295122497767706/10532121986310608739/4594617407493338948/16928188289055674841/14287108221676609114/17121499248988355341/12817064365569736558`"#]],
+                To explore this path try re-running with `explore 1525806181380480722/17800847812377584527/8386162701824831779/787321934809141168/11064940309934055452/6663500292895118256/1904646115807553998`"#]],
         );
     }
 
@@ -365,7 +365,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=2045, unique=883, max_depth=7
+                Done states=1193, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -373,7 +373,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
-                To explore this path try re-running with `explore 12586295122497767706/10523655236178006975/4817824121712768443/2353486163341217474/470983902780759494/3940016343886851216/11973647857737093227`"#]],
+                To explore this path try re-running with `explore 1525806181380480722/4200109456730230031/4857902701350411630/1558045707661065885/16706564648230123544/18305677316000548821/6130097866521043824`"#]],
         );
     }
 
@@ -398,7 +398,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=2045, unique=883, max_depth=7
+                Done states=1193, unique=883, max_depth=7
                 Discovered "correct value" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
@@ -406,7 +406,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg/YbISQBXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAAECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7tkl20BXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAQECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
-                To explore this path try re-running with `explore 11851034823671676899/5803437920469526979/12506160443869374158/5589695348560030457/15235376469677352807/12358122021797399281/14218684217226664515`"#]],
+                To explore this path try re-running with `explore 11282747607017160468/6140979456762620303/14887090684556844818/9271353539420952360/2905563363371263433/6298159820772864567/7088573042506657677`"#]],
         );
     }
 
@@ -431,7 +431,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=16775, unique=4649, max_depth=13
+                Done states=7477, unique=4649, max_depth=13
             "#]],
         );
     }

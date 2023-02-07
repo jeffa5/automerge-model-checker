@@ -226,7 +226,7 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=1678, unique=651, max_depth=7
+                Done states=1010, unique=651, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
@@ -234,7 +234,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg2FFLKgBTwAIAAAAAAAAAAABAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7dZRG8BTwAIAAAAAAAAAAEBAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 8834054245916827928/2711285872498653153/1881594481882534608/3574177192691817672/15313835021245131647/11164681738517205339/2419102392726606731`"#]],
+                To explore this path try re-running with `explore 15482871843547519777/8203200380951402305/8829712127819938698/9203449192000354338/1513831609101728924/10211774821601995043/3348636454154444996`"#]],
         );
     }
 
@@ -259,7 +259,7 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=2157, unique=856, max_depth=7
+                Done states=1311, unique=856, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
@@ -267,7 +267,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kgwgf+QYBWAAIAAAAAAAAAAABAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzQ0MjI0MTQwNwljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7WbvTIBWAAIAAAAAAAAAAEBAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzU0MzE0NDU0NQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 8834054245916827928/13803142587272929732/12910559937317636747/9372264707866864915/4057633810598148725/13349169562147048614/14621510963469290164`"#]],
+                To explore this path try re-running with `explore 15482871843547519777/18165317894337760192/694225343320960706/7251433598226590557/3823086620333083307/10110955772386490526/18101974323185263970`"#]],
         );
     }
 
@@ -292,7 +292,7 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=1678, unique=651, max_depth=7
+                Done states=1010, unique=651, max_depth=7
                 Discovered "all apps have the right number of tasks" counterexample Path[6]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
@@ -300,7 +300,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9KgxyNDm8BbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAAECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg75sovgBbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAQECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
-                To explore this path try re-running with `explore 1766162618599153337/16058784185849688961/4571219151017098578/12028928343021117232/18346254702243812579/7243911262121863261/6612536647059921398`"#]],
+                To explore this path try re-running with `explore 17492868438200066151/2505832214583032789/1929226361012236889/16042632906015736619/15462423237410012875/16262740734369261783/10226122137356237458`"#]],
         );
     }
 
