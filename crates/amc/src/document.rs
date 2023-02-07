@@ -24,6 +24,7 @@ pub struct Document {
 enum Value {
     Map(BTreeMap<String, Value>),
     List(Vec<Value>),
+    Text(String),
     Scalar(String),
 }
 
@@ -52,7 +53,10 @@ fn materialize_value(am: &Automerge, value: automerge::Value, id: automerge::Obj
                 }
                 Value::List(list)
             }
-            automerge::ObjType::Text => todo!(),
+            automerge::ObjType::Text => {
+                let text = am.text(id).unwrap();
+                Value::Text(text)
+            }
             automerge::ObjType::Table => todo!(),
         },
         automerge::Value::Scalar(s) => Value::Scalar(s.to_string()),
