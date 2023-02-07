@@ -161,7 +161,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 func: crate::driver::DriverState::TextInsert {
                                     request_count: INSERT_REQUEST_COUNT,
                                     index: 0,
-                                    value: s.clone(),
+                                    value: s,
                                 },
                             },
                         ]
