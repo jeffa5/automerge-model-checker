@@ -66,6 +66,8 @@
         python3Packages.pandas
         python3Packages.matplotlib
         python3Packages.seaborn
+
+        black
       ];
     };
   };
