@@ -12,17 +12,23 @@ mod put;
 use amc::application::Application;
 pub use delete::ListDeleter;
 pub use delete::MapSingleDeleter;
+pub use delete::TextDeleter;
 pub use insert::ListInserter;
+pub use insert::TextInserter;
 pub use put::ListPutter;
 pub use put::MapSinglePutter;
+pub use put::TextPutter;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct App {
     pub map_single_putter: put::MapSinglePutter,
-    pub list_start_putter: put::ListPutter,
     pub map_single_deleter: delete::MapSingleDeleter,
+    pub list_start_putter: put::ListPutter,
     pub list_deleter: delete::ListDeleter,
     pub list_inserter: insert::ListInserter,
+    pub text_start_putter: put::TextPutter,
+    pub text_deleter: delete::TextDeleter,
+    pub text_inserter: insert::TextInserter,
 }
 
 impl Application for App {
@@ -49,6 +55,13 @@ impl Application for App {
                 self.list_inserter.execute(document, (index, value))
             }
             DriverMsg::ListDelete { index } => self.list_deleter.execute(document, index),
+            DriverMsg::TextPut { index, value } => {
+                self.text_start_putter.execute(document, (index, value))
+            }
+            DriverMsg::TextInsert { index, value } => {
+                self.text_inserter.execute(document, (index, value))
+            }
+            DriverMsg::TextDelete { index } => self.text_deleter.execute(document, index),
         }
     }
 }

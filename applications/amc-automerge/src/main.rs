@@ -18,6 +18,7 @@ mod scalar;
 enum ObjectType {
     Map,
     List,
+    Text,
 }
 
 #[derive(Parser, Debug)]
@@ -80,10 +81,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
     fn application(&self, _i: usize) -> Self::App {
         let c = App {
             map_single_putter: client::MapSinglePutter,
-            list_start_putter: client::ListPutter,
             map_single_deleter: client::MapSingleDeleter,
+            list_start_putter: client::ListPutter,
             list_deleter: client::ListDeleter,
             list_inserter: client::ListInserter,
+            text_start_putter: client::TextPutter,
+            text_deleter: client::TextDeleter,
+            text_inserter: client::TextInserter,
         };
         println!("Adding application {:?}", c);
         c
@@ -133,6 +137,34 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             },
                         },
                     ]
+                }
+                ObjectType::Text => {
+                    if let ScalarValue::Str(s) = value {
+                        vec![
+                            Driver {
+                                func: crate::driver::DriverState::TextStartPut {
+                                    request_count: 2,
+                                    index: 0,
+                                    value: s.clone(),
+                                },
+                            },
+                            Driver {
+                                func: crate::driver::DriverState::TextDelete {
+                                    request_count: 2,
+                                    index: 0,
+                                },
+                            },
+                            Driver {
+                                func: crate::driver::DriverState::TextInsert {
+                                    request_count: INSERT_REQUEST_COUNT,
+                                    index: 0,
+                                    value: s.clone(),
+                                },
+                            },
+                        ]
+                    } else {
+                        panic!("text object wanted but value wasn't a string")
+                    }
                 }
             };
             drivers.append(&mut new_drivers);

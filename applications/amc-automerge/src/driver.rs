@@ -32,6 +32,20 @@ pub enum DriverState {
         request_count: usize,
         index: usize,
     },
+    TextStartPut {
+        request_count: usize,
+        index: usize,
+        value: String,
+    },
+    TextInsert {
+        request_count: usize,
+        index: usize,
+        value: String,
+    },
+    TextDelete {
+        request_count: usize,
+        index: usize,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -41,6 +55,9 @@ pub enum DriverMsg {
     ListPut { index: usize, value: ScalarValue },
     ListInsert { index: usize, value: ScalarValue },
     ListDelete { index: usize },
+    TextPut { index: usize, value: String },
+    TextInsert { index: usize, value: String },
+    TextDelete { index: usize },
 }
 
 impl Drive<App> for Driver {
@@ -102,6 +119,41 @@ impl Drive<App> for Driver {
             } => {
                 let msgs = (0..*request_count)
                     .map(|_| DriverMsg::ListInsert {
+                        index: *index,
+                        value: value.clone(),
+                    })
+                    .collect();
+                ((), msgs)
+            }
+            DriverState::TextStartPut {
+                request_count,
+                index,
+                value,
+            } => {
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::TextPut {
+                        index: *index,
+                        value: value.clone(),
+                    })
+                    .collect();
+                ((), msgs)
+            }
+            DriverState::TextDelete {
+                request_count,
+                index,
+            } => {
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::TextDelete { index: *index })
+                    .collect();
+                ((), msgs)
+            }
+            DriverState::TextInsert {
+                request_count,
+                index,
+                value,
+            } => {
+                let msgs = (0..*request_count)
+                    .map(|_| DriverMsg::TextInsert {
                         index: *index,
                         value: value.clone(),
                     })

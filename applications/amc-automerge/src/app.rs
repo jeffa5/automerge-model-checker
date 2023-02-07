@@ -10,6 +10,7 @@ use automerge::ROOT;
 use crate::scalar::ScalarValue;
 
 pub const LIST_KEY: &str = "list";
+pub const TEXT_KEY: &str = "text";
 pub const MAP_KEY: &str = "map";
 
 /// The app that clients work with.
@@ -67,6 +68,14 @@ impl AppState {
         }
     }
 
+    fn get_text_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
+        if let Some((_, id)) = tx.get(ROOT, TEXT_KEY).ok().flatten() {
+            id
+        } else {
+            tx.put_object(ROOT, TEXT_KEY, ObjType::Text).unwrap()
+        }
+    }
+
     pub fn put_map(&mut self, key: String, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let map = Self::get_map_obj(&mut tx);
@@ -78,6 +87,17 @@ impl AppState {
         let mut tx = self.doc.transaction();
         let list = Self::get_list_obj(&mut tx);
         if tx.put(list, index, value).is_err() {
+            tx.rollback();
+            self.doc.set_error();
+            return;
+        };
+        tx.commit();
+    }
+
+    pub fn put_text(&mut self, index: usize, value: String) {
+        let mut tx = self.doc.transaction();
+        let text = Self::get_text_obj(&mut tx);
+        if tx.put(text, index, value).is_err() {
             tx.rollback();
             self.doc.set_error();
             return;
@@ -97,7 +117,7 @@ impl AppState {
         tx.commit();
     }
 
-    pub fn insert(&mut self, index: usize, value: ScalarValue) {
+    pub fn insert_list(&mut self, index: usize, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let list = match tx.get(ROOT, LIST_KEY) {
             Ok(Some((Value::Object(ObjType::List), list))) => list,
@@ -108,6 +128,20 @@ impl AppState {
             }
         };
         tx.insert(list, index, value).unwrap();
+        tx.commit();
+    }
+
+    pub fn insert_text(&mut self, index: usize, value: String) {
+        let mut tx = self.doc.transaction();
+        let text = match tx.get(ROOT, TEXT_KEY) {
+            Ok(Some((Value::Object(ObjType::Text), text))) => text,
+            _ => {
+                tx.rollback();
+                self.doc.set_error();
+                return;
+            }
+        };
+        tx.insert(text, index, value).unwrap();
         tx.commit();
     }
 
@@ -136,6 +170,17 @@ impl AppState {
         let mut tx = self.doc.transaction();
         let list = Self::get_list_obj(&mut tx);
         if tx.delete(list, index).is_err() {
+            tx.rollback();
+            self.doc.set_error();
+            return;
+        };
+        tx.commit();
+    }
+
+    pub fn delete_text(&mut self, index: usize) {
+        let mut tx = self.doc.transaction();
+        let text = Self::get_text_obj(&mut tx);
+        if tx.delete(text, index).is_err() {
             tx.rollback();
             self.doc.set_error();
             return;

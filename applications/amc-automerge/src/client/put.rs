@@ -48,3 +48,26 @@ impl Application for ListPutter {
         document.to_mut().put_list(index, value);
     }
 }
+
+/// A client strategy that just puts at the start of a text object.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct TextPutter;
+
+impl Application for TextPutter {
+    type Input = (usize, String);
+
+    type Output = ();
+    type State = AppState;
+
+    fn init(&self, id: usize) -> Self::State {
+        AppState::new(id)
+    }
+
+    fn execute(
+        &self,
+        document: &mut std::borrow::Cow<Self::State>,
+        (index, value): Self::Input,
+    ) -> Self::Output {
+        document.to_mut().put_text(index, value);
+    }
+}

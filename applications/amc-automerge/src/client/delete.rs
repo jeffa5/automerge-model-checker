@@ -49,3 +49,27 @@ impl Application for ListDeleter {
         document.to_mut().delete_list(input);
     }
 }
+
+/// A client strategy that just deletes the first element in a text object.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct TextDeleter;
+
+impl Application for TextDeleter {
+    type Input = usize;
+
+    type Output = ();
+
+    type State = AppState;
+
+    fn init(&self, id: usize) -> Self::State {
+        AppState::new(id)
+    }
+
+    fn execute(
+        &self,
+        document: &mut std::borrow::Cow<Self::State>,
+        input: Self::Input,
+    ) -> Self::Output {
+        document.to_mut().delete_text(input);
+    }
+}
