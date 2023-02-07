@@ -16,8 +16,11 @@ mod scalar;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, clap::ValueEnum)]
 enum ObjectType {
+    /// Use a map object in Automerge.
     Map,
+    /// Use a list object in Automerge.
     List,
+    /// Use a text object in Automerge.
     Text,
 }
 
