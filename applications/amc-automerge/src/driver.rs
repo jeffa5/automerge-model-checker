@@ -9,43 +9,14 @@ pub struct Driver {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DriverState {
-    MapSinglePut {
-        request_count: usize,
-        key: String,
-        value: ScalarValue,
-    },
-    MapSingleDelete {
-        request_count: usize,
-        key: String,
-    },
-    ListPut {
-        request_count: usize,
-        index: usize,
-        value: ScalarValue,
-    },
-    ListInsert {
-        request_count: usize,
-        index: usize,
-        value: ScalarValue,
-    },
-    ListDelete {
-        request_count: usize,
-        index: usize,
-    },
-    TextPut {
-        request_count: usize,
-        index: usize,
-        value: String,
-    },
-    TextInsert {
-        request_count: usize,
-        index: usize,
-        value: String,
-    },
-    TextDelete {
-        request_count: usize,
-        index: usize,
-    },
+    MapSinglePut { key: String, value: ScalarValue },
+    MapSingleDelete { key: String },
+    ListPut { index: usize, value: ScalarValue },
+    ListInsert { index: usize, value: ScalarValue },
+    ListDelete { index: usize },
+    TextPut { index: usize, value: String },
+    TextInsert { index: usize, value: String },
+    TextDelete { index: usize },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -71,93 +42,51 @@ impl Drive<App> for Driver {
         Vec<<App as amc::prelude::Application>::Input>,
     ) {
         match &self.func {
-            DriverState::MapSinglePut {
-                request_count,
-                key,
-                value,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::MapSinglePut {
-                        key: key.clone(),
-                        value: value.clone(),
-                    })
-                    .collect();
+            DriverState::MapSinglePut { key, value } => {
+                let msgs = vec![DriverMsg::MapSinglePut {
+                    key: key.clone(),
+                    value: value.clone(),
+                }];
                 ((), msgs)
             }
-            DriverState::MapSingleDelete { request_count, key } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::MapSingleDelete { key: key.clone() })
-                    .collect();
+            DriverState::MapSingleDelete { key } => {
+                let msgs = vec![DriverMsg::MapSingleDelete { key: key.clone() }];
                 ((), msgs)
             }
-            DriverState::ListPut {
-                request_count,
-                index,
-                value,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::ListPut {
-                        index: *index,
-                        value: value.clone(),
-                    })
-                    .collect();
+            DriverState::ListPut { index, value } => {
+                let msgs = vec![DriverMsg::ListPut {
+                    index: *index,
+                    value: value.clone(),
+                }];
                 ((), msgs)
             }
-            DriverState::ListDelete {
-                request_count,
-                index,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::ListDelete { index: *index })
-                    .collect();
+            DriverState::ListDelete { index } => {
+                let msgs = vec![DriverMsg::ListDelete { index: *index }];
                 ((), msgs)
             }
-            DriverState::ListInsert {
-                request_count,
-                index,
-                value,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::ListInsert {
-                        index: *index,
-                        value: value.clone(),
-                    })
-                    .collect();
+            DriverState::ListInsert { index, value } => {
+                let msgs = vec![DriverMsg::ListInsert {
+                    index: *index,
+                    value: value.clone(),
+                }];
                 ((), msgs)
             }
-            DriverState::TextPut {
-                request_count,
-                index,
-                value,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::TextPut {
-                        index: *index,
-                        value: value.clone(),
-                    })
-                    .collect();
+            DriverState::TextPut { index, value } => {
+                let msgs = vec![DriverMsg::TextPut {
+                    index: *index,
+                    value: value.clone(),
+                }];
                 ((), msgs)
             }
-            DriverState::TextDelete {
-                request_count,
-                index,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::TextDelete { index: *index })
-                    .collect();
+            DriverState::TextDelete { index } => {
+                let msgs = vec![DriverMsg::TextDelete { index: *index }];
                 ((), msgs)
             }
-            DriverState::TextInsert {
-                request_count,
-                index,
-                value,
-            } => {
-                let msgs = (0..*request_count)
-                    .map(|_| DriverMsg::TextInsert {
-                        index: *index,
-                        value: value.clone(),
-                    })
-                    .collect();
+            DriverState::TextInsert { index, value } => {
+                let msgs = vec![DriverMsg::TextInsert {
+                    index: *index,
+                    value: value.clone(),
+                }];
                 ((), msgs)
             }
         }

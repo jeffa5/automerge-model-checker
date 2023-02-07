@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::app::{LIST_KEY, MAP_KEY};
 use crate::client::App;
 use crate::scalar::ScalarValue;
+use amc::combinators::{Repeat, Repeater};
 use amc::global::{GlobalActor, GlobalActorState};
 
 use crate::driver::Driver;
@@ -57,6 +58,10 @@ struct AutomergeOpts {
     /// Use the null type.
     #[clap(long, global = true)]
     null: bool,
+
+    /// Times to repeat each request.
+    #[clap(long, global = true, default_value = "1")]
+    repeats: u8,
 }
 
 #[derive(Parser, Debug)]
@@ -68,14 +73,12 @@ struct Args {
     amc_args: amc::cli::RunArgs,
 }
 
-type ActorState = GlobalActorState<Driver, App>;
-
-const INSERT_REQUEST_COUNT: usize = 2;
+type ActorState = GlobalActorState<Repeater<Driver>, App>;
 
 impl amc::model::ModelBuilder for AutomergeOpts {
     type App = App;
 
-    type Driver = Driver;
+    type Driver = Repeater<Driver>;
 
     type Config = Config;
 
@@ -99,19 +102,17 @@ impl amc::model::ModelBuilder for AutomergeOpts {
     fn drivers(&self, server: usize) -> Vec<Self::Driver> {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
-            let mut new_drivers = match self.object_type {
+            let new_drivers = match self.object_type {
                 ObjectType::Map => {
                     vec![
                         Driver {
                             func: crate::driver::DriverState::MapSinglePut {
-                                request_count: 2,
                                 key: "key".to_owned(),
                                 value: value.clone(),
                             },
                         },
                         Driver {
                             func: crate::driver::DriverState::MapSingleDelete {
-                                request_count: 2,
                                 key: "key".to_owned(),
                             },
                         },
@@ -121,20 +122,17 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     vec![
                         Driver {
                             func: crate::driver::DriverState::ListPut {
-                                request_count: 2,
                                 index: 0,
                                 value: value.clone(),
                             },
                         },
                         Driver {
                             func: crate::driver::DriverState::ListDelete {
-                                request_count: 2,
                                 index: 0,
                             },
                         },
                         Driver {
                             func: crate::driver::DriverState::ListInsert {
-                                request_count: INSERT_REQUEST_COUNT,
                                 index: 0,
                                 value: value.clone(),
                             },
@@ -146,20 +144,17 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         vec![
                             Driver {
                                 func: crate::driver::DriverState::TextPut {
-                                    request_count: 2,
                                     index: 0,
                                     value: s.clone(),
                                 },
                             },
                             Driver {
                                 func: crate::driver::DriverState::TextDelete {
-                                    request_count: 2,
                                     index: 0,
                                 },
                             },
                             Driver {
                                 func: crate::driver::DriverState::TextInsert {
-                                    request_count: INSERT_REQUEST_COUNT,
                                     index: 0,
                                     value: s,
                                 },
@@ -170,6 +165,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     }
                 }
             };
+            let mut new_drivers = new_drivers.into_iter().map(|d| d.repeat(self.repeats)).collect();
             drivers.append(&mut new_drivers);
         };
         if self.bytes {
@@ -219,7 +215,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                model_opts.servers * INSERT_REQUEST_COUNT
+                model_opts.servers * self.repeats as usize
             },
         };
         println!("Built config {:?}", c);
@@ -235,7 +231,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             stateright::actor::ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config>;
+        type Model = stateright::actor::ActorModel<GlobalActor<App, Repeater<Driver>>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {
