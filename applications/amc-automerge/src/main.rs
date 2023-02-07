@@ -28,7 +28,7 @@ enum ObjectType {
 struct AutomergeOpts {
     /// What object type to check.
     #[clap(long, global = true, default_value = "map")]
-    object_type: crate::ObjectType,
+    object_type: ObjectType,
 
     /// Use the bytes type.
     #[clap(long, global = true)]
