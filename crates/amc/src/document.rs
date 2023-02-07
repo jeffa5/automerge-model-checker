@@ -66,21 +66,23 @@ fn materialize(am: &Automerge) -> Value {
 impl Debug for Document {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = f.debug_struct("Document");
+        let heads = self
+            .get_heads()
+            .into_iter()
+            .map(|h| h.0)
+            .collect::<Vec<_>>();
+        let last_sent_heads = self.last_sent_heads.iter().map(|h| h.0).collect::<Vec<_>>();
         if self.debug_materialize {
             // todo: materialize
             let v = materialize(&self.am);
-            s.field("doc", &v)
-                .field("heads", &self.get_heads())
-                .field("sync_states", &self.sync_states)
-                .field("last_sent_heads", &self.last_sent_heads)
-                .field("error", &self.error);
+            s.field("doc", &v);
         } else {
-            s.field("am", &self.am)
-                .field("heads", &self.get_heads())
-                .field("sync_states", &self.sync_states)
-                .field("last_sent_heads", &self.last_sent_heads)
-                .field("error", &self.error);
+            s.field("am", &self.am);
         }
+        s.field("heads", &heads)
+            .field("sync_states", &self.sync_states)
+            .field("last_sent_heads", &last_sent_heads)
+            .field("error", &self.error);
         s.finish()
     }
 }
