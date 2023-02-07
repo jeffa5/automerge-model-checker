@@ -94,7 +94,9 @@ impl RunArgs {
                 checker.serve(("127.0.0.1", port));
             }
             Runner::CheckDfs => {
-                checker.spawn_dfs().join_and_report(&mut Reporter::default());
+                checker
+                    .spawn_dfs()
+                    .join_and_report(&mut Reporter::default());
             }
             Runner::CheckIterative => {
                 let limit = self.max_depth;
@@ -102,7 +104,9 @@ impl RunArgs {
                     println!("Checking with max depth {}", max_depth);
                     let mut checker = self.build_checker::<M>(&model);
                     checker = checker.target_max_depth(max_depth);
-                    let checker = checker.spawn_dfs().join_and_report(&mut Reporter::default());
+                    let checker = checker
+                        .spawn_dfs()
+                        .join_and_report(&mut Reporter::default());
 
                     let finished = checker.model().properties().iter().all(|property| {
                         let discovery = checker.discovery(property.name);
@@ -141,7 +145,9 @@ impl RunArgs {
                 }
             }
             Runner::CheckBfs => {
-                checker.spawn_bfs().join_and_report(&mut Reporter::default());
+                checker
+                    .spawn_bfs()
+                    .join_and_report(&mut Reporter::default());
             }
         }
     }
