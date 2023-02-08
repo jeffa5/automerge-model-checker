@@ -5,7 +5,12 @@ use std::time::Instant;
 
 use num_format::SystemLocale;
 use num_format::ToFormattedString;
+use stateright::actor::ActorModel;
+use stateright::Expectation;
 use stateright::Model;
+
+use crate::global::GlobalActor;
+use crate::model::ModelBuilder;
 
 /// A reporter with more information about the rate of new states being processed.
 #[derive(Debug, Default)]
@@ -13,6 +18,26 @@ pub struct Reporter {
     last_total: usize,
     last_unique: usize,
     last_report: Option<Instant>,
+    properties: BTreeMap<&'static str, Expectation>,
+}
+
+impl Reporter {
+    /// Create a new reporter.
+    pub fn new<M: ModelBuilder>(
+        model: &ActorModel<GlobalActor<M::App, M::Driver>, M::Config, M::History>,
+    ) -> Self {
+        let properties = model
+            .properties()
+            .iter()
+            .map(|p| (p.name, p.expectation.clone()))
+            .collect();
+        Self {
+            last_total: 0,
+            last_unique: 0,
+            last_report: None,
+            properties,
+        }
+    }
 }
 
 impl<M> stateright::report::Reporter<M> for Reporter
@@ -64,20 +89,53 @@ where
         <M as Model>::State: Hash,
     {
         let discoveries: BTreeMap<_, _> = discoveries.into_iter().collect();
-        for (name, discovery) in discoveries {
-            print!(
-                "Discovered \"{}\" {} {}",
-                name, discovery.classification, discovery.path,
-            );
-            println!(
-                "To explore this path try re-running with `explore {}`",
-                discovery.path.encode()
-            );
+        let (success, failure): (Vec<_>, Vec<_>) =
+            self.properties.iter().partition(|(name, expectation)| {
+                property_holds(expectation, discoveries.get(*name).is_some())
+            });
+
+        for (name, expectation) in &self.properties {
+            let status = if property_holds(expectation, discoveries.get(name).is_some()) {
+                "OK"
+            } else {
+                "FAILED"
+            };
+            println!("Property {:?} {:?} {}", expectation, name, status);
+            if let Some(discovery) = discoveries.get(name) {
+                print!("{}, {}", discovery.classification, discovery.path,);
+                println!(
+                    "To explore this path try re-running with `explore {}`",
+                    discovery.path.encode()
+                );
+            }
         }
+
+        println!(
+            "Properties checked. {} succeeded, {} failed",
+            success.len(),
+            failure.len()
+        );
     }
 
     fn delay(&self) -> std::time::Duration {
         std::time::Duration::from_millis(10)
+    }
+}
+
+fn property_holds(expectation: &Expectation, discovery: bool) -> bool {
+    match (expectation, discovery) {
+        // counter-example
+        (Expectation::Always, true) => false,
+        // no counter-example
+        (Expectation::Always, false) => true,
+        // counter-example
+        (Expectation::Eventually, true) => false,
+        // no counter-example
+        (Expectation::Eventually, false) => true,
+        // example
+        (Expectation::Sometimes, true) => true,
+        // no example
+        (Expectation::Sometimes, false) => false,
     }
 }
 

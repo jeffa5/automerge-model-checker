@@ -96,7 +96,7 @@ impl RunArgs {
             Runner::CheckDfs => {
                 checker
                     .spawn_dfs()
-                    .join_and_report(&mut Reporter::default());
+                    .join_and_report(&mut Reporter::new::<M>(&model));
             }
             Runner::CheckIterative => {
                 let limit = self.max_depth;
@@ -106,7 +106,7 @@ impl RunArgs {
                     checker = checker.target_max_depth(max_depth);
                     let checker = checker
                         .spawn_dfs()
-                        .join_and_report(&mut Reporter::default());
+                        .join_and_report(&mut Reporter::new::<M>(&model));
 
                     let finished = checker.model().properties().iter().all(|property| {
                         let discovery = checker.discovery(property.name);
@@ -147,7 +147,7 @@ impl RunArgs {
             Runner::CheckBfs => {
                 checker
                     .spawn_bfs()
-                    .join_and_report(&mut Reporter::default());
+                    .join_and_report(&mut Reporter::new::<M>(&model));
             }
         }
     }
