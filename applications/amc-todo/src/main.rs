@@ -30,11 +30,11 @@ struct TodoOptions {
     initial_change: bool,
 
     /// Update existing todos.
-    #[clap(long)]
+    #[clap(long, global = true)]
     updater: bool,
 
     /// Toggle todos.
-    #[clap(long)]
+    #[clap(long, global = true)]
     toggler: bool,
 }
 
