@@ -148,6 +148,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 value: value.clone(),
                             },
                         },
+                        Driver {
+                            func: crate::driver::DriverState::ListSplice {
+                                index: 0,
+                                delete: 2,
+                                values: vec![value.clone(); 2],
+                            },
+                        },
                     ];
                     if value.is_counter() {
                         d.push(Driver {
@@ -169,7 +176,17 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 func: crate::driver::DriverState::TextDelete { index: 0 },
                             },
                             Driver {
-                                func: crate::driver::DriverState::TextInsert { index: 0, value: s },
+                                func: crate::driver::DriverState::TextInsert {
+                                    index: 0,
+                                    value: s.clone(),
+                                },
+                            },
+                            Driver {
+                                func: crate::driver::DriverState::TextSplice {
+                                    index: 0,
+                                    delete: 2,
+                                    text: format!("{}{}", s, s),
+                                },
                             },
                         ]
                     } else {
