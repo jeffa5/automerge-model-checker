@@ -37,7 +37,18 @@
     cargoArtifacts = craneLib.buildDepsOnly {
       inherit src pname;
     };
+    mkApp = bin: {
+      type = "app";
+      program = "${self.packages.${system}.amc}/bin/${bin}";
+    };
   in {
+    apps.${system} = {
+      amc-counter = mkApp "amc-counter";
+      amc-todo = mkApp "amc-todo";
+      amc-moves = mkApp "amc-moves";
+      amc-automerge = mkApp "amc-automerge";
+    };
+
     packages.${system} = {
       default = self.packages.${system}.amc;
 

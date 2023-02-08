@@ -15,12 +15,16 @@ This might be able to help designers of data types check their merge behaviour t
 
 - [Counter](./applications/amc-counter)
     - `cargo run --release --bin amc-counter -- check-iterative`
+    - `nix run .#amc-counter -- check-iterative`
 - [Todos](./applications/amc-todo)
     - `cargo run --release --bin amc-todo -- check-iterative`
+    - `nix run .#amc-todo -- check-iterative`
 - [Concurrent moves in a list](./applications/amc-moves)
     - `cargo run --release --bin amc-moves -- check-iterative`
+    - `nix run .#amc-moves -- check-iterative`
 - [Automerge itself](./applications/amc-automerge)
     - `cargo run --release --bin amc-automerge -- check-iterative`
+    - `nix run .#amc-automerge -- check-iterative`
 
 ## Design
 
@@ -40,3 +44,8 @@ Drivers get combined with a lightweight wrapper to handle communication with the
 It is at this point developers can specify properties that they want to be evaluated in the model.
 For instance, a counter should have the value of the sum of increments and decrements (shown in `properties` of [`CounterOpts`](http://jeffas.io/automerge-model-checker/doc/amc_counter/struct.CounterOpts.html)).
 amc provides some common properties and helpers in the [`properties` module](http://jeffas.io/automerge-model-checker/doc/amc/properties/index.html).
+
+## Benchmarking
+
+Benchmarking is performed by the `bench.py` script, or the `bench` nix target.
+Run them with `cargo build --release && python bench.py` or `nix run .#bench` respectively (the latter automatically builds the binaries).
