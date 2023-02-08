@@ -88,10 +88,12 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         let c = App {
             map_single_putter: client::MapSinglePutter,
             map_single_deleter: client::MapSingleDeleter,
+            map_incrementer: client::MapIncrementer,
             list_putter: client::ListPutter,
             list_deleter: client::ListDeleter,
             list_inserter: client::ListInserter,
             list_splicer: client::ListSplicer,
+            list_incrementer: client::ListIncrementer,
             text_putter: client::TextPutter,
             text_deleter: client::TextDeleter,
             text_inserter: client::TextInserter,
@@ -106,7 +108,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         let mut add_drivers = |value: ScalarValue| {
             let new_drivers = match self.object_type {
                 ObjectType::Map => {
-                    vec![
+                    let mut d = vec![
                         Driver {
                             func: crate::driver::DriverState::MapSinglePut {
                                 key: "key".to_owned(),
@@ -118,10 +120,19 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 key: "key".to_owned(),
                             },
                         },
-                    ]
+                    ];
+                    if value.is_counter() {
+                        d.push(Driver {
+                            func: crate::driver::DriverState::MapIncrement {
+                                key: "key".to_owned(),
+                                by: 1,
+                            },
+                        });
+                    }
+                    d
                 }
                 ObjectType::List => {
-                    vec![
+                    let mut d = vec![
                         Driver {
                             func: crate::driver::DriverState::ListPut {
                                 index: 0,
@@ -137,7 +148,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 value: value.clone(),
                             },
                         },
-                    ]
+                    ];
+                    if value.is_counter() {
+                        d.push(Driver {
+                            func: crate::driver::DriverState::ListIncrement { index: 0, by: 1 },
+                        });
+                    }
+                    d
                 }
                 ObjectType::Text => {
                     if let ScalarValue::Str(s) = value {

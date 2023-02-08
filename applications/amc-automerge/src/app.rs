@@ -203,7 +203,7 @@ impl AppState {
         tx.commit();
     }
 
-    pub fn splice_text(&mut self, index: usize, delete:usize, value: String) {
+    pub fn splice_text(&mut self, index: usize, delete: usize, value: String) {
         let mut tx = self.doc.transaction();
         let text = match tx.get(ROOT, TEXT_KEY) {
             Ok(Some((Value::Object(ObjType::Text), text))) => text,
@@ -214,6 +214,24 @@ impl AppState {
             }
         };
         tx.splice_text(text, index, delete, &value).unwrap();
+        tx.commit();
+    }
+
+    pub fn increment_map(&mut self, key: String, by: i64) {
+        let mut tx = self.doc.transaction();
+        let map = Self::get_map_obj(&mut tx);
+        tx.increment(map, key, by).unwrap();
+        tx.commit();
+    }
+
+    pub fn increment_list(&mut self, index: usize, by: i64) {
+        let mut tx = self.doc.transaction();
+        let list = Self::get_list_obj(&mut tx);
+        if tx.increment(list, index, by).is_err() {
+            tx.rollback();
+            self.doc.set_error();
+            return;
+        };
         tx.commit();
     }
 
