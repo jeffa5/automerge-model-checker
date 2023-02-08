@@ -93,6 +93,11 @@ pub struct ModelOpts {
     #[clap(long, global = true)]
     pub save_load_check: bool,
 
+    /// Enable checking historical document queries return the same document as latest queries
+    /// would.
+    #[clap(long, global = true)]
+    pub historical_check: bool,
+
     /// Enable checking documents don't panic.
     #[clap(long, global = true)]
     pub error_free_check: bool,

@@ -268,6 +268,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let moves_opts = MovesOpts { initial_size: 1 };
@@ -296,6 +297,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let moves_opts = MovesOpts { initial_size: 1 };

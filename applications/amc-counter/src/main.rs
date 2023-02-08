@@ -319,6 +319,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let counter_opts = CounterOpts {
@@ -352,6 +353,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let counter_opts = CounterOpts {
@@ -385,6 +387,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let counter_opts = CounterOpts {
@@ -418,6 +421,7 @@ mod tests {
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
+            historical_check: false,
             error_free_check: false,
         };
         let counter_opts = CounterOpts {

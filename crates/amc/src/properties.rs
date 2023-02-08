@@ -7,6 +7,8 @@ use stateright::actor::{ActorModel, ActorModelState};
 
 use crate::client::Application;
 use crate::client::DerefDocument;
+use crate::document::materialize;
+use crate::document::materialize_at;
 use crate::drive::Drive;
 use crate::global::GlobalMsg;
 use crate::global::{GlobalActor, GlobalActorState};
@@ -30,6 +32,7 @@ where
     model = with_in_sync_check(model);
     model = with_save_load_check(model);
     model = with_error_free_check(model);
+    model = with_historical_document_check(model);
     model
 }
 
@@ -94,6 +97,58 @@ where
             })
         },
     )
+}
+
+/// Ensure that historical queries on the documents return the correct values.
+pub fn with_historical_document_check<A, D, C, H>(
+    model: ActorModel<GlobalActor<A, D>, C, H>,
+) -> ActorModel<GlobalActor<A, D>, C, H>
+where
+    A: Application,
+    D: Drive<A>,
+    H: Hash + Debug + Clone,
+{
+    model.property(
+        stateright::Expectation::Always,
+        "historical queries are correct",
+        |_, state| check_historical_materialize(&state.actor_states),
+    )
+}
+
+fn check_historical_materialize<D, A>(actors: &[Arc<GlobalActorState<D, A>>]) -> bool
+where
+    A: Application,
+    D: Drive<A>,
+{
+    for actor in actors {
+        if let GlobalActorState::Server(server) = &**actor {
+            let document = server.document();
+            let historical_documents = get_historical_documents(&document);
+            for historical_doc in historical_documents {
+                let heads = historical_doc.get_heads();
+                let original_view = materialize(&historical_doc);
+                let historical_view = materialize_at(&document, &heads);
+                if original_view != historical_view {
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
+fn get_historical_documents(doc: &Automerge) -> Vec<Automerge> {
+    let changes = doc.get_changes(&[]).unwrap();
+    let mut visited = Vec::new();
+    let mut documents = Vec::new();
+    for change in changes {
+        visited.push(change);
+        let mut doc = Automerge::new();
+        doc.apply_changes(visited.iter().map(|&c| c.clone()))
+            .unwrap();
+        documents.push(doc);
+    }
+    documents
 }
 
 /// Check that all servers have the same document heads.

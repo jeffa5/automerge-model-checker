@@ -20,8 +20,8 @@ pub struct Document {
     debug_materialize: bool,
 }
 
-#[derive(Debug)]
-enum Value {
+#[derive(Debug, PartialEq)]
+pub enum Value {
     Map(BTreeMap<String, Value>),
     List(Vec<Value>),
     Text(String),
@@ -32,6 +32,14 @@ fn materialize_root(am: &Automerge) -> Value {
     let mut map = BTreeMap::new();
     for (k, v, id) in am.map_range(ROOT, ..) {
         map.insert(k.to_owned(), materialize_value(am, v, id));
+    }
+    Value::Map(map)
+}
+
+fn materialize_root_at(am: &Automerge, heads: &[ChangeHash]) -> Value {
+    let mut map = BTreeMap::new();
+    for (k, v, id) in am.map_range_at(ROOT, .., heads) {
+        map.insert(k.to_owned(), materialize_value_at(am, v, id, heads));
     }
     Value::Map(map)
 }
@@ -63,8 +71,44 @@ fn materialize_value(am: &Automerge, value: automerge::Value, id: automerge::Obj
     }
 }
 
-fn materialize(am: &Automerge) -> Value {
+fn materialize_value_at(
+    am: &Automerge,
+    value: automerge::Value,
+    id: automerge::ObjId,
+    heads: &[ChangeHash],
+) -> Value {
+    match value {
+        automerge::Value::Object(o) => match o {
+            automerge::ObjType::Map => {
+                let mut map = BTreeMap::new();
+                for (k, v, id) in am.map_range_at(id, .., heads) {
+                    map.insert(k.to_owned(), materialize_value_at(am, v, id, heads));
+                }
+                Value::Map(map)
+            }
+            automerge::ObjType::List => {
+                let mut list = Vec::new();
+                for (_, v, id) in am.list_range_at(id, .., heads) {
+                    list.push(materialize_value_at(am, v, id, heads));
+                }
+                Value::List(list)
+            }
+            automerge::ObjType::Text => {
+                let text = am.text_at(id, heads).unwrap();
+                Value::Text(text)
+            }
+            automerge::ObjType::Table => todo!(),
+        },
+        automerge::Value::Scalar(s) => Value::Scalar(s.to_string()),
+    }
+}
+
+pub fn materialize(am: &Automerge) -> Value {
     materialize_root(am)
+}
+
+pub fn materialize_at(am: &Automerge, heads: &[ChangeHash]) -> Value {
+    materialize_root_at(am, heads)
 }
 
 impl Debug for Document {
