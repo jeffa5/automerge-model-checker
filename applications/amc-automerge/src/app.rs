@@ -188,6 +188,35 @@ impl AppState {
         tx.commit();
     }
 
+    pub fn splice_list(&mut self, index: usize, delete: usize, values: Vec<ScalarValue>) {
+        let mut tx = self.doc.transaction();
+        let list = match tx.get(ROOT, LIST_KEY) {
+            Ok(Some((Value::Object(ObjType::List), list))) => list,
+            _ => {
+                tx.rollback();
+                self.doc.set_error();
+                return;
+            }
+        };
+        let values = values.into_iter().map(Into::into);
+        tx.splice(list, index, delete, values).unwrap();
+        tx.commit();
+    }
+
+    pub fn splice_text(&mut self, index: usize, delete:usize, value: String) {
+        let mut tx = self.doc.transaction();
+        let text = match tx.get(ROOT, TEXT_KEY) {
+            Ok(Some((Value::Object(ObjType::Text), text))) => text,
+            _ => {
+                tx.rollback();
+                self.doc.set_error();
+                return;
+            }
+        };
+        tx.splice_text(text, index, delete, &value).unwrap();
+        tx.commit();
+    }
+
     pub fn values(&self) -> Vec<(&str, Value)> {
         self.doc
             .map_range(ROOT, ..)

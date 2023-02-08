@@ -9,14 +9,45 @@ pub struct Driver {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DriverState {
-    MapSinglePut { key: String, value: ScalarValue },
-    MapSingleDelete { key: String },
-    ListPut { index: usize, value: ScalarValue },
-    ListInsert { index: usize, value: ScalarValue },
-    ListDelete { index: usize },
-    TextPut { index: usize, value: String },
-    TextInsert { index: usize, value: String },
-    TextDelete { index: usize },
+    MapSinglePut {
+        key: String,
+        value: ScalarValue,
+    },
+    MapSingleDelete {
+        key: String,
+    },
+    ListPut {
+        index: usize,
+        value: ScalarValue,
+    },
+    ListInsert {
+        index: usize,
+        value: ScalarValue,
+    },
+    ListDelete {
+        index: usize,
+    },
+    ListSplice {
+        index: usize,
+        delete: usize,
+        values: Vec<ScalarValue>,
+    },
+    TextPut {
+        index: usize,
+        value: String,
+    },
+    TextInsert {
+        index: usize,
+        value: String,
+    },
+    TextDelete {
+        index: usize,
+    },
+    TextSplice {
+        index: usize,
+        delete: usize,
+        text: String,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -26,9 +57,11 @@ pub enum DriverMsg {
     ListPut { index: usize, value: ScalarValue },
     ListInsert { index: usize, value: ScalarValue },
     ListDelete { index: usize },
+    ListSplice { index: usize, delete: usize, values: Vec<ScalarValue> },
     TextPut { index: usize, value: String },
     TextInsert { index: usize, value: String },
     TextDelete { index: usize },
+    TextSplice { index: usize, delete: usize, text: String },
 }
 
 impl Drive<App> for Driver {
@@ -71,6 +104,14 @@ impl Drive<App> for Driver {
                 }];
                 ((), msgs)
             }
+            DriverState::ListSplice { index, delete, values } => {
+                let msgs = vec![DriverMsg::ListSplice {
+                    index: *index,
+                    delete: *delete,
+                    values: values.clone(),
+                }];
+                ((), msgs)
+            }
             DriverState::TextPut { index, value } => {
                 let msgs = vec![DriverMsg::TextPut {
                     index: *index,
@@ -86,6 +127,14 @@ impl Drive<App> for Driver {
                 let msgs = vec![DriverMsg::TextInsert {
                     index: *index,
                     value: value.clone(),
+                }];
+                ((), msgs)
+            }
+            DriverState::TextSplice { index, delete, text } => {
+                let msgs = vec![DriverMsg::TextSplice {
+                    index: *index,
+                    delete: *delete,
+                    text: text.clone(),
                 }];
                 ((), msgs)
             }

@@ -8,6 +8,7 @@ use crate::driver::DriverMsg;
 mod delete;
 mod insert;
 mod put;
+mod splice;
 
 use amc::application::Application;
 pub use delete::ListDeleter;
@@ -18,6 +19,8 @@ pub use insert::TextInserter;
 pub use put::ListPutter;
 pub use put::MapSinglePutter;
 pub use put::TextPutter;
+pub use splice::ListSplicer;
+pub use splice::TextSplicer;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct App {
@@ -26,9 +29,11 @@ pub struct App {
     pub list_putter: put::ListPutter,
     pub list_deleter: delete::ListDeleter,
     pub list_inserter: insert::ListInserter,
+    pub list_splicer: splice::ListSplicer,
     pub text_putter: put::TextPutter,
     pub text_deleter: delete::TextDeleter,
     pub text_inserter: insert::TextInserter,
+    pub text_splicer: splice::TextSplicer,
 }
 
 impl Application for App {
@@ -55,6 +60,11 @@ impl Application for App {
                 self.list_inserter.execute(document, (index, value))
             }
             DriverMsg::ListDelete { index } => self.list_deleter.execute(document, index),
+            DriverMsg::ListSplice {
+                index,
+                delete,
+                values,
+            } => self.list_splicer.execute(document, (index, delete, values)),
             DriverMsg::TextPut { index, value } => {
                 self.text_putter.execute(document, (index, value))
             }
@@ -62,6 +72,11 @@ impl Application for App {
                 self.text_inserter.execute(document, (index, value))
             }
             DriverMsg::TextDelete { index } => self.text_deleter.execute(document, index),
+            DriverMsg::TextSplice {
+                index,
+                delete,
+                text,
+            } => self.text_splicer.execute(document, (index, delete, text)),
         }
     }
 }

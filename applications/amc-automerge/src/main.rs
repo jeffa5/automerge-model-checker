@@ -91,9 +91,11 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             list_putter: client::ListPutter,
             list_deleter: client::ListDeleter,
             list_inserter: client::ListInserter,
+            list_splicer: client::ListSplicer,
             text_putter: client::TextPutter,
             text_deleter: client::TextDeleter,
             text_inserter: client::TextInserter,
+            text_splicer: client::TextSplicer,
         };
         println!("Adding application {:?}", c);
         c
