@@ -48,6 +48,10 @@
       amc-docs = craneLib.cargoDoc {
         inherit cargoArtifacts src pname;
       };
+
+      bench = pkgs.writeShellScript "bench" ''
+        PATH=${self.packages.${system}.amc}/bin:$PATH ${pkgs.python3}/bin/python ${./bench.py}
+      '';
     };
 
     formatter.${system} = pkgs.alejandra;

@@ -13,13 +13,6 @@ from typing import List, Tuple
 RESULTS_DIR = "results"
 
 
-def build():
-    """
-    Build the binaries.
-    """
-    subprocess.run(["cargo", "build", "--release"], check=True)
-
-
 def make_results_dir():
     """
     Clear and create the results dir.
@@ -76,10 +69,7 @@ def run(config: Config):
     out_dir = os.path.join(RESULTS_DIR, config.dir())
     out_file = os.path.join(out_dir, "out")
     os.makedirs(out_dir)
-    cmd = (
-        f"cargo run -q --release --bin {config.bin_name} -- "
-        + f"check-iterative {config.to_args()} | tee {out_file}"
-    )
+    cmd = f"{config.bin_name} check-iterative {config.to_args()} | tee {out_file}"
     print("Running command:", cmd)
     subprocess.run(
         cmd,
@@ -92,7 +82,6 @@ def main():
     """
     Run the benchmarks.
     """
-    build()
     make_results_dir()
 
     sync_methods = ["changes", "messages", "save-load"]
