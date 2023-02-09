@@ -63,6 +63,11 @@ struct AutomergeOpts {
     #[clap(long, global = true, default_value = "foo", value_delimiter = ',')]
     keys: Vec<String>,
 
+    /// Indices to target for list operations, should include 0 at least otherwise the list won't
+    /// be built up.
+    #[clap(long, global = true, default_value = "0", value_delimiter = ',')]
+    indices: Vec<usize>,
+
     /// Times to repeat each request.
     #[clap(long, global = true, default_value = "1")]
     repeats: u8,
@@ -107,7 +112,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         c
     }
 
-    fn drivers(&self, server: usize, config: &Config) -> Vec<Self::Driver> {
+    fn drivers(&self, server: usize, _config: &Config) -> Vec<Self::Driver> {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
             let new_drivers: Vec<_> = match self.object_type {
@@ -139,7 +144,10 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         d
                     })
                     .collect(),
-                ObjectType::List => (0..config.max_list_size)
+                ObjectType::List => self
+                    .indices
+                    .iter()
+                    .copied()
                     .flat_map(|index| {
                         let mut d = vec![
                             Driver {
@@ -175,7 +183,9 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     .collect(),
                 ObjectType::Text => {
                     if let ScalarValue::Str(s) = value {
-                        (0..config.max_list_size)
+                        self.indices
+                            .iter()
+                            .copied()
                             .flat_map(|index| {
                                 vec![
                                     Driver {
@@ -261,7 +271,8 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             max_list_size: if self.object_type == ObjectType::Map {
                 0
             } else {
-                model_opts.servers * self.repeats as usize
+                // each server performs an insert to the indices repeated some number of times
+                model_opts.servers * self.repeats as usize * self.indices.len()
             },
         };
         println!("Built config {:?}", c);
