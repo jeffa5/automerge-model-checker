@@ -36,22 +36,6 @@ impl AppState {
         }
     }
 
-    pub fn get(&self, key: &str) -> Option<ScalarValue> {
-        let (_, map) = self.doc.get(ROOT, MAP_KEY).ok().flatten()?;
-        self.doc
-            .get(map, key)
-            .unwrap()
-            .map(|(v, _)| v.into_scalar().unwrap().into())
-    }
-
-    pub fn get_list(&self, index: usize) -> Option<ScalarValue> {
-        let (_, map) = self.doc.get(ROOT, LIST_KEY).ok().flatten()?;
-        self.doc
-            .get(map, index)
-            .unwrap()
-            .map(|(v, _)| v.into_scalar().unwrap().into())
-    }
-
     fn get_map_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
         if let Some((_, id)) = tx.get(ROOT, MAP_KEY).ok().flatten() {
             id
@@ -105,18 +89,6 @@ impl AppState {
         tx.commit();
     }
 
-    pub fn put_object(&mut self, key: String, value: ObjType) {
-        let mut tx = self.doc.transaction();
-        tx.put_object(ROOT, key, value).unwrap();
-        tx.commit();
-    }
-
-    pub fn put_object_list(&mut self, index: usize, value: ObjType) {
-        let mut tx = self.doc.transaction();
-        tx.put_object(ROOT, index, value).unwrap();
-        tx.commit();
-    }
-
     pub fn insert_list(&mut self, index: usize, value: ScalarValue) {
         let mut tx = self.doc.transaction();
         let list = match tx.get(ROOT, LIST_KEY) {
@@ -142,20 +114,6 @@ impl AppState {
             }
         };
         tx.insert(text, index, value).unwrap();
-        tx.commit();
-    }
-
-    pub fn insert_object(&mut self, index: usize, value: ObjType) {
-        let mut tx = self.doc.transaction();
-        let list = match tx.get(ROOT, LIST_KEY) {
-            Ok(Some((Value::Object(ObjType::List), list))) => list,
-            _ => {
-                tx.rollback();
-                self.doc.set_error();
-                return;
-            }
-        };
-        tx.insert_object(list, index, value).unwrap();
         tx.commit();
     }
 
@@ -233,13 +191,6 @@ impl AppState {
             return;
         };
         tx.commit();
-    }
-
-    pub fn values(&self) -> Vec<(&str, Value)> {
-        self.doc
-            .map_range(ROOT, ..)
-            .map(|(key, value, _)| (key, value))
-            .collect()
     }
 
     pub fn length(&self, key: &str) -> usize {
