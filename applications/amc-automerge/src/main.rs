@@ -5,6 +5,7 @@ use crate::client::App;
 use crate::scalar::ScalarValue;
 use amc::combinators::{Repeat, Repeater};
 use amc::global::{GlobalActor, GlobalActorState};
+use app::TEXT_KEY;
 
 use crate::driver::Driver;
 use clap::Parser;
@@ -267,12 +268,23 @@ impl amc::model::ModelBuilder for AutomergeOpts {
 
     fn config(&self, model_opts: &amc::model::ModelOpts) -> Self::Config {
         let c = Config {
-            max_map_size: 1,
-            max_list_size: if self.object_type == ObjectType::Map {
-                0
+            max_map_size: if self.object_type == ObjectType::Map {
+                self.keys.len()
             } else {
+                // don't add to it otherwise
+                0
+            },
+            max_list_size: if self.object_type == ObjectType::List {
                 // each server performs an insert to the indices repeated some number of times
                 model_opts.servers * self.repeats as usize * self.indices.len()
+            } else {
+                0
+            },
+            max_text_size: if self.object_type == ObjectType::Text {
+                // each server performs an insert to the indices repeated some number of times
+                model_opts.servers * self.repeats as usize * self.indices.len()
+            } else {
+                0
             },
         };
         println!("Built config {:?}", c);
@@ -315,6 +327,18 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     .iter()
                     .all(|s| max_list_size_is_the_max(s, &model.cfg))
             }),
+            Prop::sometimes("reach max text size", |model, state| {
+                state
+                    .actor_states
+                    .iter()
+                    .any(|s| state_has_max_text_size(s, &model.cfg))
+            }),
+            Prop::always("max text size is the max", |model, state| {
+                state
+                    .actor_states
+                    .iter()
+                    .all(|s| max_text_size_is_the_max(s, &model.cfg))
+            }),
         ]
     }
 }
@@ -355,10 +379,29 @@ fn max_list_size_is_the_max(state: &Arc<ActorState>, cfg: &Config) -> bool {
     }
 }
 
+fn state_has_max_text_size(state: &Arc<ActorState>, cfg: &Config) -> bool {
+    let max = cfg.max_text_size;
+    if let GlobalActorState::Server(s) = &**state {
+        s.length(TEXT_KEY) == max
+    } else {
+        false
+    }
+}
+
+fn max_text_size_is_the_max(state: &Arc<ActorState>, cfg: &Config) -> bool {
+    let max = cfg.max_text_size;
+    if let GlobalActorState::Server(s) = &**state {
+        s.length(TEXT_KEY) <= max
+    } else {
+        true
+    }
+}
+
 #[derive(Debug, Clone)]
 struct Config {
     pub max_map_size: usize,
     pub max_list_size: usize,
+    pub max_text_size: usize,
 }
 
 fn main() {
