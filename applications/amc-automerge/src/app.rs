@@ -30,33 +30,28 @@ impl DerefDocument for AppState {
 
 impl AppState {
     pub fn new(id: usize) -> Self {
+        let mut doc = Document::new(id);
+        doc.with_initial_change (|txn| {
+            // create objects we'll be working in
+            txn.put_object(ROOT, MAP_KEY, ObjType::Map).unwrap();
+            txn.put_object(ROOT, LIST_KEY, ObjType::List).unwrap();
+            txn.put_object(ROOT, TEXT_KEY, ObjType::Text).unwrap();
+        });
         Self {
-            doc: Box::new(Document::new(id)),
+            doc: Box::new(doc),
         }
     }
 
     fn get_map_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
-        if let Some((_, id)) = tx.get(ROOT, MAP_KEY).ok().flatten() {
-            id
-        } else {
-            tx.put_object(ROOT, MAP_KEY, ObjType::Map).unwrap()
-        }
+        tx.get(ROOT, MAP_KEY).ok().flatten().map(|(_, id)| id).unwrap()
     }
 
     fn get_list_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
-        if let Some((_, id)) = tx.get(ROOT, LIST_KEY).ok().flatten() {
-            id
-        } else {
-            tx.put_object(ROOT, LIST_KEY, ObjType::List).unwrap()
-        }
+        tx.get(ROOT, LIST_KEY).ok().flatten().map(|(_, id)| id).unwrap()
     }
 
     fn get_text_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
-        if let Some((_, id)) = tx.get(ROOT, TEXT_KEY).ok().flatten() {
-            id
-        } else {
-            tx.put_object(ROOT, TEXT_KEY, ObjType::Text).unwrap()
-        }
+        tx.get(ROOT, TEXT_KEY).ok().flatten().map(|(_, id)| id).unwrap()
     }
 
     pub fn put_map(&mut self, key: String, value: ScalarValue) {
