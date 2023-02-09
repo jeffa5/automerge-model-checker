@@ -88,7 +88,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
 
     type History = ();
 
-    fn application(&self, _i: usize) -> Self::App {
+    fn application(&self, _i: usize, _config: &Config) -> Self::App {
         let c = App {
             map_single_putter: client::MapSinglePutter,
             map_single_deleter: client::MapSingleDeleter,
@@ -107,7 +107,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         c
     }
 
-    fn drivers(&self, server: usize) -> Vec<Self::Driver> {
+    fn drivers(&self, server: usize, _config: &Config) -> Vec<Self::Driver> {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
             let new_drivers = match self.object_type {

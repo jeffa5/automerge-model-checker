@@ -25,16 +25,16 @@ pub trait ModelBuilder: Debug {
     type Driver: Drive<Self::App> + 'static;
 
     /// The type of config for the model.
-    type Config: Debug + 'static;
+    type Config: Debug + Clone + 'static;
 
     /// The type of history for the model.
     type History: Clone + Debug + Hash;
 
     /// Generate an application instance.
-    fn application(&self, application: usize) -> Self::App;
+    fn application(&self, application: usize, config: &Self::Config) -> Self::App;
 
     /// Generate some drivers for the given application.
-    fn drivers(&self, application: usize) -> Vec<Self::Driver>;
+    fn drivers(&self, application: usize, config: &Self::Config) -> Vec<Self::Driver>;
 
     /// Generate the config for the model.
     fn config(&self, model_opts: &ModelOpts) -> Self::Config;
@@ -115,7 +115,7 @@ impl ModelOpts {
         println!("Built config: {:?}", config);
         let history = model_builder.history();
         println!("Built history: {:?}", history);
-        let mut model = ActorModel::new(config, history);
+        let mut model = ActorModel::new(config.clone(), history);
 
         // add servers
         for i in 0..self.servers {
@@ -123,13 +123,13 @@ impl ModelOpts {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
                 restarts: self.restarts,
-                app: model_builder.application(i),
+                app: model_builder.application(i, &config),
             }))
         }
 
         // add drivers
         for i in 0..self.servers {
-            for driver in model_builder.drivers(i) {
+            for driver in model_builder.drivers(i, &config) {
                 model = model.actor(GlobalActor::Client(Client {
                     server: Id::from(i),
                     driver,

@@ -200,7 +200,7 @@ impl ModelBuilder for CounterOpts {
 
     type History = Vec<GlobalMsg<Counter>>;
 
-    fn application(&self, _application: usize) -> Self::App {
+    fn application(&self, _application: usize, _config: &Config) -> Self::App {
         Counter {
             initial_value: 1,
             counter_type: self.counter_type,
@@ -208,7 +208,7 @@ impl ModelBuilder for CounterOpts {
         }
     }
 
-    fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
+    fn drivers(&self, _application: usize, _config: &Config) -> Vec<Self::Driver> {
         vec![
             Driver {
                 func: DriverFunc::Inc,

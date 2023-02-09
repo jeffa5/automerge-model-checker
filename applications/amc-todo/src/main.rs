@@ -50,9 +50,7 @@ struct Args {
 type AppHistory = Vec<(GlobalMsg<App>, GlobalMsg<App>)>;
 
 #[derive(Debug, Clone)]
-pub struct Config {
-    pub app: App,
-}
+pub struct Config {}
 
 impl amc::model::ModelBuilder for TodoOptions {
     type App = App;
@@ -63,14 +61,14 @@ impl amc::model::ModelBuilder for TodoOptions {
 
     type History = AppHistory;
 
-    fn application(&self, _server: usize) -> Self::App {
+    fn application(&self, _server: usize, _config: &Config) -> Self::App {
         App {
             random_ids: self.random_ids,
             initial_change: self.initial_change,
         }
     }
 
-    fn drivers(&self, _server: usize) -> Vec<Self::Driver> {
+    fn drivers(&self, _server: usize, _config: &Config) -> Vec<Self::Driver> {
         let mut drivers = vec![
             Driver {
                 func: DriverState::Creater,
@@ -93,9 +91,7 @@ impl amc::model::ModelBuilder for TodoOptions {
     }
 
     fn config(&self, _model_opts: &amc::model::ModelOpts) -> Self::Config {
-        Config {
-            app: self.application(0),
-        }
+        Config {}
     }
 
     fn history(&self) -> Self::History {

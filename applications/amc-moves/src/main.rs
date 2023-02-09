@@ -164,13 +164,13 @@ impl ModelBuilder for MovesOpts {
 
     type History = Vec<GlobalMsg<List>>;
 
-    fn application(&self, _application: usize) -> Self::App {
+    fn application(&self, _application: usize, _config: &Config) -> Self::App {
         List {
             initial_size: self.initial_size,
         }
     }
 
-    fn drivers(&self, _application: usize) -> Vec<Self::Driver> {
+    fn drivers(&self, _application: usize, _config: &Config) -> Vec<Self::Driver> {
         vec![
             Driver {
                 func: DriverFunc::MoverLastFirst,
