@@ -59,6 +59,10 @@ struct AutomergeOpts {
     #[clap(long, global = true)]
     null: bool,
 
+    /// Number of keys to use if using a map.
+    #[clap(long, global = true, default_value = "foo", value_delimiter = ',')]
+    keys: Vec<String>,
+
     /// Times to repeat each request.
     #[clap(long, global = true, default_value = "1")]
     repeats: u8,
@@ -107,30 +111,34 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
             let new_drivers = match self.object_type {
-                ObjectType::Map => {
-                    let mut d = vec![
-                        Driver {
-                            func: crate::driver::DriverState::MapSinglePut {
-                                key: "key".to_owned(),
-                                value: value.clone(),
+                ObjectType::Map => self
+                    .keys
+                    .iter()
+                    .flat_map(|k| {
+                        let mut d = vec![
+                            Driver {
+                                func: crate::driver::DriverState::MapSinglePut {
+                                    key: k.to_owned(),
+                                    value: value.clone(),
+                                },
                             },
-                        },
-                        Driver {
-                            func: crate::driver::DriverState::MapSingleDelete {
-                                key: "key".to_owned(),
+                            Driver {
+                                func: crate::driver::DriverState::MapSingleDelete {
+                                    key: k.to_owned(),
+                                },
                             },
-                        },
-                    ];
-                    if value.is_counter() {
-                        d.push(Driver {
-                            func: crate::driver::DriverState::MapIncrement {
-                                key: "key".to_owned(),
-                                by: 1,
-                            },
-                        });
-                    }
-                    d
-                }
+                        ];
+                        if value.is_counter() {
+                            d.push(Driver {
+                                func: crate::driver::DriverState::MapIncrement {
+                                    key: k.to_owned(),
+                                    by: 1,
+                                },
+                            });
+                        }
+                        d
+                    })
+                    .collect(),
                 ObjectType::List => {
                     let mut d = vec![
                         Driver {
