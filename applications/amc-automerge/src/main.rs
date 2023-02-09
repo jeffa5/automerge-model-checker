@@ -107,10 +107,10 @@ impl amc::model::ModelBuilder for AutomergeOpts {
         c
     }
 
-    fn drivers(&self, server: usize, _config: &Config) -> Vec<Self::Driver> {
+    fn drivers(&self, server: usize, config: &Config) -> Vec<Self::Driver> {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
-            let new_drivers = match self.object_type {
+            let new_drivers: Vec<_> = match self.object_type {
                 ObjectType::Map => self
                     .keys
                     .iter()
@@ -139,64 +139,70 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                         d
                     })
                     .collect(),
-                ObjectType::List => {
-                    let mut d = vec![
-                        Driver {
-                            func: crate::driver::DriverState::ListPut {
-                                index: 0,
-                                value: value.clone(),
+                ObjectType::List => (0..config.max_list_size)
+                    .flat_map(|index| {
+                        let mut d = vec![
+                            Driver {
+                                func: crate::driver::DriverState::ListPut {
+                                    index,
+                                    value: value.clone(),
+                                },
                             },
-                        },
-                        Driver {
-                            func: crate::driver::DriverState::ListDelete { index: 0 },
-                        },
-                        Driver {
-                            func: crate::driver::DriverState::ListInsert {
-                                index: 0,
-                                value: value.clone(),
+                            Driver {
+                                func: crate::driver::DriverState::ListDelete { index },
                             },
-                        },
-                        Driver {
-                            func: crate::driver::DriverState::ListSplice {
-                                index: 0,
-                                delete: 2,
-                                values: vec![value.clone(); 2],
+                            Driver {
+                                func: crate::driver::DriverState::ListInsert {
+                                    index,
+                                    value: value.clone(),
+                                },
                             },
-                        },
-                    ];
-                    if value.is_counter() {
-                        d.push(Driver {
-                            func: crate::driver::DriverState::ListIncrement { index: 0, by: 1 },
-                        });
-                    }
-                    d
-                }
+                            Driver {
+                                func: crate::driver::DriverState::ListSplice {
+                                    index,
+                                    delete: 2,
+                                    values: vec![value.clone(); 2],
+                                },
+                            },
+                        ];
+                        if value.is_counter() {
+                            d.push(Driver {
+                                func: crate::driver::DriverState::ListIncrement { index, by: 1 },
+                            });
+                        }
+                        d
+                    })
+                    .collect(),
                 ObjectType::Text => {
                     if let ScalarValue::Str(s) = value {
-                        vec![
-                            Driver {
-                                func: crate::driver::DriverState::TextPut {
-                                    index: 0,
-                                    value: s.clone(),
-                                },
-                            },
-                            Driver {
-                                func: crate::driver::DriverState::TextDelete { index: 0 },
-                            },
-                            Driver {
-                                func: crate::driver::DriverState::TextInsert {
-                                    index: 0,
-                                    value: s.clone(),
-                                },
-                            },
-                            Driver {
-                                func: crate::driver::DriverState::TextSplice {
-                                    index: 0,
-                                    delete: 2,
-                                    text: format!("{}{}", s, s),
-                                },
-                            },
-                        ]
+                        (0..config.max_list_size)
+                            .flat_map(|index| {
+                                vec![
+                                    Driver {
+                                        func: crate::driver::DriverState::TextPut {
+                                            index,
+                                            value: s.clone(),
+                                        },
+                                    },
+                                    Driver {
+                                        func: crate::driver::DriverState::TextDelete { index },
+                                    },
+                                    Driver {
+                                        func: crate::driver::DriverState::TextInsert {
+                                            index,
+                                            value: s.clone(),
+                                        },
+                                    },
+                                    Driver {
+                                        func: crate::driver::DriverState::TextSplice {
+                                            index,
+                                            delete: 2,
+                                            text: format!("{}{}", s, s),
+                                        },
+                                    },
+                                ]
+                            })
+                            .collect()
                     } else {
                         panic!("text object wanted but value wasn't a string")
                     }
