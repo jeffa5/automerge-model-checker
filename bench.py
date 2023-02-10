@@ -17,7 +17,7 @@ def make_results_dir():
     """
     Clear and create the results dir.
     """
-    shutil.rmtree(RESULTS_DIR)
+    shutil.rmtree(RESULTS_DIR, ignore_errors=True)
     os.makedirs(RESULTS_DIR)
 
 
