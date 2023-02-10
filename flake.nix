@@ -47,6 +47,10 @@
       amc-todo = mkApp "amc-todo";
       amc-moves = mkApp "amc-moves";
       amc-automerge = mkApp "amc-automerge";
+      bench = {
+        type = "app";
+        program = "${self.packages.${system}.bench}";
+      };
     };
 
     packages.${system} = {
