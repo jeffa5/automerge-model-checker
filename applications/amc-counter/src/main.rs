@@ -61,7 +61,7 @@ impl Application for Counter {
         }
     }
 
-    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
+    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Option<()> {
         match input {
             CounterMsg::Increment => {
                 if self.counter_type {
@@ -108,6 +108,7 @@ impl Application for Counter {
                 }
             }
         }
+        None
     }
 }
 

@@ -21,8 +21,9 @@ impl Application for MapSingleDeleter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         input: Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().delete(&input);
+        None
     }
 }
 
@@ -45,8 +46,9 @@ impl Application for ListDeleter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         input: Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().delete_list(input);
+        None
     }
 }
 
@@ -69,7 +71,8 @@ impl Application for TextDeleter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         input: Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().delete_text(input);
+        None
     }
 }

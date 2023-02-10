@@ -26,7 +26,7 @@ pub trait Application: Clone + Hash + Eq + Debug + Send + Sync {
 
     /// Execute an application, triggering some behaviour with a given input, expecting a
     /// corresponding output.
-    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output;
+    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Option<Self::Output>;
 }
 
 /// Get access to a document.

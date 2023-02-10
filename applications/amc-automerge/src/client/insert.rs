@@ -23,8 +23,9 @@ impl Application for ListInserter {
         &self,
         document: &mut Cow<Self::State>,
         (index, value): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().insert_list(index, value);
+        None
     }
 }
 
@@ -47,7 +48,8 @@ impl Application for TextInserter {
         &self,
         document: &mut Cow<Self::State>,
         (index, value): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().insert_text(index, value);
+        None
     }
 }

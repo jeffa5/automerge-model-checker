@@ -22,7 +22,7 @@ impl Application for App {
         AppState::new(id, self.random_ids, self.initial_change)
     }
 
-    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
+    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Option<AppOutput> {
         let output = match &input {
             crate::driver::AppInput::CreateTodo(text) => {
                 let id = document.to_mut().create_todo(text.clone());
@@ -47,6 +47,6 @@ impl Application for App {
             }
         };
         debug!(?input, ?output, "Executing new input");
-        output
+        Some(output)
     }
 }

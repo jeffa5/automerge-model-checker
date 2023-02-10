@@ -21,8 +21,9 @@ impl Application for MapIncrementer {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         (key, by): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().increment_map(key, by);
+        None
     }
 }
 
@@ -44,7 +45,8 @@ impl Application for ListIncrementer {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         (index, by): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().increment_list(index, by);
+        None
     }
 }

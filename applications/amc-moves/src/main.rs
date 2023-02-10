@@ -68,7 +68,7 @@ impl Application for List {
         ListState { doc }
     }
 
-    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
+    fn execute(&self, state: &mut Cow<Self::State>, input: Self::Input) -> Option<()> {
         match input {
             ListInput::Move(from, mut to) => {
                 let (_, list_id) = state.document().get(ROOT, "list").unwrap().unwrap();
@@ -83,6 +83,7 @@ impl Application for List {
                 txn.commit();
             }
         }
+        None
     }
 }
 

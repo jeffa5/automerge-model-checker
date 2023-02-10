@@ -52,7 +52,7 @@ impl Application for App {
         AppState::new(id)
     }
 
-    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Self::Output {
+    fn execute(&self, document: &mut Cow<Self::State>, input: Self::Input) -> Option<()> {
         match input {
             DriverMsg::MapSinglePut { key, value } => {
                 self.map_single_putter.execute(document, (key, value))

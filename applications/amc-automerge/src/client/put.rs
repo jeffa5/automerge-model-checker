@@ -21,9 +21,10 @@ impl Application for MapSinglePutter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         (key, value): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().put_map(key, value);
-    }
+        None
+   }
 }
 
 /// A client strategy that just puts at the start of a list.
@@ -44,8 +45,9 @@ impl Application for ListPutter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         (index, value): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().put_list(index, value);
+        None
     }
 }
 
@@ -67,7 +69,8 @@ impl Application for TextPutter {
         &self,
         document: &mut std::borrow::Cow<Self::State>,
         (index, value): Self::Input,
-    ) -> Self::Output {
+    ) -> Option<()> {
         document.to_mut().put_text(index, value);
+        None
     }
 }
