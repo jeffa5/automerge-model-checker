@@ -24,7 +24,9 @@ impl Application for ListSplicer {
         document: &mut Cow<Self::State>,
         (index, delete, values): Self::Input,
     ) -> Option<()> {
-        document.to_mut().splice_list(index, delete, values);
+        if index + delete < document.list_length() {
+            document.to_mut().splice_list(index, delete, values);
+        }
         None
     }
 }
@@ -49,7 +51,9 @@ impl Application for TextSplicer {
         document: &mut Cow<Self::State>,
         (index, delete, text): Self::Input,
     ) -> Option<()> {
-        document.to_mut().splice_text(index, delete, text);
+        if index + delete < document.text_length() {
+            document.to_mut().splice_text(index, delete, text);
+        }
         None
     }
 }

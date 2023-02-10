@@ -19,12 +19,10 @@ impl Application for ListInserter {
         AppState::new(id)
     }
 
-    fn execute(
-        &self,
-        document: &mut Cow<Self::State>,
-        (index, value): Self::Input,
-    ) -> Option<()> {
-        document.to_mut().insert_list(index, value);
+    fn execute(&self, document: &mut Cow<Self::State>, (index, value): Self::Input) -> Option<()> {
+        if index <= document.list_length() {
+            document.to_mut().insert_list(index, value);
+        }
         None
     }
 }
@@ -44,12 +42,10 @@ impl Application for TextInserter {
         AppState::new(id)
     }
 
-    fn execute(
-        &self,
-        document: &mut Cow<Self::State>,
-        (index, value): Self::Input,
-    ) -> Option<()> {
-        document.to_mut().insert_text(index, value);
+    fn execute(&self, document: &mut Cow<Self::State>, (index, value): Self::Input) -> Option<()> {
+        if index <= document.text_length() {
+            document.to_mut().insert_text(index, value);
+        }
         None
     }
 }

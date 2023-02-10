@@ -44,7 +44,18 @@ impl AppState {
         }
     }
 
-    fn get_map_obj(tx: &mut automerge::transaction::Transaction<UnObserved>) -> automerge::ObjId {
+    fn get_map_obj(&self) -> automerge::ObjId {
+        self.doc
+            .get(ROOT, MAP_KEY)
+            .ok()
+            .flatten()
+            .map(|(_, id)| id)
+            .unwrap()
+    }
+
+    fn get_map_obj_tx(
+        tx: &mut automerge::transaction::Transaction<UnObserved>,
+    ) -> automerge::ObjId {
         tx.get(ROOT, MAP_KEY)
             .ok()
             .flatten()
@@ -92,17 +103,13 @@ impl AppState {
 
     pub fn put_map(&mut self, key: String, value: ScalarValue) {
         let mut tx = self.doc.to_mut().transaction();
-        let map = Self::get_map_obj(&mut tx);
+        let map = Self::get_map_obj_tx(&mut tx);
         tx.put(map, key, value).unwrap();
         tx.commit();
     }
 
     pub fn put_list(&mut self, index: usize, value: ScalarValue) {
         let list = self.get_list_obj();
-        let len = self.doc.length(&list);
-        if index >= len {
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
         if tx.put(list, index, value).is_err() {
             tx.rollback();
@@ -113,10 +120,6 @@ impl AppState {
 
     pub fn put_text(&mut self, index: usize, value: String) {
         let text = self.get_text_obj();
-        let len = self.doc.length(&text);
-        if index >= len {
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
         if tx.put(text, index, value).is_err() {
             tx.rollback();
@@ -127,11 +130,6 @@ impl AppState {
 
     pub fn insert_list(&mut self, index: usize, value: ScalarValue) {
         let list = self.get_list_obj();
-        let len = self.doc.length(&list);
-        if index > len {
-            // can push on to the end
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
         if tx.insert(list, index, value).is_err() {
             tx.rollback();
@@ -142,13 +140,7 @@ impl AppState {
 
     pub fn insert_text(&mut self, index: usize, value: String) {
         let text = self.get_text_obj();
-        let len = self.doc.length(&text);
-        if index > len {
-            // can push on to the end
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
-        let text = Self::get_text_obj_tx(&mut tx);
         if tx.insert(text, index, value).is_err() {
             tx.rollback();
             return;
@@ -158,17 +150,12 @@ impl AppState {
 
     pub fn delete(&mut self, key: &str) {
         let mut tx = self.doc.to_mut().transaction();
-        let map = Self::get_map_obj(&mut tx);
+        let map = Self::get_map_obj_tx(&mut tx);
         tx.delete(map, key).unwrap();
         tx.commit();
     }
 
     pub fn delete_list(&mut self, index: usize) {
-        let list = self.get_list_obj();
-        let len = self.doc.length(&list);
-        if index >= len {
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
         let list = Self::get_list_obj_tx(&mut tx);
         if tx.delete(list, index).is_err() {
@@ -180,12 +167,7 @@ impl AppState {
 
     pub fn delete_text(&mut self, index: usize) {
         let text = self.get_text_obj();
-        let len = self.doc.length(&text);
-        if index >= len {
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
-        let text = Self::get_text_obj_tx(&mut tx);
         if tx.delete(text, index).is_err() {
             tx.rollback();
             self.doc.to_mut().set_error();
@@ -217,17 +199,13 @@ impl AppState {
 
     pub fn increment_map(&mut self, key: String, by: i64) {
         let mut tx = self.doc.to_mut().transaction();
-        let map = Self::get_map_obj(&mut tx);
+        let map = Self::get_map_obj_tx(&mut tx);
         tx.increment(map, key, by).unwrap();
         tx.commit();
     }
 
     pub fn increment_list(&mut self, index: usize, by: i64) {
         let list = self.get_list_obj();
-        let len = self.doc.length(&list);
-        if index >= len {
-            return;
-        }
         let mut tx = self.doc.to_mut().transaction();
         if tx.increment(list, index, by).is_err() {
             tx.rollback();
@@ -243,5 +221,17 @@ impl AppState {
             .flatten()
             .map(|(_, id)| self.doc.length(id))
             .unwrap_or_default()
+    }
+
+    pub fn list_length(&self) -> usize {
+        self.doc.length(self.get_list_obj())
+    }
+
+    pub fn text_length(&self) -> usize {
+        self.doc.length(self.get_text_obj())
+    }
+
+    pub fn map_contains(&self, key: &str) -> bool {
+        matches!(self.doc.get(self.get_map_obj(), key), Ok(Some(_)))
     }
 }

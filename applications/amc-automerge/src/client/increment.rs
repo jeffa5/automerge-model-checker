@@ -46,7 +46,9 @@ impl Application for ListIncrementer {
         document: &mut std::borrow::Cow<Self::State>,
         (index, by): Self::Input,
     ) -> Option<()> {
-        document.to_mut().increment_list(index, by);
+        if index < document.list_length() {
+            document.to_mut().increment_list(index, by);
+        }
         None
     }
 }

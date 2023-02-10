@@ -22,7 +22,9 @@ impl Application for MapSingleDeleter {
         document: &mut std::borrow::Cow<Self::State>,
         input: Self::Input,
     ) -> Option<()> {
-        document.to_mut().delete(&input);
+        if document.map_contains(&input) {
+            document.to_mut().delete(&input);
+        }
         None
     }
 }
@@ -45,9 +47,11 @@ impl Application for ListDeleter {
     fn execute(
         &self,
         document: &mut std::borrow::Cow<Self::State>,
-        input: Self::Input,
+        index: Self::Input,
     ) -> Option<()> {
-        document.to_mut().delete_list(input);
+        if index < document.list_length() {
+            document.to_mut().delete_list(index);
+        }
         None
     }
 }
@@ -70,9 +74,11 @@ impl Application for TextDeleter {
     fn execute(
         &self,
         document: &mut std::borrow::Cow<Self::State>,
-        input: Self::Input,
+        index: Self::Input,
     ) -> Option<()> {
-        document.to_mut().delete_text(input);
+        if index < document.text_length() {
+            document.to_mut().delete_text(index);
+        }
         None
     }
 }

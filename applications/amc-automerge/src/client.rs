@@ -88,6 +88,7 @@ impl Application for App {
                 delete,
                 text,
             } => self.text_splicer.execute(document, (index, delete, text)),
-        }
+        };
+        None
     }
 }
