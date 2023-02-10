@@ -185,7 +185,11 @@ def main():
                 )
 
                 # amc-automerge
-                for object_type in ["map", "list", "text"]:
+                for (object_type, props) in [
+                    ("map", ["foo", "bar"]),
+                    ("list", [0, 1]),
+                    ("text", [0, 1]),
+                ]:
                     for datatype in [
                         "bytes",
                         "string",
@@ -195,6 +199,11 @@ def main():
                         "boolean",
                         "null",
                     ]:
+                        extra_args = []
+                        if object_type == "map":
+                            extra_args.append(("keys", ",".join(props)))
+                        else:
+                            extra_args.append(("indices", ",".join(props)))
                         run(
                             Config(
                                 bin_name="amc-automerge",
@@ -202,7 +211,7 @@ def main():
                                 servers=servers,
                                 restarts=restarts,
                                 extra_flags=[datatype],
-                                extra_args=[("object-type", object_type)],
+                                extra_args=extra_args + [("object-type", object_type)],
                             )
                         )
 
