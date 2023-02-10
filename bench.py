@@ -71,7 +71,7 @@ def run(config: Config):
         print(f"Skipping {out_dir}")
         return
     os.makedirs(out_dir)
-    cmd = f"{config.bin_name} check-iterative {config.to_args()} | tee {out_file}"
+    cmd = f"{config.bin_name} check-iterative {config.to_args()} > {out_file}"
     print("Running command:", cmd)
     subprocess.run(
         cmd,
