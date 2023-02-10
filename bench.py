@@ -8,6 +8,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from typing import List, Tuple
+from loguru import logger
 
 RESULTS_DIR = "results"
 
@@ -68,11 +69,11 @@ def run(config: Config):
     out_dir = os.path.join(RESULTS_DIR, config.dir())
     out_file = os.path.join(out_dir, "out")
     if os.path.exists(out_dir):
-        print(f"Skipping {out_dir}")
+        logger.info("Skipping {}", out_dir)
         return
     os.makedirs(out_dir)
     cmd = f"{config.bin_name} check-iterative {config.to_args()} > {out_file}"
-    print("Running command:", cmd)
+    logger.info("Running command: {}", cmd)
     subprocess.run(
         cmd,
         shell=True,

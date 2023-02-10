@@ -65,7 +65,7 @@
       };
 
       bench = pkgs.writeShellScript "bench" ''
-        PATH=${self.packages.${system}.amc}/bin:$PATH ${pkgs.python3}/bin/python ${./bench.py}
+        PATH=${self.packages.${system}.amc}/bin:$PATH ${pkgs.python3.withPackages (ps: [ps.loguru])}/bin/python ${./bench.py}
       '';
     };
 
