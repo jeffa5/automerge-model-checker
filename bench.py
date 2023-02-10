@@ -5,7 +5,6 @@ Run benchmarks in different combinations.
 """
 
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -17,8 +16,8 @@ def make_results_dir():
     """
     Clear and create the results dir.
     """
-    shutil.rmtree(RESULTS_DIR, ignore_errors=True)
-    os.makedirs(RESULTS_DIR)
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
 
 
 @dataclass
@@ -68,6 +67,9 @@ def run(config: Config):
     """
     out_dir = os.path.join(RESULTS_DIR, config.dir())
     out_file = os.path.join(out_dir, "out")
+    if os.path.exists(out_dir):
+        print(f"Skipping {out_dir}")
+        return
     os.makedirs(out_dir)
     cmd = f"{config.bin_name} check-iterative {config.to_args()} | tee {out_file}"
     print("Running command:", cmd)
