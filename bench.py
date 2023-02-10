@@ -191,13 +191,13 @@ def main():
                     ("text", ["0", "1"]),
                 ]:
                     for datatype in [
-                        "bytes",
+                        # "bytes",
                         "string",
-                        "int",
-                        "uint",
-                        "timestamp",
-                        "boolean",
-                        "null",
+                        # "int",
+                        # "uint",
+                        # "timestamp",
+                        # "boolean",
+                        # "null",
                     ]:
                         extra_args = []
                         if object_type == "map":
