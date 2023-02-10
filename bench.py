@@ -187,8 +187,8 @@ def main():
                 # amc-automerge
                 for (object_type, props) in [
                     ("map", ["foo", "bar"]),
-                    ("list", [0, 1]),
-                    ("text", [0, 1]),
+                    ("list", ["0", "1"]),
+                    ("text", ["0", "1"]),
                 ]:
                     for datatype in [
                         "bytes",
