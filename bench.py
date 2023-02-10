@@ -186,76 +186,25 @@ def main():
 
                 # amc-automerge
                 for object_type in ["map", "list", "text"]:
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["bytes"],
-                            extra_args=[("object-type", object_type)],
+                    for datatype in [
+                        "bytes",
+                        "string",
+                        "int",
+                        "uint",
+                        "timestamp",
+                        "boolean",
+                        "null",
+                    ]:
+                        run(
+                            Config(
+                                bin_name="amc-automerge",
+                                sync_method=sync_method,
+                                servers=servers,
+                                restarts=restarts,
+                                extra_flags=[datatype],
+                                extra_args=[("object-type", object_type)],
+                            )
                         )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["string"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["int"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["uint"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["timestamp"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["boolean"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
-                    run(
-                        Config(
-                            bin_name="amc-automerge",
-                            sync_method=sync_method,
-                            servers=servers,
-                            restarts=restarts,
-                            extra_flags=["null"],
-                            extra_args=[("object-type", object_type)],
-                        )
-                    )
 
 
 if __name__ == "__main__":
