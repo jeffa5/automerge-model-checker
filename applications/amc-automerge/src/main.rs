@@ -60,7 +60,7 @@ struct AutomergeOpts {
     #[clap(long, global = true)]
     null: bool,
 
-    /// Number of keys to use if using a map.
+    /// Keys to use if using a map.
     #[clap(long, global = true, default_value = "foo", value_delimiter = ',')]
     keys: Vec<String>,
 
