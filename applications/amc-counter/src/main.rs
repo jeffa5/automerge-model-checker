@@ -342,7 +342,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg9HytnIBLQAIAAAAAAAAAAABAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg37mM9cBLQAIAAAAAAAAAAEBAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
-                To explore this path try re-running with `explore 1525806181380480722/17800847812377584527/8386162701824831779/787321934809141168/11064940309934055452/6663500292895118256/1904646115807553998`"#]],
+                To explore this path try re-running with `explore 1525806181380480722/5180418002550223678/5944152108436530398/6844139681497215916/14420335236416177080/8613034781207194886/10065992036751478607`"#]],
         );
     }
 
@@ -376,7 +376,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
-                To explore this path try re-running with `explore 1525806181380480722/4200109456730230031/4857902701350411630/1558045707661065885/16706564648230123544/18305677316000548821/6130097866521043824`"#]],
+                To explore this path try re-running with `explore 1525806181380480722/17097366349952166707/8593760643917371053/10515671521338280547/2964746799589016998/3743303551252853264/13106660646034931466`"#]],
         );
     }
 
@@ -410,7 +410,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg/YbISQBXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAAECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7tkl20BXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAQECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
-                To explore this path try re-running with `explore 11282747607017160468/6140979456762620303/14887090684556844818/9271353539420952360/2905563363371263433/6298159820772864567/7088573042506657677`"#]],
+                To explore this path try re-running with `explore 11282747607017160468/5938715736771673525/8215538973129948655/8182588904830695981/13837347306307031713/3101484924508244605/5391279161082374327`"#]],
         );
     }
 

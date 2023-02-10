@@ -286,7 +286,7 @@ mod tests {
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg4uoy0wBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAAEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
                 - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI"] }) }
-                To explore this path try re-running with `explore 989895131523661519/9629008048735085213/2945674711648958142/7484395196802973298/8986840453897689648/15855679113791863516/7181443774157603252`"#]],
+                To explore this path try re-running with `explore 989895131523661519/12126579709578502203/4236396483328634040/7267937768031212210/2324762786091901137/1688099541537975566/14767950816351140781`"#]],
         );
     }
 
@@ -316,7 +316,7 @@ mod tests {
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgHv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QGLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhztowEABgIKB8CsVgF0hW9Kg+/vwrgBagEZ2/yCVWqEhxxbv8U9m/PGQRtWd/xxKYnwuCsD89CoxwgAAAAAAAAAAQEDAAABCAAAAAAAAAPnCwECAgIRBBMDNAJCA1YDVwFwA3ECcwICAQIBfwEAAX4CfgEBfgMBfgAWYX4BAH8BfwI" }) }
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAEB7+/CuG90nP066zL05yAIIASzVPPkFXOaSi00hcbAw+0FAQoHgj0BdIVvSoOLqMtMAWoBGdv8glVqhIccW7/FPZvzxkEbVnf8cSmJ8LgrA/PQqMcIAAAAAAAAAAABAwAAAQgAAAAAAAAD5wsBAgICEQQTAzQCQgNWA1cBcANxAnMCAgECAX8BAAF+An4BAX4DAX4AFmF+AQB/AX8C" }) }
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncMessageRaw { message_bytes: "QgKLqMtMsZ0HkCT1v4Lnu5/A93T+avmorCMyhnXoLhzto+/vwrhvdJz9Ousy9OcgCCAEs1Tz5BVzmkotNIXGwMPtAAECi6jLTLGdB5Ak9b+C57ufwPd0/mr5qKwjMoZ16C4c7aPv78K4b3Sc/TrrMvTnIAggBLNU8+QVc5pKLTSFxsDD7QAA" }) }
-                To explore this path try re-running with `explore 989895131523661519/9629008048735085213/2945674711648958142/6748872524998518923/14659593233181165081/4196886151292571453/12920924051922563149/15608510881148094730`"#]],
+                To explore this path try re-running with `explore 989895131523661519/12126579709578502203/4236396483328634040/9869795524893107760/13250961904440122108/5028899663474348700/194727513515203086/68795656804177286`"#]],
         );
     }
 }
