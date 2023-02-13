@@ -1,4 +1,4 @@
-# Automerge Model Checker (amc)
+# Automerge Model Checker (AMC)
 
 [![main docs](https://img.shields.io/badge/docs-main-informational)](http://jeffas.io/automerge-model-checker/doc/amc/)
 
@@ -29,7 +29,7 @@ This might be able to help designers of data types check their merge behaviour t
 ## Design
 
 The Automerge model checker is built on [Stateright](https://github.com/stateright/stateright) for doing the actual model checking.
-amc provides convenience wrappers for working with automerge documents as well as a more structured way of building the model to be checked.
+AMC provides convenience wrappers for working with automerge documents as well as a more structured way of building the model to be checked.
 This comes down to two main parts: the [`Application`](http://jeffas.io/automerge-model-checker/doc/amc/application/trait.Application.html) and the [`Drive`r](http://jeffas.io/automerge-model-checker/doc/amc/driver/trait.Drive.html).
 
 The application is responsible for implementing the logic of mutating the automerge document.
@@ -39,11 +39,11 @@ The driver creates the inputs for the application to work with, and can get resp
 Each driver instance should implement a single type of workflow that can be performed.
 This gives each application multiple drivers.
 
-When building the model using the [`ModelBuilder`](http://jeffas.io/automerge-model-checker/doc/amc/model/trait.ModelBuilder.html), amc will combine applications with logic to handle syncing with a certain method.
+When building the model using the [`ModelBuilder`](http://jeffas.io/automerge-model-checker/doc/amc/model/trait.ModelBuilder.html), AMC will combine applications with logic to handle syncing with a certain method.
 Drivers get combined with a lightweight wrapper to handle communication with the application.
 It is at this point developers can specify properties that they want to be evaluated in the model.
 For instance, a counter should have the value of the sum of increments and decrements (shown in `properties` of [`CounterOpts`](http://jeffas.io/automerge-model-checker/doc/amc_counter/struct.CounterOpts.html)).
-amc provides some common properties and helpers in the [`properties` module](http://jeffas.io/automerge-model-checker/doc/amc/properties/index.html).
+AMC provides some common properties and helpers in the [`properties` module](http://jeffas.io/automerge-model-checker/doc/amc/properties/index.html).
 
 ## Benchmarking
 
