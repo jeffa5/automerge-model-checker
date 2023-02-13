@@ -60,11 +60,13 @@ where
         let new_unique = data.unique_states - self.last_unique;
         let unique_rate = (data.unique_states as f64 / data.duration.as_secs_f64()).round() as u64;
         let max_depth = data.max_depth;
+        let in_degree = data.average_in_degree;
+        let out_degree = data.average_out_degree;
         let status = if data.done { "Done    " } else { "Checking" };
         let locale = SystemLocale::default().unwrap();
         let duration = data.duration.as_millis();
         println!(
-            "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), max_depth={}, duration={:?}ms",
+            "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), max_depth={}, in_degree={}, out_degree={}, duration={:?}ms",
             status,
             data.total_states.to_formatted_string(&locale),
             new_total.to_formatted_string(&locale),
@@ -73,6 +75,8 @@ where
             new_unique.to_formatted_string(&locale),
             unique_rate.to_formatted_string(&locale),
             max_depth,
+            in_degree,
+            out_degree,
             duration
         );
 
@@ -156,8 +160,12 @@ where
         }
 
         self.data.push_str(&format!(
-            "Done states={}, unique={}, max_depth={}\n",
-            data.total_states, data.unique_states, data.max_depth,
+            "Done states={}, unique={}, max_depth={}, in_degree={}, out_degree={}\n",
+            data.total_states,
+            data.unique_states,
+            data.max_depth,
+            data.average_in_degree,
+            data.average_out_degree
         ));
     }
 
