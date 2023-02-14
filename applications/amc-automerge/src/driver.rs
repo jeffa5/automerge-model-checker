@@ -5,6 +5,7 @@ use crate::{client::App, scalar::ScalarValue};
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Driver {
     pub func: DriverState,
+    pub repeats: u8,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -121,93 +122,86 @@ impl Drive<App> for Driver {
         <Self as Drive<App>>::State,
         Vec<<App as amc::prelude::Application>::Input>,
     ) {
-        match &self.func {
+        let msgs = match &self.func {
             DriverState::MapSinglePut { key, value } => {
-                let msgs = vec![DriverMsg::MapSinglePut {
+                vec![DriverMsg::MapSinglePut {
                     key: key.clone(),
                     value: value.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::MapSingleDelete { key } => {
-                let msgs = vec![DriverMsg::MapSingleDelete { key: key.clone() }];
-                ((), msgs)
+                vec![DriverMsg::MapSingleDelete { key: key.clone() }]
             }
             DriverState::ListPut { index, value } => {
-                let msgs = vec![DriverMsg::ListPut {
+                vec![DriverMsg::ListPut {
                     index: *index,
                     value: value.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::ListDelete { index } => {
-                let msgs = vec![DriverMsg::ListDelete { index: *index }];
-                ((), msgs)
+                vec![DriverMsg::ListDelete { index: *index }]
             }
             DriverState::ListInsert { index, value } => {
-                let msgs = vec![DriverMsg::ListInsert {
+                vec![DriverMsg::ListInsert {
                     index: *index,
                     value: value.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::ListSplice {
                 index,
                 delete,
                 values,
             } => {
-                let msgs = vec![DriverMsg::ListSplice {
+                vec![DriverMsg::ListSplice {
                     index: *index,
                     delete: *delete,
                     values: values.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::TextPut { index, value } => {
-                let msgs = vec![DriverMsg::TextPut {
+                vec![DriverMsg::TextPut {
                     index: *index,
                     value: value.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::TextDelete { index } => {
-                let msgs = vec![DriverMsg::TextDelete { index: *index }];
-                ((), msgs)
+                vec![DriverMsg::TextDelete { index: *index }]
             }
             DriverState::TextInsert { index, value } => {
-                let msgs = vec![DriverMsg::TextInsert {
+                vec![DriverMsg::TextInsert {
                     index: *index,
                     value: value.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::TextSplice {
                 index,
                 delete,
                 text,
             } => {
-                let msgs = vec![DriverMsg::TextSplice {
+                vec![DriverMsg::TextSplice {
                     index: *index,
                     delete: *delete,
                     text: text.clone(),
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::MapIncrement { key, by } => {
-                let msgs = vec![DriverMsg::MapIncrement {
+                vec![DriverMsg::MapIncrement {
                     key: key.clone(),
                     by: *by,
-                }];
-                ((), msgs)
+                }]
             }
             DriverState::ListIncrement { index, by } => {
-                let msgs = vec![DriverMsg::ListIncrement {
+                vec![DriverMsg::ListIncrement {
                     index: *index,
                     by: *by,
-                }];
-                ((), msgs)
+                }]
             }
+        };
+        let mut all_msgs = Vec::new();
+        for _ in 0..self.repeats {
+            all_msgs.append(&mut msgs.clone());
         }
+        ((), all_msgs)
     }
 
     fn handle_output(

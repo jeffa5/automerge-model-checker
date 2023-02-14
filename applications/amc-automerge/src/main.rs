@@ -3,7 +3,6 @@ use std::sync::Arc;
 use crate::app::{LIST_KEY, MAP_KEY};
 use crate::client::App;
 use crate::scalar::ScalarValue;
-use amc::combinators::{Repeat, Repeater};
 use amc::global::{GlobalActor, GlobalActorState};
 use app::TEXT_KEY;
 
@@ -83,12 +82,12 @@ struct Args {
     amc_args: amc::cli::RunArgs,
 }
 
-type ActorState = GlobalActorState<Repeater<Driver>, App>;
+type ActorState = GlobalActorState<Driver, App>;
 
 impl amc::model::ModelBuilder for AutomergeOpts {
     type App = App;
 
-    type Driver = Repeater<Driver>;
+    type Driver = Driver;
 
     type Config = Config;
 
@@ -116,7 +115,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
     fn drivers(&self, server: usize, _config: &Config) -> Vec<Self::Driver> {
         let mut drivers = vec![];
         let mut add_drivers = |value: ScalarValue| {
-            let new_drivers: Vec<_> = match self.object_type {
+            let mut new_drivers: Vec<_> = match self.object_type {
                 ObjectType::Map => self
                     .keys
                     .iter()
@@ -127,11 +126,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                     key: k.to_owned(),
                                     value: value.clone(),
                                 },
+                                repeats: self.repeats,
                             },
                             Driver {
                                 func: crate::driver::DriverState::MapSingleDelete {
                                     key: k.to_owned(),
                                 },
+                                repeats: self.repeats,
                             },
                         ];
                         if value.is_counter() {
@@ -140,6 +141,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                     key: k.to_owned(),
                                     by: 1,
                                 },
+                                repeats: self.repeats,
                             });
                         }
                         d
@@ -156,15 +158,18 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                     index,
                                     value: value.clone(),
                                 },
+                                repeats: self.repeats,
                             },
                             Driver {
                                 func: crate::driver::DriverState::ListDelete { index },
+                                repeats: self.repeats,
                             },
                             Driver {
                                 func: crate::driver::DriverState::ListInsert {
                                     index,
                                     value: value.clone(),
                                 },
+                                repeats: self.repeats,
                             },
                             Driver {
                                 func: crate::driver::DriverState::ListSplice {
@@ -172,11 +177,13 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                     delete: 2,
                                     values: vec![value.clone(); 2],
                                 },
+                                repeats: self.repeats,
                             },
                         ];
                         if value.is_counter() {
                             d.push(Driver {
                                 func: crate::driver::DriverState::ListIncrement { index, by: 1 },
+                                repeats: self.repeats,
                             });
                         }
                         d
@@ -194,15 +201,18 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                             index,
                                             value: s.clone(),
                                         },
+                                        repeats: self.repeats,
                                     },
                                     Driver {
                                         func: crate::driver::DriverState::TextDelete { index },
+                                        repeats: self.repeats,
                                     },
                                     Driver {
                                         func: crate::driver::DriverState::TextInsert {
                                             index,
                                             value: s.clone(),
                                         },
+                                        repeats: self.repeats,
                                     },
                                     Driver {
                                         func: crate::driver::DriverState::TextSplice {
@@ -210,6 +220,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                             delete: 2,
                                             text: format!("{}{}", s, s),
                                         },
+                                        repeats: self.repeats,
                                     },
                                 ]
                             })
@@ -219,10 +230,6 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     }
                 }
             };
-            let mut new_drivers = new_drivers
-                .into_iter()
-                .map(|d| d.repeat(self.repeats))
-                .collect();
             drivers.append(&mut new_drivers);
         };
         if self.bytes {
@@ -300,7 +307,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
             stateright::actor::ActorModel<GlobalActor<Self::App, Self::Driver>, Self::Config>,
         >,
     > {
-        type Model = stateright::actor::ActorModel<GlobalActor<App, Repeater<Driver>>, Config>;
+        type Model = stateright::actor::ActorModel<GlobalActor<App, Driver>, Config>;
         type Prop = Property<Model>;
         vec![
             Prop::sometimes("reach max map size", |model, state| {
