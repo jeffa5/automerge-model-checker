@@ -68,6 +68,18 @@ pub struct AutomergeOpts {
     #[clap(long, global = true, default_value = "0", value_delimiter = ',')]
     pub indices: Vec<usize>,
 
+    /// Whether to add put operations.
+    #[clap(long, global = true)]
+    pub put: bool,
+
+    /// Whether to add insert operations for lists.
+    #[clap(long, global = true)]
+    pub insert: bool,
+
+    /// Whether to add delete operations.
+    #[clap(long, global = true)]
+    pub delete: bool,
+
     /// Whether to add splice operations for lists.
     #[clap(long, global = true)]
     pub splice: bool,
@@ -124,21 +136,24 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     .keys
                     .iter()
                     .flat_map(|k| {
-                        let mut d = vec![
-                            Driver {
+                        let mut d = vec![];
+                        if self.put {
+                            d.push(Driver {
                                 func: crate::driver::DriverState::MapSinglePut {
                                     key: k.to_owned(),
                                     value: value.clone(),
                                 },
                                 repeats: self.repeats,
-                            },
-                            Driver {
+                            })
+                        }
+                        if self.delete {
+                            d.push(Driver {
                                 func: crate::driver::DriverState::MapSingleDelete {
                                     key: k.to_owned(),
                                 },
                                 repeats: self.repeats,
-                            },
-                        ];
+                            })
+                        }
                         if value.is_counter() {
                             d.push(Driver {
                                 func: crate::driver::DriverState::MapIncrement {
@@ -156,26 +171,31 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                     .iter()
                     .copied()
                     .flat_map(|index| {
-                        let mut d = vec![
-                            Driver {
-                                func: crate::driver::DriverState::ListPut {
-                                    index,
-                                    value: value.clone(),
-                                },
-                                repeats: self.repeats,
-                            },
-                            Driver {
-                                func: crate::driver::DriverState::ListDelete { index },
-                                repeats: self.repeats,
-                            },
-                            Driver {
+                        let mut d = vec![];
+                        if self.insert {
+                            d.push(Driver {
                                 func: crate::driver::DriverState::ListInsert {
                                     index,
                                     value: value.clone(),
                                 },
                                 repeats: self.repeats,
-                            },
-                        ];
+                            })
+                        }
+                        if self.delete {
+                            d.push(Driver {
+                                func: crate::driver::DriverState::ListDelete { index },
+                                repeats: self.repeats,
+                            })
+                        }
+                        if self.put {
+                            d.push(Driver {
+                                func: crate::driver::DriverState::ListPut {
+                                    index,
+                                    value: value.clone(),
+                                },
+                                repeats: self.repeats,
+                            })
+                        }
                         if self.splice {
                             d.push(Driver {
                                 func: crate::driver::DriverState::ListSplice {
@@ -201,26 +221,31 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             .iter()
                             .copied()
                             .flat_map(|index| {
-                                let mut d = vec![
-                                    Driver {
+                                let mut d = vec![];
+                                if self.put {
+                                    d.push(Driver {
                                         func: crate::driver::DriverState::TextPut {
                                             index,
                                             value: s.clone(),
                                         },
                                         repeats: self.repeats,
-                                    },
-                                    Driver {
+                                    })
+                                }
+                                if self.delete {
+                                    d.push(Driver {
                                         func: crate::driver::DriverState::TextDelete { index },
                                         repeats: self.repeats,
-                                    },
-                                    Driver {
+                                    })
+                                }
+                                if self.insert {
+                                    d.push(Driver {
                                         func: crate::driver::DriverState::TextInsert {
                                             index,
                                             value: s.clone(),
                                         },
                                         repeats: self.repeats,
-                                    },
-                                ];
+                                    })
+                                }
                                 if self.splice {
                                     d.push(Driver {
                                         func: crate::driver::DriverState::TextSplice {
