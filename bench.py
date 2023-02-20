@@ -79,12 +79,15 @@ def run(config: Config):
     )
     logger.info("Running command: {}", cmd)
     timeout_s = 60 * 10 # 30 minutes
-    subprocess.run(
-        cmd,
-        shell=True,
-        check=True,
-        timeout=timeout_s,
-    )
+    try:
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired:
+        logger.warn("Timed out after {}s", timeout_s)
 
 
 def main():
