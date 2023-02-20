@@ -68,6 +68,10 @@ pub struct AutomergeOpts {
     #[clap(long, global = true, default_value = "0", value_delimiter = ',')]
     pub indices: Vec<usize>,
 
+    /// Whether to add splice operations for lists.
+    #[clap(long, global = true)]
+    pub splice: bool,
+
     /// Times to repeat each request.
     #[clap(long, global = true, default_value = "1")]
     pub repeats: u8,
@@ -171,15 +175,17 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                 },
                                 repeats: self.repeats,
                             },
-                            Driver {
+                        ];
+                        if self.splice {
+                            d.push(Driver {
                                 func: crate::driver::DriverState::ListSplice {
                                     index,
                                     delete: 2,
                                     values: vec![value.clone(); 2],
                                 },
                                 repeats: self.repeats,
-                            },
-                        ];
+                            });
+                        }
                         if value.is_counter() {
                             d.push(Driver {
                                 func: crate::driver::DriverState::ListIncrement { index, by: 1 },
@@ -195,7 +201,7 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                             .iter()
                             .copied()
                             .flat_map(|index| {
-                                vec![
+                                let mut d = vec![
                                     Driver {
                                         func: crate::driver::DriverState::TextPut {
                                             index,
@@ -214,15 +220,18 @@ impl amc::model::ModelBuilder for AutomergeOpts {
                                         },
                                         repeats: self.repeats,
                                     },
-                                    Driver {
+                                ];
+                                if self.splice {
+                                    d.push(Driver {
                                         func: crate::driver::DriverState::TextSplice {
                                             index,
                                             delete: 2,
                                             text: format!("{}{}", s, s),
                                         },
                                         repeats: self.repeats,
-                                    },
-                                ]
+                                    });
+                                }
+                                d
                             })
                             .collect()
                     } else {
