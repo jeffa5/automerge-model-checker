@@ -91,6 +91,8 @@ def main():
     """
     make_results_dir()
 
+    # checks, not save-load as that is better fuzzed and is costly here
+    check_flags = ["in-sync-check", "historical-check", "error-free-check"]
     sync_methods = ["changes", "messages", "save-load"]
     for servers in [2, 3]:
         for sync_method in sync_methods:
@@ -103,7 +105,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=[],
+                        extra_flags=check_flags,
                         extra_args=[],
                     )
                 )
@@ -114,7 +116,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["counter-type"],
+                        extra_flags=check_flags + ["counter-type"],
                         extra_args=[],
                     )
                 )
@@ -125,7 +127,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["initial-change"],
+                        extra_flags=check_flags + ["initial-change"],
                         extra_args=[],
                     )
                 )
@@ -136,7 +138,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["counter-type", "initial-change"],
+                        extra_flags=check_flags + ["counter-type", "initial-change"],
                         extra_args=[],
                     )
                 )
@@ -149,7 +151,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=[],
+                        extra_flags=check_flags,
                         extra_args=[],
                     )
                 )
@@ -162,7 +164,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=[],
+                        extra_flags=check_flags,
                         extra_args=[],
                     )
                 )
@@ -173,7 +175,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["random-ids"],
+                        extra_flags=check_flags + ["random-ids"],
                         extra_args=[],
                     )
                 )
@@ -184,7 +186,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["initial-change"],
+                        extra_flags=check_flags + ["initial-change"],
                         extra_args=[],
                     )
                 )
@@ -195,7 +197,7 @@ def main():
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
-                        extra_flags=["initial-change", "random-ids"],
+                        extra_flags=check_flags + ["initial-change", "random-ids"],
                         extra_args=[],
                     )
                 )
@@ -216,7 +218,7 @@ def main():
                         # "null",
                     ]:
                         extra_args = [("object-type", object_type)]
-                        extra_flags = [datatype]
+                        extra_flags = check_flags + [datatype]
                         if object_type == "map":
                             extra_args.append(("keys", ",".join(props)))
                             extra_flags += ["put", "delete"]
