@@ -67,7 +67,7 @@ impl AppState {
         if let Ok(Some((_, id))) = tx.get(ROOT, "todos") {
             return id;
         }
-        
+
         tx.put_object(ROOT, "todos", ObjType::Map).unwrap()
     }
 
