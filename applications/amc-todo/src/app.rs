@@ -67,15 +67,15 @@ impl AppState {
         if let Ok(Some((_, id))) = tx.get(ROOT, "todos") {
             return id;
         }
-        let id = tx.put_object(ROOT, "todos", ObjType::Map).unwrap();
-        return id;
+        
+        tx.put_object(ROOT, "todos", ObjType::Map).unwrap()
     }
 
     fn todos_map(&self) -> Option<ObjId> {
         if let Ok(Some((_, id))) = self.doc.get(ROOT, "todos") {
             return Some(id);
         }
-        return None;
+        None
     }
 
     // create a todo in the document and return its id
@@ -144,7 +144,7 @@ impl AppState {
 
     pub fn num_todos(&self) -> usize {
         let todos_map = self.todos_map();
-        todos_map.map(|m| self.doc.length(&m)).unwrap_or_default()
+        todos_map.map(|m| self.doc.length(m)).unwrap_or_default()
     }
 
     pub fn list_todos(&self) -> TinyVec<[u32; 4]> {

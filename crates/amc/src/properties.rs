@@ -123,11 +123,11 @@ where
     for actor in actors {
         if let GlobalActorState::Server(server) = &**actor {
             let document = server.document();
-            let historical_documents = get_historical_documents(&document);
+            let historical_documents = get_historical_documents(document);
             for historical_doc in historical_documents {
                 let heads = historical_doc.get_heads();
                 let original_view = materialize(&historical_doc);
-                let historical_view = materialize_at(&document, &heads);
+                let historical_view = materialize_at(document, &heads);
                 if original_view != historical_view {
                     return false;
                 }
