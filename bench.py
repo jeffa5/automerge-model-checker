@@ -28,6 +28,7 @@ class Config:
     """
 
     bin_name: str
+    search_type: str
     sync_method: str
     servers: int
     restarts: bool
@@ -39,7 +40,7 @@ class Config:
         Build the dir name for this config.
         """
         restarts = "restarts" if self.restarts else "norestarts"
-        directory = f"{self.bin_name}_{self.sync_method}_{self.servers}_{restarts}"
+        directory = f"{self.bin_name}_{self.search_type}_{self.sync_method}_{self.servers}_{restarts}"
         if self.extra_flags:
             directory += "_"
             directory += "_".join(self.extra_flags)
@@ -72,7 +73,7 @@ def run(config: Config):
         logger.info("Skipping {}", out_dir)
         return
     os.makedirs(out_dir)
-    cmd = f"{config.bin_name} check-iterative {config.to_args()} > {out_file}"
+    cmd = f"{config.bin_name} check-{config.search_type} {config.to_args()} > {out_file}"
     logger.info("Running command: {}", cmd)
     subprocess.run(
         cmd,
@@ -95,6 +96,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-counter",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -105,6 +107,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-counter",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -115,6 +118,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-counter",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -125,6 +129,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-counter",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -137,6 +142,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-moves",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -149,6 +155,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-todo",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -159,6 +166,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-todo",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -169,6 +177,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-todo",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -179,6 +188,7 @@ def main():
                 run(
                     Config(
                         bin_name="amc-todo",
+                        search_type="iterative",
                         sync_method=sync_method,
                         servers=servers,
                         restarts=restarts,
@@ -210,6 +220,7 @@ def main():
                         run(
                             Config(
                                 bin_name="amc-automerge",
+                                search_type="dfs",
                                 sync_method=sync_method,
                                 servers=servers,
                                 restarts=restarts,
