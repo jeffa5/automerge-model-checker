@@ -8,6 +8,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from typing import List, Tuple
+
 from loguru import logger
 
 RESULTS_DIR = "results"
@@ -73,7 +74,9 @@ def run(config: Config):
         logger.info("Skipping {}", out_dir)
         return
     os.makedirs(out_dir)
-    cmd = f"{config.bin_name} check-{config.search_type} {config.to_args()} > {out_file}"
+    cmd = (
+        f"{config.bin_name} check-{config.search_type} {config.to_args()} > {out_file}"
+    )
     logger.info("Running command: {}", cmd)
     subprocess.run(
         cmd,
@@ -212,11 +215,14 @@ def main():
                         # "boolean",
                         # "null",
                     ]:
-                        extra_args = []
+                        extra_args = [("object-type", object_type)]
+                        extra_flags = [datatype]
                         if object_type == "map":
                             extra_args.append(("keys", ",".join(props)))
+                            extra_flags += ["put", "delete"]
                         else:
                             extra_args.append(("indices", ",".join(props)))
+                            extra_flags += ["insert", "delete"]
                         run(
                             Config(
                                 bin_name="amc-automerge",
@@ -224,8 +230,8 @@ def main():
                                 sync_method=sync_method,
                                 servers=servers,
                                 restarts=restarts,
-                                extra_flags=[datatype],
-                                extra_args=extra_args + [("object-type", object_type)],
+                                extra_flags=extra_flags,
+                                extra_args=extra_args,
                             )
                         )
 
