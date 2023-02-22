@@ -87,7 +87,7 @@ def run(config: Config):
             timeout=timeout_s,
         )
     except subprocess.TimeoutExpired:
-        logger.warn("Timed out after {}s", timeout_s)
+        logger.warning("Timed out after {}s", timeout_s)
 
 
 def main():
