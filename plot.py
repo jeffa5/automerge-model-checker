@@ -5,11 +5,12 @@ Plot the benchmark results.
 """
 
 import os
-import shutil
 import re
+import shutil
 from dataclasses import dataclass
-import matplotlib.pyplot as plt
 from typing import List
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
@@ -64,7 +65,6 @@ def main():
     df = pd.DataFrame(
         results, columns=["run_cmd", "states", "unique", "depth", "duration_ms"]
     )
-    df.set_index("run_cmd", inplace=True)
     print(df)
     print(df.dtypes)
 
@@ -73,6 +73,28 @@ def main():
 
     with open("plots/data.csv", "w") as datafile:
         datafile.write(df.to_csv())
+
+    # counter headline results
+    for cmd in [
+        # automerge
+        "amc-automerge_dfs_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_put_delete_object-type=map_keys=foo,bar",
+        "amc-automerge_dfs_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_insert_delete_object-type=list_indices=0,1",
+        # counter
+        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
+        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_counter-type",
+        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change",
+        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_counter-type_initial-change",
+        # moves
+        "amc-moves_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
+        # todo
+        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
+        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_random-ids",
+        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change",
+        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change_random-ids",
+    ]:
+        results = df[df["run_cmd"] == cmd]
+        results = results.iloc[-1]
+        print(results.tolist())
 
     a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker="o")
     a.set(xscale="log")
