@@ -232,7 +232,7 @@ def main():
                         run(
                             Config(
                                 bin_name="amc-automerge",
-                                search_type="dfs",
+                                search_type="iterative",
                                 sync_method=sync_method,
                                 servers=servers,
                                 restarts=restarts,
