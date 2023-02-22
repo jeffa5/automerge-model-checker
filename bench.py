@@ -78,7 +78,7 @@ def run(config: Config):
         f"{config.bin_name} check-{config.search_type} {config.to_args()} > {out_file}"
     )
     logger.info("Running command: {}", cmd)
-    timeout_s = 60 * 10 # 30 minutes
+    timeout_s = 60 * 30  # 30 minutes
     try:
         subprocess.run(
             cmd,
