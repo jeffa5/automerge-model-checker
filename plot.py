@@ -77,20 +77,21 @@ def main():
     # counter headline results
     for cmd in [
         # automerge
-        "amc-automerge_dfs_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_put_delete_object-type=map_keys=foo,bar",
-        "amc-automerge_dfs_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_insert_delete_object-type=list_indices=0,1",
+        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_put_delete_object-type=map_keys=foo,bar",
+        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_insert_delete_object-type=list_indices=0,1",
+        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_string_insert_delete_object-type=text_indices=0,1",
         # counter
-        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
-        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_counter-type",
-        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change",
-        "amc-counter_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_counter-type_initial-change",
+        "amc-counter_iterative_changes_2_norestarts",
+        "amc-counter_iterative_changes_2_norestarts_counter-type",
+        "amc-counter_iterative_changes_2_norestarts_initial-change",
+        "amc-counter_iterative_changes_2_norestarts_counter-type_initial-change",
         # moves
-        "amc-moves_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
+        "amc-moves_iterative_changes_2_norestarts",
         # todo
-        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check",
-        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_random-ids",
-        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change",
-        "amc-todo_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_initial-change_random-ids",
+        "amc-todo_iterative_changes_2_norestarts",
+        "amc-todo_iterative_changes_2_norestarts_random-ids",
+        "amc-todo_iterative_changes_2_norestarts_initial-change",
+        "amc-todo_iterative_changes_2_norestarts_initial-change_random-ids",
     ]:
         results = df[df["run_cmd"] == cmd]
         results = results.iloc[-1]
