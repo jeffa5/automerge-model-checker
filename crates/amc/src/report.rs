@@ -64,7 +64,7 @@ where
         let locale = SystemLocale::default().unwrap();
         let duration = data.duration.as_millis();
         println!(
-            "{} states={: >8} (+{: <8} {: >8}/s), unique={: >8} (+{: <8} {: >8}/s), max_depth={}, duration={:?}ms",
+            "{} states={} (+{} {}/s), unique={} (+{} {}/s), max_depth={}, duration={:?}ms",
             status,
             data.total_states.to_formatted_string(&locale),
             new_total.to_formatted_string(&locale),
