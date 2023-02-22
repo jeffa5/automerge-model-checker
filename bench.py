@@ -96,150 +96,132 @@ def main():
     """
     make_results_dir()
 
-    sync_methods = ["changes", "messages", "save-load"]
-    for servers in [2, 3]:
-        for sync_method in sync_methods:
-            for restarts in [True, False]:
-                # amc-counter
-                run(
-                    Config(
-                        bin_name="amc-counter",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=[],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-counter",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["counter-type"],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-counter",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["initial-change"],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-counter",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["counter-type", "initial-change"],
-                        extra_args=[],
-                    )
-                )
+    amc_check_flags = [
+        "in-sync-check",
+        "historical-check",
+        "error-free-check",
+        "save-load-check",
+    ]
 
-                # amc-moves
-                run(
-                    Config(
-                        bin_name="amc-moves",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=[],
-                        extra_args=[],
-                    )
-                )
+    configs = [
+        # amc-counter
+        Config(
+            bin_name="amc-counter",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=[],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-counter",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["counter-type"],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-counter",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["initial-change"],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-counter",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["counter-type", "initial-change"],
+            extra_args=[],
+        ),
 
-                # amc-todo
-                run(
-                    Config(
-                        bin_name="amc-todo",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=[],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-todo",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["random-ids"],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-todo",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["initial-change"],
-                        extra_args=[],
-                    )
-                )
-                run(
-                    Config(
-                        bin_name="amc-todo",
-                        search_type="iterative",
-                        sync_method=sync_method,
-                        servers=servers,
-                        restarts=restarts,
-                        extra_flags=["initial-change", "random-ids"],
-                        extra_args=[],
-                    )
-                )
+        # amc-moves
+        Config(
+            bin_name="amc-moves",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=[],
+            extra_args=[],
+        ),
 
-                # amc-automerge
-                for (object_type, props) in [
-                    ("map", ["foo", "bar"]),
-                    ("list", ["0", "1"]),
-                    ("text", ["0", "1"]),
-                ]:
-                    for datatype in [
-                        # "bytes",
-                        "string",
-                        # "int",
-                        # "uint",
-                        # "timestamp",
-                        # "boolean",
-                        # "null",
-                    ]:
-                        extra_args = [("object-type", object_type)]
-                        check_flags = ["in-sync-check", "historical-check", "error-free-check"]
-                        extra_flags = check_flags + [datatype]
-                        if object_type == "map":
-                            extra_args.append(("keys", ",".join(props)))
-                            extra_flags += ["put", "delete"]
-                        else:
-                            extra_args.append(("indices", ",".join(props)))
-                            extra_flags += ["insert", "delete"]
-                        run(
-                            Config(
-                                bin_name="amc-automerge",
-                                search_type="iterative",
-                                sync_method=sync_method,
-                                servers=servers,
-                                restarts=restarts,
-                                extra_flags=extra_flags,
-                                extra_args=extra_args,
-                            )
-                        )
+        # amc-todo
+        Config(
+            bin_name="amc-todo",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=[],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-todo",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["random-ids"],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-todo",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["initial-change"],
+            extra_args=[],
+        ),
+        Config(
+            bin_name="amc-todo",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=["initial-change", "random-ids"],
+            extra_args=[],
+        ),
+
+        # amc-automerge
+        Config(
+            bin_name="amc-automerge",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=amc_check_flags + ["string", "put", "delete"],
+            extra_args=[("object-type", "map"), ("keys", "foo,bar")],
+        ),
+        Config(
+            bin_name="amc-automerge",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=amc_check_flags + ["string", "insert", "delete"],
+            extra_args=[("object-type", "list"), ("indices", "0,1")],
+        ),
+        Config(
+            bin_name="amc-automerge",
+            search_type="iterative",
+            sync_method="changes",
+            servers=2,
+            restarts=False,
+            extra_flags=amc_check_flags + ["string", "insert", "delete"],
+            extra_args=[("object-type", "text"), ("indices", "0,1")],
+        ),
+    ]
+    for config in configs:
+        run(config)
 
 
 if __name__ == "__main__":
