@@ -96,7 +96,6 @@ def main():
     """
     make_results_dir()
 
-    # checks, not save-load as that is better fuzzed and is costly here
     sync_methods = ["changes", "messages", "save-load"]
     for servers in [2, 3]:
         for sync_method in sync_methods:
