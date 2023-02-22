@@ -71,6 +71,9 @@ def main():
     shutil.rmtree("plots", ignore_errors=True)
     os.makedirs("plots")
 
+    with open("plots/data.csv", "w") as datafile:
+        datafile.write(df.to_csv())
+
     a = sns.relplot(df, x="states", y="unique", hue="run_cmd", kind="line", marker="o")
     a.set(xscale="log")
     a.set(yscale="log")
