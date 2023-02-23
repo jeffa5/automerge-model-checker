@@ -1,7 +1,6 @@
 use std::{fmt::Debug, hash::Hash, sync::Arc};
 
 use automerge::Automerge;
-use automerge::ReadDoc;
 use automerge::ROOT;
 use stateright::actor::{ActorModel, ActorModelState};
 
@@ -177,8 +176,8 @@ where
         (GlobalActorState::Client(_), GlobalActorState::Server(_)) => true,
         (GlobalActorState::Server(_), GlobalActorState::Client(_)) => true,
         (GlobalActorState::Server(a), GlobalActorState::Server(b)) => {
-            let a_vals = a.document().values(ROOT).collect::<Vec<_>>();
-            let b_vals = b.document().values(ROOT).collect::<Vec<_>>();
+            let a_vals = materialize(a.document());
+            let b_vals = materialize(b.document());
             a_vals == b_vals
         }
     })
