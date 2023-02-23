@@ -1,7 +1,6 @@
 use std::{fmt::Debug, hash::Hash, sync::Arc};
 
 use automerge::Automerge;
-use automerge::ROOT;
 use stateright::actor::{ActorModel, ActorModelState};
 
 use crate::client::Application;
