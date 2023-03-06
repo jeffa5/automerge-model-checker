@@ -2,7 +2,7 @@
 
 [![main docs](https://img.shields.io/badge/docs-main-informational)](http://jeffas.io/automerge-model-checker/doc/amc/)
 
-An attempt to model check the [Rust implementation](https://github.com/automerge/automerge-rs) of [Automerge](https://automerge.org/) directly, making some simplifying assumptions along the way.
+The Automerge Model Checker provides a library for model checking the [Rust implementation](https://github.com/automerge/automerge-rs) of [Automerge](https://automerge.org/) directly, making some simplifying assumptions along the way, **as well as custom applications**.
 
 ## Status
 
