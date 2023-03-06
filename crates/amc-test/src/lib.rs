@@ -1,3 +1,5 @@
+//! Test utilities for amc.
+
 use amc::model::{ModelBuilder, ModelOpts};
 use amc::report::TestReporter;
 use expect_test::Expect;
