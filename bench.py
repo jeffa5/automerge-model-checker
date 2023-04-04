@@ -134,7 +134,7 @@ def main():
         ),
         Config(
             bin_name="amc-counter",
-            search_type="iterative",
+            search_type="dfs",
             sync_method="changes",
             servers=3,
             restarts=False,
@@ -183,7 +183,7 @@ def main():
         ),
         Config(
             bin_name="amc-todo",
-            search_type="iterative",
+            search_type="dfs",
             sync_method="changes",
             servers=3,
             restarts=False,
@@ -194,7 +194,7 @@ def main():
         # amc-automerge
         Config(
             bin_name="amc-automerge",
-            search_type="iterative",
+            search_type="dfs",
             sync_method="changes",
             servers=3,
             restarts=False,
@@ -203,7 +203,7 @@ def main():
         ),
         Config(
             bin_name="amc-automerge",
-            search_type="iterative",
+            search_type="dfs",
             sync_method="changes",
             servers=3,
             restarts=False,
@@ -212,7 +212,7 @@ def main():
         ),
         Config(
             bin_name="amc-automerge",
-            search_type="iterative",
+            search_type="dfs",
             sync_method="changes",
             servers=3,
             restarts=False,
