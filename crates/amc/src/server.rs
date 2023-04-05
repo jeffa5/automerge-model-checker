@@ -28,6 +28,10 @@ pub struct Server<A> {
     pub peers: Vec<Id>,
     /// Method to synchronise with peers.
     pub sync_method: SyncMethod,
+    /// Whether to batch synchronisation in all possible ways.
+    ///
+    /// **Warning**: this can be very expensive.
+    pub batch_synchronisation: bool,
     /// Whether to trigger restarts in the application.
     pub restarts: bool,
     /// Application logic.
@@ -80,8 +84,10 @@ impl<A: Application> Actor for Server<A> {
 
     /// Servers don't do things on their own unless told to.
     fn on_start(&self, id: Id, o: &mut Out<Self>) -> Self::State {
-        // Start a timer for periodic syncing.
-        o.set_timer(GlobalTimer::Server(Timer::Synchronise), model_timeout());
+        // Start a timer for periodic syncing if we are wanting to explore all possible batchings.
+        if self.batch_synchronisation {
+            o.set_timer(GlobalTimer::Server(Timer::Synchronise), model_timeout());
+        }
         if self.restarts {
             o.set_timer(GlobalTimer::Server(Timer::Restart), model_timeout());
         }
@@ -105,6 +111,10 @@ impl<A: Application> Actor for Server<A> {
                         src,
                         GlobalMsg::ClientToServer(ApplicationMsg::Output(output)),
                     );
+                }
+                // not using timers for synchronisation so need to try and sync here
+                if !self.batch_synchronisation {
+                    self.sync(state, o)
                 }
             }
             GlobalMsg::ServerToServer(ServerMsg::SyncMessageRaw { message_bytes }) => {
