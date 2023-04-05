@@ -198,6 +198,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -215,15 +216,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=1010, unique=651, max_depth=7
-                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                Done states=203, unique=162, max_depth=5
+                Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg2FFLKgBTwAIAAAAAAAAAAABAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7dZRG8BTwAIAAAAAAAAAAEBAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 15482871843547519777/8203200380951402305/8829712127819938698/9203449192000354338/1513831609101728924/10211774821601995043/3348636454154444996`"#]],
+                To explore this path try re-running with `explore 3618709252656414281/3848895781740508824/3030994841380107975/8235390891822971838/6445604413388662187`"#]],
         );
     }
 
@@ -232,6 +231,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -249,15 +249,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=1311, unique=856, max_depth=7
-                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                Done states=227, unique=190, max_depth=5
+                Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kgwgf+QYBWAAIAAAAAAAAAAABAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzQ0MjI0MTQwNwljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7WbvTIBWAAIAAAAAAAAAAEBAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzU0MzE0NDU0NQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 15482871843547519777/18165317894337760192/694225343320960706/7251433598226590557/3823086620333083307/10110955772386490526/18101974323185263970`"#]],
+                To explore this path try re-running with `explore 3618709252656414281/13152949298909582684/18321986597509055663/17700926072447250057/1499795684066723353`"#]],
         );
     }
 
@@ -266,6 +264,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -283,15 +282,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=1010, unique=651, max_depth=7
-                Discovered "all apps have the right number of tasks" counterexample Path[6]:
+                Done states=203, unique=162, max_depth=5
+                Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9KgxyNDm8BbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAAECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg75sovgBbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAQECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
-                To explore this path try re-running with `explore 17492868438200066151/2505832214583032789/1929226361012236889/16042632906015736619/15462423237410012875/16262740734369261783/10226122137356237458`"#]],
+                To explore this path try re-running with `explore 7010877734742148362/10654691187990764641/8397507758268191045/3934490380097970375/4484010949238792495`"#]],
         );
     }
 
@@ -301,6 +298,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,

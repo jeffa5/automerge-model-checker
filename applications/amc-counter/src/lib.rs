@@ -308,6 +308,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -325,15 +326,13 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=1193, unique=883, max_depth=7
-                Discovered "correct value" counterexample Path[6]:
+                Done states=222, unique=179, max_depth=5
+                Discovered "correct value" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg9HytnIBLQAIAAAAAAAAAAABAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg37mM9cBLQAIAAAAAAAAAAEBAQAAAAYVCTQBQgJWAlcBcAJ/B2NvdW50ZXIBfwF/FAF/AA"] }) }
-                To explore this path try re-running with `explore 1525806181380480722/5180418002550223678/5944152108436530398/6844139681497215916/14420335236416177080/8613034781207194886/10065992036751478607`"#]],
+                To explore this path try re-running with `explore 8399851022870237940/16806491862266398352/5438897868953376969/16701553720798388135/13315330198982492364`"#]],
         );
     }
 
@@ -342,6 +341,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -359,15 +359,13 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=1193, unique=883, max_depth=7
-                Discovered "correct value" counterexample Path[6]:
+                Done states=222, unique=179, max_depth=5
+                Discovered "correct value" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg8uC6w0BOQAIAAAAAAAAAAABAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg5SFxa4BOQAIAAAAAAAAAAEBAQAAAAgVCTQBQgNWA1cCcANxAnMCAgdjb3VudGVyAn4BBX4YFAABfgABfwB/AQ"] }) }
-                To explore this path try re-running with `explore 1525806181380480722/17097366349952166707/8593760643917371053/10515671521338280547/2964746799589016998/3743303551252853264/13106660646034931466`"#]],
+                To explore this path try re-running with `explore 8399851022870237940/6286690770233473543/7056331258323820444/9617842048992555650/16723310297820614748`"#]],
         );
     }
 
@@ -376,6 +374,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -393,15 +392,13 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=1193, unique=883, max_depth=7
-                Discovered "correct value" counterexample Path[6]:
+                Done states=222, unique=179, max_depth=5
+                Discovered "correct value" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(Increment)) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(Increment)) }
-                - Timeout(Id(0), Server(Synchronise))
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg/YbISQBXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAAECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
-                - Timeout(Id(1), Server(Synchronise))
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7tkl20BXgFSivc63RbdozTgVxdZsTebmtG2LZfGjrMebHARiIr6ywgAAAAAAAAAAQECAAABCAAAAAAAAAPnCBUJNAFCAlYCVwFwAnECcwJ/B2NvdW50ZXIBfwF/FAF/AX8BfwE"] }) }
-                To explore this path try re-running with `explore 11282747607017160468/5938715736771673525/8215538973129948655/8182588904830695981/13837347306307031713/3101484924508244605/5391279161082374327`"#]],
+                To explore this path try re-running with `explore 13057938546621334551/15046840202489597371/6604804354041139761/5847114616358703178/9862545585125496178`"#]],
         );
     }
 
@@ -410,6 +407,7 @@ mod tests {
         let model_opts = ModelOpts {
             servers: 2,
             sync_method: SyncMethod::Changes,
+            batch_synchronisation: false,
             restarts: false,
             in_sync_check: false,
             save_load_check: false,
@@ -427,7 +425,7 @@ mod tests {
             model_opts,
             counter_opts,
             expect![[r#"
-                Done states=7477, unique=4649, max_depth=13
+                Done states=1241, unique=897, max_depth=9
             "#]],
         );
     }

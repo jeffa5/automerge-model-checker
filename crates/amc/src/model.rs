@@ -81,6 +81,10 @@ pub struct ModelOpts {
     #[clap(long, global = true, default_value = "changes")]
     pub sync_method: SyncMethod,
 
+    /// Whether to batch synchronisation in all possible ways.
+    #[clap(long, global = true)]
+    pub batch_synchronisation: bool,
+
     /// Whether to perform server restarts.
     #[clap(long, global = true)]
     pub restarts: bool,
@@ -122,6 +126,7 @@ impl ModelOpts {
             model = model.actor(GlobalActor::Server(Server {
                 peers: model_peers(i, self.servers),
                 sync_method: self.sync_method,
+                batch_synchronisation: self.batch_synchronisation,
                 restarts: self.restarts,
                 app: model_builder.application(i, &config),
             }))
