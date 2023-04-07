@@ -23,7 +23,7 @@ pub enum AppInput {
     CreateTodo(SmolStr),
     Update(u32, SmolStr),
     ToggleActive(u32),
-    DeleteTodo(u32),
+    DeleteAll,
     ListTodos,
 }
 
@@ -34,6 +34,7 @@ pub enum AppOutput {
     Update(bool),
     ToggleActive(bool),
     DeleteTodo(bool),
+    DeleteAll(TinyVec<[u32;4]>),
     ListTodos(TinyVec<[u32; 4]>),
 }
 
@@ -51,7 +52,7 @@ impl Drive<App> for Driver {
             DriverState::Creater => ((), vec![AppInput::CreateTodo(SmolStr::new_inline("a"))]),
             DriverState::Updater => ((), vec![AppInput::ListTodos]),
             DriverState::Toggler => ((), vec![AppInput::ListTodos]),
-            DriverState::Deleter => ((), vec![AppInput::ListTodos]),
+            DriverState::Deleter => ((), vec![AppInput::DeleteAll]),
         }
     }
 
@@ -67,9 +68,6 @@ impl Drive<App> for Driver {
                 .collect(),
             (DriverState::Toggler, AppOutput::ListTodos(ids)) => {
                 ids.iter().map(|id| AppInput::ToggleActive(*id)).collect()
-            }
-            (DriverState::Deleter, AppOutput::ListTodos(ids)) => {
-                ids.iter().map(|id| AppInput::DeleteTodo(*id)).collect()
             }
             _ => {
                 vec![]

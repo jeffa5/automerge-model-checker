@@ -123,11 +123,13 @@ impl amc::model::ModelBuilder for TodoOptions {
                                 present_tasks.push(id);
                             }
                             (AppInput::ToggleActive(_), AppOutput::ToggleActive(_)) => {}
-                            (AppInput::DeleteTodo(id), AppOutput::DeleteTodo(_)) => {
-                                if let Some(index_to_remove) =
-                                    present_tasks.iter().position(|&x| x == id)
-                                {
-                                    present_tasks.swap_remove(index_to_remove);
+                            (AppInput::DeleteAll, AppOutput::DeleteAll(ids)) => {
+                                for id in ids {
+                                    if let Some(index_to_remove) =
+                                        present_tasks.iter().position(|&x| x == id)
+                                    {
+                                        present_tasks.swap_remove(index_to_remove);
+                                    }
                                 }
                             }
                             (AppInput::Update(_id, _text), AppOutput::Update(_success)) => {}

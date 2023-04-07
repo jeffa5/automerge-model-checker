@@ -36,10 +36,12 @@ impl Application for App {
                 let b = document.to_mut().toggle_active(*id);
                 AppOutput::ToggleActive(b)
             }
-            crate::driver::AppInput::DeleteTodo(id) => {
-                let was_present = document.to_mut().delete_todo(*id);
-                AppOutput::DeleteTodo(was_present)
-                // AppOutput::DeleteTodo(false)
+            crate::driver::AppInput::DeleteAll => {
+                let ids = document.list_todos();
+                for id in &ids {
+                    document.to_mut().delete_todo(*id);
+                }
+                AppOutput::DeleteAll(ids)
             }
             crate::driver::AppInput::ListTodos => {
                 let ids = document.list_todos();
