@@ -218,13 +218,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=203, unique=162, max_depth=5
+                Done states=165, unique=141, max_depth=5
                 Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg2FFLKgBTwAIAAAAAAAAAAABAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7dZRG8BTwAIAAAAAAAAAAEBAQAAAAgBBAIGFRg0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MBMQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 3618709252656414281/3848895781740508824/3030994841380107975/8235390891822971838/6445604413388662187`"#]],
+                To explore this path try re-running with `explore 17937195640485670173/1998021212760936223/8897512721146917596/14326810500298763431/9127825691506328565`"#]],
         );
     }
 
@@ -251,13 +251,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=227, unique=190, max_depth=5
+                Done states=187, unique=167, max_depth=5
                 Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kgwgf+QYBWAAIAAAAAAAAAAABAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzQ0MjI0MTQwNwljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg7WbvTIBWAAIAAAAAAAAAAEBAQAAAAgBBAIGFSE0AUIEVgVXAXACAAEDAAABfwECAnwFdG9kb3MKMzU0MzE0NDU0NQljb21wbGV0ZWQEdGV4dAQCAAIBAgB+ARZhBAA"] }) }
-                To explore this path try re-running with `explore 3618709252656414281/13152949298909582684/18321986597509055663/17700926072447250057/1499795684066723353`"#]],
+                To explore this path try re-running with `explore 17937195640485670173/12886282729551366936/10036090383301036612/8577159003293906480/15410110601288289037`"#]],
         );
     }
 
@@ -284,13 +284,13 @@ mod tests {
             model_opts,
             todo_opts,
             expect![[r#"
-                Done states=203, unique=162, max_depth=5
+                Done states=165, unique=141, max_depth=5
                 Discovered "all apps have the right number of tasks" counterexample Path[4]:
                 - Deliver { src: Id(2), dst: Id(0), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(4), dst: Id(1), msg: ClientToServer(Input(CreateTodo("a"))) }
                 - Deliver { src: Id(0), dst: Id(1), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9KgxyNDm8BbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAAECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
                 - Deliver { src: Id(1), dst: Id(0), msg: ServerToServer(SyncChangeRaw { missing_changes_bytes: ["hW9Kg75sovgBbwHG41V/TSmS0zF9OlKXsY+AGk2OJT4ZQc8yCtzbYlW+IQgAAAAAAAAAAQECAAABCAAAAAAAAAPnCAEEAgQVEjQBQgRWBFcBcAJ/AQIAfwECAn0BMQljb21wbGV0ZWQEdGV4dAN/AAIBfQABFmEDAA"] }) }
-                To explore this path try re-running with `explore 7010877734742148362/10654691187990764641/8397507758268191045/3934490380097970375/4484010949238792495`"#]],
+                To explore this path try re-running with `explore 14072620649586308657/6087180092056407687/11639183987999715538/16398580390687397916/8050191079591944869`"#]],
         );
     }
 
