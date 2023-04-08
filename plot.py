@@ -74,25 +74,10 @@ def main():
     with open("plots/data.csv", "w") as datafile:
         datafile.write(df.to_csv())
 
+    cmds = sorted(list(set(df["run_cmd"])))
+
     # counter headline results
-    for cmd in [
-        # automerge
-        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_save-load-check_string_put_delete_object-type=map_keys=foo,bar",
-        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_save-load-check_string_insert_delete_object-type=list_indices=0,1",
-        "amc-automerge_iterative_changes_2_norestarts_in-sync-check_historical-check_error-free-check_save-load-check_string_insert_delete_object-type=text_indices=0,1",
-        # counter
-        "amc-counter_iterative_changes_2_norestarts",
-        "amc-counter_iterative_changes_2_norestarts_counter-type",
-        "amc-counter_iterative_changes_2_norestarts_initial-change",
-        "amc-counter_iterative_changes_2_norestarts_counter-type_initial-change",
-        # moves
-        "amc-moves_iterative_changes_2_norestarts",
-        # todo
-        "amc-todo_iterative_changes_2_norestarts",
-        "amc-todo_iterative_changes_2_norestarts_random-ids",
-        "amc-todo_iterative_changes_2_norestarts_initial-change",
-        "amc-todo_iterative_changes_2_norestarts_initial-change_random-ids",
-    ]:
+    for cmd in cmds:
         results = df[df["run_cmd"] == cmd]
         results = results.iloc[-1]
         print(results.tolist())
